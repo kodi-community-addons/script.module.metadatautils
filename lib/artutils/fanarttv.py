@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import log_msg, get_json, KODI_LANGUAGE
+from utils import rate_limiter, get_json, KODI_LANGUAGE, process_method_on_list
 from operator import itemgetter
 
 class FanartTv(object):
@@ -73,6 +73,7 @@ class FanartTv(object):
         return artwork
         
     @staticmethod
+    @rate_limiter
     def get_data(query):
         '''helper method to get data from fanart.tv json API'''
         url = 'http://webservice.fanart.tv/v3/%s?api_key=639191cb0774661597f28a47e7e2bad5' %(query)
