@@ -1,33 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, rate_limiter, timedelta, DialogSelect
+from utils import get_json, DialogSelect, log_msg
 from kodidb import KodiDb
 import xbmc, xbmcvfs, xbmcgui
-import simplecache
+from simplecache import SimpleCache, use_cache
+
 
 
 class AnimatedArt(object):
     '''get animated artwork'''
-    art_db = None
-    kodidb = KodiDb()
-    ignore_cache = False
+    
+    cache = SimpleCache()
+
+    def __init__(self, *args):
+        self.kodidb = KodiDb()
     
     def get_animated_artwork(self,imdb_id,manual_select=False):
         '''returns both the animated poster and fanart for use in kodi'''
         if manual_select:
             xbmc.executebuiltin( "ActivateWindow(busydialog)" )
-        cache_str = "SkinHelper.AnimatedArt.%s"%imdb_id
-        cache = simplecache.get(cache_str)
-        if cache and not manual_select:
-            return cache
         #no cache so grab the results
         result = {
             "animatedposter": self.poster(imdb_id, manual_select),
             "animatedfanart": self.fanart(imdb_id, manual_select),
-            "imdb_id": imdb_id #set imdb in the dict so we can store empty values in the cache
+            "imdb_id": imdb_id
             }
         self.write_kodidb(result)
-        simplecache.set(cache_str,result)
         if manual_select:
             xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         return result
@@ -53,20 +51,13 @@ class AnimatedArt(object):
     def get_art(self,imdb_id,art_type):
         '''get the artwork'''
         art_db = self.get_animatedart_db()
-        if imdb_id in art_db:
+        if art_db.get(imdb_id):
             return art_db[imdb_id][art_type]
         return []
     
+    @use_cache(7)
     def get_animatedart_db(self):
         '''get the full animated art database as dict with imdbid and tmdbid as key - uses 7 day cache to prevent overloading the server'''
-        #try cache first
-        if self.art_db and not self.ignore_cache:
-            return self.art_db
-        cache_str = "SkinHelper.AnimatedArtwork"
-        cache = simplecache.get(cache_str)
-        if cache and not self.ignore_cache:
-            return cache
-
         #get all animated posters from the online json file
         art_db = {}
         data = get_json('http://www.consiliumb.com/animatedgifs/movies.json',None,0)
@@ -88,9 +79,6 @@ class AnimatedArt(object):
                             art_db[key]["posters"].append( entry_new )
                         elif entry['type'] == 'background':
                             art_db[key]["fanarts"].append( entry_new )
-        #store in cache and return results
-        simplecache.set(cache_str,art_db,expiration=timedelta(days=7))
-        self.art_db = art_db
         return art_db
     
     @staticmethod
@@ -148,14 +136,14 @@ class AnimatedArt(object):
         img_data = img.readBytes()
         img.close()
         img = xbmcvfs.File(local_filename,'w')
-        success = img.write(img_data)
+        img.write(img_data)
         img.close()
-        return local_filename if success else None
+        return local_filename
         
     def write_kodidb(self,artwork):
         '''store the animated artwork in kodi database to access it with ListItem.Art(animatedartX)'''
         filters = [{ "operator":"is", "field":"imdbnumber", "value":artwork["imdb_id"]}]
-        kodi_movies = self.kodidb.get_db('VideoLibrary.GetMovies',None,filters,["art"],None,"movies")
+        kodi_movies = self.kodidb.movies(filters=filters)
         if kodi_movies:
             kodi_movie = kodi_movies[0]
             cur_poster = kodi_movie["art"].get("animatedposter","")
@@ -166,6 +154,6 @@ class AnimatedArt(object):
                     "movieid": kodi_movie["movieid"],
                     "art": {"animatedfanart": artwork["animatedfanart"], "animatedposter": artwork["animatedposter"]}
                     }
-                set_kodi_json('VideoLibrary.SetMovieDetails', params)
+                self.kodidb.set_kodi_json('VideoLibrary.SetMovieDetails', params)
             
             

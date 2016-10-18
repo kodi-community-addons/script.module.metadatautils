@@ -6,15 +6,17 @@ import xbmc, xbmcvfs
 
 class ChannelLogos(object):
     '''get channellogo'''
-    kodidb = KodiDb()
+    
+    def __init__(self, *args):
+        self.kodidb = KodiDb()
     
     def get_channellogo(self,channelname):
         '''get channellogo for the supplied channelname'''
-        result = ""
+        result = {}
         for searchmethod in [self.search_kodi,self.search_logosdb]:
             if result:
                 break
-            result = searchmethod(channelname)
+            result["ChannelLogo"] = searchmethod(channelname)
         return result
         
     @staticmethod
@@ -35,7 +37,7 @@ class ChannelLogos(object):
         '''search kodi json api for channel logo'''
         result = ""
         if xbmc.getCondVisibility("PVR.HasTVChannels"):
-            results = kodidb.get_db('PVR.GetChannels','None',None,[ "thumbnail" ],None,"tvchannels", {"channelgroupid": "alltv"})
+            results = kodidb.get_json('PVR.GetChannels',fields=[ "thumbnail" ],returntype="tvchannels", optparam=("channelgroupid", "alltv") )
             for item in results:
                 if item["label"] == searchphrase:
                     channelicon = item['thumbnail']

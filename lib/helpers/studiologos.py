@@ -1,68 +1,51 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import simplecache
+from simplecache import SimpleCache
 import xbmc, xbmcvfs
 import os
 from datetime import timedelta
 
 class StudioLogos():
-    lookup_path = ""
+    
+    def __init__(self, *args):
+        self.cache = SimpleCache()
 
-    def get_studio_logo(self, studio):
-        if not studio: return {}
-        cacheStr = u"SkinHelper.StudioLogo.%s" %studio
-        cache = simplecache.get(cacheStr,checksum=self.lookup_path)
-        if cache: return cache
-
-        studios = []
+    def get_studio_logo(self, studios, lookup_path):
+        if not studios: 
+            return {}
         result = {}
-        if isinstance(studio,list):
-            studios = studio
-        elif "/" in studio:
-            studios = studio.split(" / ")
-            result["SkinHelper.ListItemStudio"] = studios[0]
-            result['SkinHelper.ListItemStudios'] = "[CR]".join(studios)
-        else:
-            studios.append(studio)
-            result["SkinHelper.ListItemStudio"] = studio
-            result['SkinHelper.ListItemStudios'] = studio
-
-        result['SkinHelper.ListItemStudioLogo'] = self.match_studio_logo(studio, self.get_studio_logos())
-        simplecache.set(cacheStr,result,checksum=self.lookup_path)
+        if not isinstance(studios,list):
+            studios = studios.split(" / ")
+        result["Studio"] = studios[0]
+        result['Studios'] = "[CR]".join(studios)
+        result['StudioLogo'] = self.match_studio_logo(studios, self.get_studio_logos(lookup_path))
         return result
 
-    def get_studio_logos(self):
-        if not self.lookup_path:
-            return {}
-
-        cacheStr = u"SkinHelper.StudioLogos.%s"%self.lookup_path
-        cache = simplecache.get( cacheStr )
-        if cache: return cache
-
+    def get_studio_logos(self, lookup_path):
+        cache_str = u"SkinHelper.StudioLogos.%s"%lookup_path
+        cache = self.cache.get( cache_str )
+        if cache: 
+            return cache
         #no cache - start lookup
-        allLogos = {}
-        if self.lookup_path.startswith("resource://"):
-            allLogos = self.get_resource_addon_files(self.lookup_path)
+        all_logos = {}
+        if lookup_path.startswith("resource://"):
+            all_logos = self.get_resource_addon_files(lookup_path)
         else:
-            if not (self.lookup_path.endswith("/") or self.lookup_path.endswith("\\")):
-                self.lookup_path = self.lookup_path + os.sep
-                allLogos = self.list_files_in_path(self.lookup_path)
-
+            if not (lookup_path.endswith("/") or lookup_path.endswith("\\")):
+                lookup_path = lookup_path + os.sep
+                all_logos = self.list_files_in_path(lookup_path)
         #save in cache and return
-        simplecache.set(cacheStr,allLogos,expiration=timedelta(days=7))
-        return allLogos
+        self.cache.set(cache_str,all_logos,expiration=timedelta(days=7))
+        return all_logos
 
     @staticmethod
-    def match_studio_logo(studiostr,studiologos):
+    def match_studio_logo(studios,studiologos):
         #try to find a matching studio logo
         studiologo = ""
-        studios = []
-        if "/" in studiostr:
-            studios = studiostr.split(" / ")
-        else:
-            studios.append(studiostr)
         for studio in studios:
+            if studiologo:
+                break
             studio = studio.lower()
             #find logo normal
             if studiologos.has_key(studio):
@@ -86,12 +69,12 @@ class StudioLogos():
     def get_resource_addon_files(self,resourcePath):
         # get listing of all files (eg studio logos) inside a resource image addonName
         # read data from our permanent cache file to prevent that we have to query the resource addon
-        cache = simplecache.get(resourcePath)
+        cache = self.cache.get(resourcePath)
         if cache: return cache
         #read resource addon as file listing
         data = self.list_files_in_path(resourcePath)
         # safe data to our permanent cache file, high timedelta because reading the resource addon list causes strange behaviour.
-        simplecache.set(resourcePath,data,expiration=timedelta(days=90))
+        self.cache.set(resourcePath,data,expiration=timedelta(days=90))
         return data
 
     def list_files_in_path( self, path):

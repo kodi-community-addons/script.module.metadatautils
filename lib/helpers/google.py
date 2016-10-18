@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 from utils import *
 import BeautifulSoup
-import simplecache
 import xbmcvfs
+from simplecache import SimpleCache
 
 class GoogleImages(object):
     '''get images from google images'''
+    
+    def __init__(self, *args):
+        self.cache = SimpleCache()
     
     def search_images(self,search_query):
         '''search google images with the given query, returns list of all images found'''
@@ -42,7 +45,7 @@ class GoogleImages(object):
         
         #get the items from cache first
         cache_str = u"SkinHelper.GoogleImages.%s"%search_query
-        cache = simplecache.get(cache_str)
+        cache = self.cache.get(cache_str)
         if cache:
             return cache
         
@@ -67,5 +70,5 @@ class GoogleImages(object):
                         results.append( img )
                     except Exception: 
                         pass
-        simplecache.set(cache_str,results)
+        self.cache.set(cache_str,results)
         return results

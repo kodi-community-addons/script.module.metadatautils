@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import log_msg, get_json, KODI_LANGUAGE, rate_limiter
+from utils import get_json, KODI_LANGUAGE, rate_limiter
 from operator import itemgetter
 
 class Tmdb(object):
@@ -100,45 +100,48 @@ class Tmdb(object):
         result =  self.get_data("search/person",params)
         if result:
             result = result[0]
-            if result["profile_path"]: 
-                cast_thumb = "http://image.tmdb.org/t/p/original%s" %result["profile_path"]
+            cast_thumb = "http://image.tmdb.org/t/p/original%s"%result["profile_path"] if result["profile_path"] else ""
             item = {"name": result["name"], 
                 "thumb": cast_thumb,
-                "roles": [item["title"] for item in result["known_for"]] }
+                "roles": [item["title"] if item.get("title") else item["name"] for item in result["known_for"]] }
             return item
         else:
-            return None
+            return {}
                 
     def get_movie_details(self,movie_id):
         '''get all moviedetails'''
         params = {
-            "append_to_response": "keywords,videos,credits,images&include_image_language=%s,en"%KODI_LANGUAGE, 
+            "append_to_response": "keywords,videos,credits,images", 
+            "include_image_language": "%s,en"%KODI_LANGUAGE,
             "language": KODI_LANGUAGE
             }
-        return self.map_details(self.get_data("movie/%s"%movie_id,params))
+        details = self.map_details(self.get_data("movie/%s"%movie_id,params),"movie")
+        return details
         
-    def get_tvshow_details(self,movie_id):
+    def get_tvshow_details(self,tvshow_id):
         '''get all tvshowdetails'''
         params = {
-            "append_to_response": "keywords,videos,external_ids,credits,images&include_image_language=%s,en"%KODI_LANGUAGE, 
+            "append_to_response": "keywords,videos,external_ids,credits,images", 
+            "include_image_language": "%s,en"%KODI_LANGUAGE,
             "language": KODI_LANGUAGE
             }
-        return self.map_details(self.get_data("movie/%s"%movie_id,params))
+        details = self.map_details(self.get_data("movie/%s"%tvshow_id,params),"tvshow")
+        return details
     
     def get_movie_details_by_imdbid(self,imdb_id):
         '''get all moviedetails by providing imdbid'''
         tmdb_id = self.get_tmdbid_by_imdbid(imdb_id)
-        return self.get_movie_details(tmdb_id)
+        return self.get_movie_details(tmdb_id) if tmdb_id else {}
         
     def get_tvshow_details_by_imdbid(self,imdb_id):
         '''get all tvshowdetails by providing imdbid'''
         tmdb_id = self.get_tmdbid_by_imdbid(imdb_id)
-        return self.get_tvshow_details(tmdb_id)
+        return self.get_tvshow_details(tmdb_id) if tmdb_id else {}
         
     def get_tvshow_details_by_tvdbid(self,tvdb_id):
         '''get all tvshowdetails by providing imdbid'''
         tmdb_id = self.get_tmdbid_by_tvdbid(tvdb_id)
-        return self.get_tvshow_details(tmdb_id)
+        return self.get_tvshow_details(tmdb_id) if tmdb_id else {}
     
     def get_tmdbid_by_imdbid(self,imdb_id):
         '''
@@ -156,15 +159,14 @@ class Tmdb(object):
         return results[0]["id"] if results else None
     
     @staticmethod
-    @rate_limiter
+    @rate_limiter(1)
     def get_data(endpoint, params):
         '''helper method to get data from tmdb json API'''
         params["api_key"] = "ae06df54334aa653354e9a010f4b81cb"
         url = u'http://api.themoviedb.org/3/%s'%endpoint
         return get_json(url,params)
 
-    @staticmethod
-    def map_details(data,media_type):
+    def map_details(self, data,media_type):
         '''helper method to map the details received from tmdb to kodi-json compatible formatting'''
         if not data:
             return {}
@@ -204,8 +206,8 @@ class Tmdb(object):
                     "thumbnail": cast_member } ) 
         #artwork
         details["art"] = {}
-        fanarts = get_best_images( data["images"]["backdrops"] )
-        posters = get_best_images( data["images"]["posters"] )
+        fanarts = self.get_best_images( data["images"]["backdrops"] )
+        posters = self.get_best_images( data["images"]["posters"] )
         details["art"]["fanarts"] = fanarts
         details["art"]["posters"] = posters
         details["art"]["fanart"] = fanarts[0] if fanarts else ""
@@ -213,7 +215,8 @@ class Tmdb(object):
         #movies only
         if media_type == "movie":
             details["title"] = data["title"]
-            details["set"] = data["belongs_to_collection"].get("name","")
+            if data["belongs_to_collection"]:
+                details["set"] = data["belongs_to_collection"].get("name","")
             details["premiered"] = data["release_date"]
             details["year"] = int(data["release_date"].split("-")[0])
             details["tagline"] = data["tagline"]
@@ -226,7 +229,7 @@ class Tmdb(object):
             details["tag"] = [item["name"] for item in data["keywords"]["keywords"]]
         #tvshows only
         if media_type == "tvshow":
-            details["title"] = data["name"]
+            details["title"] = data["name"] if data.data.get("name") else data["title"]
             details["director"] += [item["name"] for item in data["created_by"]]
             details["runtime"] = data["episode_run_time"][0] if data["episode_run_time"] else 0
             details["premiered"] = data["first_air_date"]
@@ -249,14 +252,14 @@ class Tmdb(object):
         '''get the best 5 images based on number of likes and the language'''
         for image in images:
             score = 0
-            score += item["vote_count"]
-            score += item["vote_average"] * 10
-            score += item["item_height"]
-            if "lang" in item:
-                if item["iso_639_1"] == KODI_LANGUAGE:
+            score += image["vote_count"]
+            score += image["vote_average"] * 10
+            score += image["height"]
+            if "iso_639_1" in image:
+                if image["iso_639_1"] == KODI_LANGUAGE:
                     score += 1000
-            item["score"] = score
-            item["file_path"] = "http://image.tmdb.org/t/p/original%s" %item["file_path"]
+            image["score"] = score
+            image["file_path"] = "http://image.tmdb.org/t/p/original%s" %image["file_path"]
         images = sorted(images,key=itemgetter("score"),reverse=True)[:5]
         return [image["file_path"] for image in images]
             

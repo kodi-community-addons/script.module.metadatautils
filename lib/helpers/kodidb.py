@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 import xbmc, xbmcgui
 from utils import json, try_encode, log_msg, log_exception, get_clean_image, get_duration_string, ADDON
-import studiologos
-import simplecache
+from studiologos import StudioLogos
 
 FIELDS_BASE = ["dateadded", "file", "lastplayed","plot", "title", "art", "playcount"]
 FIELDS_FILE = FIELDS_BASE + ["streamdetails", "director", "resume", "runtime"]
@@ -17,7 +16,7 @@ FIELDS_EPISODES = FIELDS_FILE + ["cast", "productioncode", "rating", "votes", "e
 FIELDS_MUSICVIDEOS = FIELDS_FILE + ["genre", "artist", "tag", "album", "track", "studio", "year"]
 FIELDS_FILES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "trailer", "year", "country", "studio",
     "genre", "mpaa", "rating", "tagline", "writer", "originaltitle", "imdbnumber", "premiered","episode", "showtitle",
-    "firstaired","watchedepisodes","duration"]
+    "firstaired","watchedepisodes","duration", "season"]
 FIELDS_SONGS = ["artist","displayartist", "title", "rating", "fanart", "thumbnail", "duration",
     "playcount", "comment", "file", "album", "lastplayed", "genre", "musicbrainzartistid", "track"]
 FIELDS_ALBUMS = ["title", "fanart", "thumbnail", "genre", "displayartist", "artist", "genreid",
@@ -53,8 +52,8 @@ class KodiDb(object):
     def movie_by_imdbid(self,imdb_id):
         '''gets a movie from kodidb by imdbid.'''
         filters = [{ "operator":"is", "field":"imdbnumber", "value":imdb_id}]
-        movies = self.movies(self,filters=filters)
-        return movies[0] if movies else None
+        items = self.movies(self,filters=filters)
+        return items[0] if items else {}
     
     def tvshow(self,db_id):
         '''get tvshow from kodi db'''
@@ -69,8 +68,8 @@ class KodiDb(object):
     def tvshow_by_imdbid(self,imdb_id):
         '''gets a tvshow from kodidb by imdbid.'''
         filters = [{ "operator":"is", "field":"imdbnumber", "value":imdb_id}]
-        tvshows = self.tvshows(self,filters=filters)
-        return tvshows[0] if tvshows else None
+        items = self.tvshows(self,filters=filters)
+        return items[0] if items else {}
     
     def episode(self,db_id):
         '''get episode from kodi db'''
@@ -109,11 +108,11 @@ class KodiDb(object):
     def movieset(self,db_id,include_set_movies=False):
         '''get movieset from kodi db'''
         if include_set_movies:
-            optparams = [("moviesetid",int(db_id)), ("movies", {"properties": FIELDS_MOVIES})]
+            optparams = [("setid",int(db_id)), ("movies", {"properties": FIELDS_MOVIES})]
         else:
-            optparams = ("moviesetid",int(db_id))
-        return self.get_json("VideoLibrary.GetMovieSetDetails",returntype="moviesetdetails",
-            fields=FIELDS_BASE,optparam=optparams)
+            optparams = ("setid",int(db_id))
+        return self.get_json("VideoLibrary.GetMovieSetDetails",returntype="",
+            fields=["title", "art", "playcount"],optparam=optparams)
     
     def moviesets(self,sort=None, filters=None, limits=None, filtertype=None,include_set_movies=False):
         '''get moviesetdetails from kodi db'''
@@ -122,238 +121,11 @@ class KodiDb(object):
         else:
             optparams = None
         return self.get_json("VideoLibrary.GetMovieSets", sort=sort, filters=filters, 
-            fields=FIELDS_BASE, limits=limits, returntype="moviesets", filtertype=filtertype)
+            fields=["title", "art", "playcount"], limits=limits, returntype="", filtertype=filtertype)
     
-    def moviesetdetails(self,set_id):
-        '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
-        if not set_id:
-            return
-        #try to get from cache first - use checksum compare because moviesets do not get refreshed automatically
-        movieset = self.movieset(set_id,True)
-        cache_checksum = [movie["playcount"] for movie in movieset["movies"]] if movieset else None
-        cache_str = "MovieSetDetails.%s"%set_id
-        cache = simplecache.get(cache_str,checksum=cache_checksum)
-        if cache:
-            return details
-        if movieset:
-            count = 0
-            runtime = 0
-            unwatchedcount = 0
-            watchedcount = 0
-            runtime = 0
-            writer = []
-            director = []
-            genre = []
-            country = []
-            studio = []
-            years = []
-            plot = ""
-            title_list = ""
-            total_movies = len(movieset['movies'])
-            title_header = "[B]" + total_movies + " " + xbmc.getLocalizedString(20342) + "[/B][CR]"
-            all_fanarts = []
-            for count, item in movieset['movies'].enumerate():
-                if item["playcount"] == 0:
-                    unwatchedcount += 1
-                else:
-                    watchedcount += 1
-                
-                #generic labels
-                for label in ["label","plot","year","rating"]:
-                    details['%.%s'%(count,label)] = item[label]
-                details["%s.DBID" %count] = item["movieid"]
-                details["%s.Duration" %count] = item['runtime'] / 60
-                
-                #art labels
-                art = item['art']
-                for label in ["poster","fanart","landscape","clearlogo","clearart","banner","discart"]:
-                    if art.get(label):
-                        details['%.%s'%(count,label)] = item[label]
-                all_fanarts.append(item.get("fanart"))
-                
-                #streamdetails
-                if item.get('streamdetails',''):
-                    streamdetails = item["streamdetails"]
-                    audiostreams = streamdetails.get('audio',[])
-                    videostreams = streamdetails.get('video',[])
-                    subtitles = streamdetails.get('subtitle',[])
-                    if len(videostreams) > 0:
-                        stream = videostreams[0]
-                        height = stream.get("height","")
-                        width = stream.get("width","")
-                        if height and width:
-                            resolution = ""
-                            if width <= 720 and height <= 480: 
-                                resolution = "480"
-                            elif width <= 768 and height <= 576: 
-                                resolution = "576"
-                            elif width <= 960 and height <= 544: 
-                                resolution = "540"
-                            elif width <= 1280 and height <= 720: 
-                                resolution = "720"
-                            elif width <= 1920 and height <= 1080: 
-                                resolution = "1080"
-                            elif width * height >= 6000000: 
-                                resolution = "4K"
-                            details["%s.Resolution" %count] = resolution
-                        details["%s.Codec" %count] = stream.get("codec","")
-                        if stream.get("aspect",""):
-                            details["%s.AspectRatio" %count] = round(stream["aspect"], 2)
-                    if len(audiostreams) > 0:
-                        #grab details of first audio stream
-                        stream = audiostreams[0]
-                        details["%s.AudioCodec" %count] = stream.get('codec','')
-                        details["%s.AudioChannels" %count] = stream.get('channels','')
-                        details["%s.AudioLanguage" %count] = stream.get('language','')
-                    if len(subtitles) > 0:
-                        #grab details of first subtitle
-                        details["%s.SubTitle" %count] = subtitles[0].get('language','')
-
-                title_list += "%s (%s)[CR]" %(item['label'],item['year'])
-                if item['plotoutline']:
-                    plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" %(item['label'],item['year'],item['plotoutline'])
-                else:
-                    plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" %(item['label'],item['year'],item['plot'])
-                runtime += item['runtime']
-                if item.get("writer"):
-                    writer += [w for w in item["writer"] if w and w not in writer]
-                if item.get("director"):
-                    director += [d for d in item["director"] if d and d not in director]
-                if item.get("genre"):
-                    genre += [g for g in item["genre"] if g and g not in genre]
-                if item.get("country"):
-                    country += [c for c in item["country"] if c and c not in country]
-                if item.get("studio"):
-                    studio += [s for s in item["studio"] if s and s not in studio]
-                years.append(str(item['year']))
-            details["Plot"] = plot
-            if total_movies > 1:
-                details["ExtendedPlot"] = title_header + title_list + "[CR]" + plot
-            else:
-                details["ExtendedPlot"] = plot
-            details["Title"] = title_list
-            details["Runtime"] = runtime / 60
-            duration = get_duration_string(runtime / 60)
-            if durationString:
-                details["Duration"] = duration[2]
-                details["Duration.Hours"] = duration[0]
-                details["Duration.Minutes"] = duration[1]
-                
-            details["Writer"] = " / ".join(writer)
-            details["Director"] = " / ".join(director)
-            details["Genre"] = " / ".join(genre)
-            details["Studio"] = " / ".join(studio)
-            details["Years"] = " / ".join(years)
-            details["Extrafanarts"] = set_fanart
-            details += StudioLogos().get_studio_logo(studio)
-            details["Count"] = total_movies
-            details["extrafanartpath"] = "plugin://script.skin.helper.service/?action=EXTRAFANART&path=movieset-%s"%set_id
-        #save to cache and return
-        simplecache.set(cache_str,details,checksum=cache_checksum)
-        return details
-    
-    def streamdetails(self,db_id,media_type,ignore_cache=False):
-        '''get a nicely formatted dict of the streamdetails which we can for example set as window props'''
-        
-        #we need valid input
-        if not db_id or not media_type or int(db_id) == -1:
-            return {}
-            
-        #get the item from cache first
-        cache_str = u"SkinHelper.StreamDetails.%s.%s" %(db_id,media_type)
-        cache = simplecache.get(cache_str)
-        if cache and not ignore_cache:
-            return cache
-
-        # no cache - get data from json
-        json_result = {}
-        streamdetails = {}
-        # get data from json
-        if "movie" in media_type:
-            json_result = self.movie(db_id)
-        elif "episode" in media_type:
-            json_result = self.episode(db_id)
-        elif "musicvideo" in media_type:
-            json_result = self.musicvideo(db_id)
-            
-        if json_result and json_result["streamdetails"]:
-            audio = json_result["streamdetails"]['audio']
-            subtitles = json_result["streamdetails"]['subtitle']
-            video = json_result["streamdetails"]['video']
-            all_audio_str = []
-            all_subs = []
-            all_lang = []
-            for count, item in audio.enumerate():
-                #audio codec
-                codec = item['codec']
-                if "ac3" in codec: 
-                    codec = "Dolby D"
-                elif "dca" in codec: 
-                    codec = "DTS"
-                elif "dts-hd" in codec or "dtshd" in codec: 
-                    codec = "DTS HD"
-                #audio channels
-                channels = item['channels']
-                if channels == 1: 
-                    channels = "1.0"
-                elif channels == 2: 
-                    channels = "2.0"
-                elif channels == 3: 
-                    channels = "2.1"
-                elif channels == 4: 
-                    channels = "4.0"
-                elif channels == 5: 
-                    channels = "5.0"
-                elif channels == 6: 
-                    channels = "5.1"
-                elif channels == 7: 
-                    channels = "6.1"
-                elif channels == 8: 
-                    channels = "7.1"
-                elif channels == 9: 
-                    channels = "8.1"
-                elif channels == 10: 
-                    channels = "9.1"
-                else: 
-                    channels = str(channels)
-                #audio language
-                language = item.get('language','')
-                if language and language not in all_lang:
-                    all_lang.append(language)
-                streamdetails['AudioStreams.%d.Language'% count] = item['language']
-                streamdetails['AudioStreams.%d.AudioCodec'%count] = item['codec']
-                streamdetails['AudioStreams.%d.AudioChannels'%count] = str(item['channels'])
-                audio_str = u"•".join([language,codec,channels])
-                streamdetails['AudioStreams.%d'%count] = audio_str
-                all_audio_str.append(audio_str)
-            subs_count = 0
-            subs_count_unique = 0
-            for item in subtitles:
-                subs_count += 1
-                if item['language'] not in all_subs:
-                    all_subs.append(item['language'])
-                    streamdetails['Subtitles.%d'%subs_count_unique] = item['language']
-                    subs_count_unique += 1
-            streamdetails['subtitles'] = u" / ".join(all_subs)
-            streamdetails['subtitles.count'] = str(subs_count)
-            streamdetails['allaudiostreams'] = u" / ".join(all_audio_str)
-            streamdetails['audioStreams.count'] = str(len(all_audio_str))
-            streamdetails['languages'] = u" / ".join(all_lang)
-            streamdetails['languages.count'] = str(len(all_lang))
-            if len(video) > 0:
-                stream = video[0]
-                streamdetails['videoheight'] = str(stream.get("height",""))
-                streamdetails['videowidth'] = str(stream.get("width",""))
-        if json_result.get("tag"):
-            streamdetails["tags"] = u" / ".join(json_result["tag"])
-        simplecache.set(cache_str,streamdetails)
-        return streamdetails
- 
     def files(self, vfspath):
         '''gets all items in a kodi vfs path'''
-        params = {}
-        params["directory"] = vfspath
-        return self.get_json("Files.GetDirectory",returntype="",opt_params=params,fields=FIELDS_FILES)
+        return self.get_json("Files.GetDirectory",returntype="",optparam=("directory",vfspath),fields=FIELDS_FILES)
     
     def genres(self, media_type):
         '''return all genres for the given media type (movie/tvshow/musicvideo)'''
@@ -408,6 +180,7 @@ class KodiDb(object):
                 for key, value in json_object['result'].iteritems():
                     if not key=="limits" and (isinstance(value, list) or isinstance(value,dict)):
                         result = value
+        else: log_msg(json_response)
         return result
 
     @staticmethod

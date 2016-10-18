@@ -9,7 +9,10 @@ import time
 import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-import simplecache
+from simplecache import SimpleCache
+
+
+simplecache = SimpleCache()
 
 try:
     from multiprocessing.pool import ThreadPool as Pool
@@ -43,7 +46,7 @@ def log_msg(msg, loglevel = xbmc.LOGNOTICE):
     xbmc.log("Skin Helper ArtUtils --> %s" %msg, level=loglevel)
 
 def log_exception(modulename, exceptiondetails):
-    log_msg(format_exc(sys.exc_info()),xbmc.LOGDEBUG)
+    log_msg(format_exc(sys.exc_info()),xbmc.LOGWARNING)
     log_msg("ERROR in %s ! --> %s" %(modulename,exceptiondetails), xbmc.LOGERROR)
     
 def get_json(url,params=None,cache_days=14):
@@ -76,10 +79,17 @@ def rate_limiter(milliseconds=500):
     '''very basic rate limiter'''
     def decorate(func):
         def func_wrapper(*args, **kwargs):
-            limit_str = "rate_limit.%s" %func
+            self = args[0]
+            limit_str = "rate_limit.%s.%s" %(self.__class__.__name__, func.__name__)
+            for item in args:
+                if not item == self:
+                    limit_str += ".%s" %item
+            for item in kwargs.itervalues():
+                limit_str += ".%s" %item
             count = 0
-            while WINDOW.getProperty("rate_limit.%s" %api_url) and count < 20:
+            while WINDOW.getProperty(limit_str) and count < 20:
                 xbmc.sleep(250)
+                log_msg("Rate limiter active for %s"%limit_str, xbmc.LOGWARNING)
                 count += 1
             WINDOW.setProperty(limit_str,"active")
             result = func(*args, **kwargs)
@@ -88,7 +98,7 @@ def rate_limiter(milliseconds=500):
             return result
         return func_wrapper
     return decorate
-  
+ 
 def try_encode(text, encoding="utf-8"):
     try:
         return text.encode(encoding,"ignore")
@@ -153,7 +163,21 @@ def get_duration_string(duration):
         log_exception(__name__,exc)
         return ""
     return ( hours, minutes, formatted_time )
-    
+
+def int_with_commas(x):
+    try:
+        x = int(x)
+        if x < 0:
+            return '-' + int_with_commas(-x)
+        result = ''
+        while x >= 1000:
+            x, r = divmod(x, 1000)
+            result = ",%03d%s" % (r, result)
+        return "%d%s" % (x, result)
+    except Exception: 
+        return ""
+
+       
 class DialogSelect( xbmcgui.WindowXMLDialog ):
     '''wrapper around Kodi dialogselect to present a list of items'''
     def __init__( self, *args, **kwargs ):

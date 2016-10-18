@@ -6,6 +6,9 @@ from operator import itemgetter
 class FanartTv(object):
     '''get artwork from fanart.tv'''
     
+    def __init__(self, *args):
+        pass
+    
     def artist(self,artist_id):
         '''get artist artwork'''
         data = self.get_data("music/%s" %artist_id)
