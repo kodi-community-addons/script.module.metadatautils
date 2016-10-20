@@ -1,40 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import xbmc, xbmcgui
-from utils import json, try_encode, log_msg, log_exception, get_clean_image, get_duration_string, ADDON
-from studiologos import StudioLogos
-
-FIELDS_BASE = ["dateadded", "file", "lastplayed","plot", "title", "art", "playcount"]
-FIELDS_FILE = FIELDS_BASE + ["streamdetails", "director", "resume", "runtime"]
-FIELDS_MOVIES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "showlink", "top250", "trailer", "year",
-    "country", "studio", "set", "genre", "mpaa", "setid", "rating", "tag", "tagline", "writer", "originaltitle",
-    "imdbnumber"]
-FIELDS_TVSHOWS = FIELDS_BASE + ["sorttitle", "mpaa", "premiered", "year", "episode", "watchedepisodes", "votes",
-    "rating", "studio", "season", "genre", "cast", "episodeguide", "tag", "originaltitle", "imdbnumber"]
-FIELDS_EPISODES = FIELDS_FILE + ["cast", "productioncode", "rating", "votes", "episode", "showtitle", "tvshowid",
-    "season", "firstaired", "writer", "originaltitle"]
-FIELDS_MUSICVIDEOS = FIELDS_FILE + ["genre", "artist", "tag", "album", "track", "studio", "year"]
-FIELDS_FILES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "trailer", "year", "country", "studio",
-    "genre", "mpaa", "rating", "tagline", "writer", "originaltitle", "imdbnumber", "premiered","episode", "showtitle",
-    "firstaired","watchedepisodes","duration", "season"]
-FIELDS_SONGS = ["artist","displayartist", "title", "rating", "fanart", "thumbnail", "duration",
-    "playcount", "comment", "file", "album", "lastplayed", "genre", "musicbrainzartistid", "track"]
-FIELDS_ALBUMS = ["title", "fanart", "thumbnail", "genre", "displayartist", "artist", "genreid",
-    "musicbrainzalbumartistid", "year", "rating", "artistid", "musicbrainzalbumid", "theme", "description",
-    "type", "style", "playcount", "albumlabel", "mood"]
-FIELDS_PVR = ["art", "channel", "directory", "endtime", "file", "genre", "icon", "playcount", "plot",
-    "plotoutline", "resume", "runtime", "starttime", "streamurl", "title"]
-
-FILTER_UNWATCHED = {"operator":"lessthan", "field":"playcount", "value":"1"}
-FILTER_WATCHED = {"operator":"isnot", "field":"playcount", "value":"0"}
-FILTER_RATING = {"operator":"greaterthan","field":"rating", "value":"7"}
-FILTER_INPROGRESS = {"operator":"true", "field":"inprogress", "value":""}
-SORT_RATING = {"method": "rating", "order": "descending"}
-SORT_RANDOM = {"method": "random", "order": "descending"}
-SORT_TITLE = {"method": "title", "order": "ascending"}
-SORT_DATEADDED = {"method": "dateadded", "order": "descending"}
-SORT_LASTPLAYED = {"method": "lastplayed", "order": "descending"}
-SORT_EPISODE = {"method": "episode"}
+from utils import json, try_encode, log_msg, log_exception, get_clean_image, get_duration_string, ADDON, try_parse_int
+from kodi_constants import *
 
 class KodiDb(object):
     '''various methods and helpers to get data from kodi json api'''
@@ -42,7 +10,7 @@ class KodiDb(object):
     def movie(self,db_id):
         '''get moviedetails from kodi db'''
         return self.get_json("VideoLibrary.GetMovieDetails",returntype="moviedetails",
-            fields=FIELDS_MOVIES,optparam=("movieid",int(db_id)))
+            fields=FIELDS_MOVIES,optparam=("movieid",try_parse_int(db_id)))
     
     def movies(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get moviedetails from kodi db'''
@@ -51,14 +19,17 @@ class KodiDb(object):
             
     def movie_by_imdbid(self,imdb_id):
         '''gets a movie from kodidb by imdbid.'''
-        filters = [{ "operator":"is", "field":"imdbnumber", "value":imdb_id}]
-        items = self.movies(self,filters=filters)
-        return items[0] if items else {}
+        #apparently you can't filter on imdb so we have to do this the complicated way
+        all_items = self.get_json('VideoLibrary.GetMovies',fields=["imdbnumber"],returntype="movies")
+        for item in all_items:
+            if item["imdbnumber"] == imdb_id:
+                return self.movie(item["movieid"])
+        return {}
     
     def tvshow(self,db_id):
         '''get tvshow from kodi db'''
         return self.get_json("VideoLibrary.GetTvShowDetails",returntype="tvshowdetails",
-            fields=FIELDS_TVSHOWS,optparam=("tvshowid",int(db_id)))
+            fields=FIELDS_TVSHOWS,optparam=("tvshowid",try_parse_int(db_id)))
     
     def tvshows(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get tvshows from kodi db'''
@@ -67,19 +38,22 @@ class KodiDb(object):
             
     def tvshow_by_imdbid(self,imdb_id):
         '''gets a tvshow from kodidb by imdbid.'''
-        filters = [{ "operator":"is", "field":"imdbnumber", "value":imdb_id}]
-        items = self.tvshows(self,filters=filters)
-        return items[0] if items else {}
+        #apparently you can't filter on imdb so we have to do this the complicated way
+        all_items = self.get_json('VideoLibrary.GetTvShows',fields=["imdbnumber"],returntype="tvshows")
+        for item in all_items:
+            if item["imdbnumber"] == imdb_id:
+                return self.tvshow(item["tvshowid"])
+        return {}
     
     def episode(self,db_id):
         '''get episode from kodi db'''
         return self.get_json("VideoLibrary.GetEpisodeDetails",returntype="episodedetails",
-            fields=FIELDS_EPISODES,optparam=("episodeid",int(db_id)))
+            fields=FIELDS_EPISODES,optparam=("episodeid",try_parse_int(db_id)))
     
     def episodes(self,sort=None, filters=None, limits=None, filtertype=None, tvshowid=None):
         '''get episodes from kodi db'''
         if tvshowid:
-            params = ( "tvshowid", int(tvshowid) )
+            params = ( "tvshowid", try_parse_int(tvshowid) )
         else:
             params=None
         return self.get_json("VideoLibrary.GetEpisodes", sort=sort, filters=filters, 
@@ -88,7 +62,7 @@ class KodiDb(object):
     def musicvideo(self,db_id):
         '''get musicvideo from kodi db'''
         return self.get_json("VideoLibrary.GetMusicVideoDetails",returntype="musicvideodetails",
-            fields=FIELDS_MUSICVIDEOS,optparam=("musicvideoid",int(db_id)))
+            fields=FIELDS_MUSICVIDEOS,optparam=("musicvideoid",try_parse_int(db_id)))
     
     def musicvideos(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get musicvideos from kodi db'''
@@ -98,19 +72,18 @@ class KodiDb(object):
     def recording(self,db_id):
         '''get pvr recording from kodi db'''
         return self.get_json("PVR.GetRecordingDetails",returntype="recordingdetails",
-            fields=FIELDS_PVR,optparam=("recordingid",int(db_id)))
+            fields=FIELDS_PVR,optparam=("recordingid",try_parse_int(db_id)))
     
-    def recordings(self,sort=None, filters=None, limits=None, filtertype=None):
+    def recordings(self,limits=None):
         '''get pvr recordings from kodi db'''
-        return self.get_json("PVR.GetRecordings", sort=sort, filters=filters, 
-            fields=FIELDS_PVR, limits=limits, returntype="recordings", filtertype=filtertype)
+        return self.get_json("PVR.GetRecordings", fields=FIELDS_PVR, limits=limits, returntype="recordings")
     
-    def movieset(self,db_id,include_set_movies=False):
+    def movieset(self,db_id,include_set_movies_fields=""):
         '''get movieset from kodi db'''
-        if include_set_movies:
-            optparams = [("setid",int(db_id)), ("movies", {"properties": FIELDS_MOVIES})]
+        if include_set_movies_fields:
+            optparams = [("setid",try_parse_int(db_id)), ("movies", {"properties": include_set_movies_fields})]
         else:
-            optparams = ("setid",int(db_id))
+            optparams = ("setid",try_parse_int(db_id))
         return self.get_json("VideoLibrary.GetMovieSetDetails",returntype="",
             fields=["title", "art", "playcount"],optparam=optparams)
     
@@ -132,7 +105,7 @@ class KodiDb(object):
         return self.get_json("VideoLibrary.GetGenres", fields=["thumbnail","title"], returntype="genres", optparam=("type",media_type))
     
     @staticmethod    
-    def set_json(method,params):
+    def set_json(jsonmethod,params):
         kodi_json = {}
         kodi_json["jsonrpc"] = "2.0"
         kodi_json["method"] = jsonmethod
@@ -170,7 +143,11 @@ class KodiDb(object):
             kodi_json["params"]["limits"] = { "start": limits[0], "end": limits[1] }
         json_response = xbmc.executeJSONRPC(try_encode(json.dumps(kodi_json)))
         json_object = json.loads(json_response.decode('utf-8','replace'))
-        result = {}
+        #set the default returntype to prevent errors
+        if "details" in jsonmethod.lower():
+            result = {}
+        else:
+            result = []
         if 'result' in json_object:
             if returntype and returntype in json_object['result']:
                 #returntype specified, return immediately
@@ -180,7 +157,9 @@ class KodiDb(object):
                 for key, value in json_object['result'].iteritems():
                     if not key=="limits" and (isinstance(value, list) or isinstance(value,dict)):
                         result = value
-        else: log_msg(json_response)
+        else: 
+            log_msg(json_response)
+            log_msg(kodi_json)
         return result
 
     @staticmethod

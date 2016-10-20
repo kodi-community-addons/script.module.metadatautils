@@ -8,20 +8,21 @@ from helpers.google import GoogleImages
 from helpers.channellogos import ChannelLogos
 from helpers.fanarttv import FanartTv
 from helpers.kodidb import KodiDb
-import helpers.kodidb as kodidb
+import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
-from helpers.utils import log_msg, get_duration_string
+from helpers.utils import log_msg, get_duration_string, log_exception
 from simplecache import SimpleCache, use_cache
+from thetvdb import TheTvDb
 import xbmc
+import datetime
     
 class ArtUtils(object):
     '''
         Provides all kind of mediainfo for kodi media, returned as dict with details
-        All functions have an optional tuple_list_prefix argument, if set, the output will be a list
-        of tuples with strings directly usable as window property. The argument must be string which will be
-        the prefix of the key in the list you want to set.
     '''
+    
+    #path to use to lookup studio logos, must be set by the calling addon
     studiologos_path = ""
     
     def __init__(self):
@@ -35,59 +36,60 @@ class ArtUtils(object):
         self.pvrart = PvrArtwork()
         self.channellogos = ChannelLogos()
         self.studiologos = StudioLogos()
+        self.thetvdb = TheTvDb()
         self.cache = SimpleCache()
-        
-    def get_extrafanart(self,dbid, media_type, tuple_list_prefix=""):
+    
+    #@use_cache(14)
+    def get_extrafanart(self, dbid, media_type):
+        result = {}
         log_msg("get_extrafanart is not yet supported!")
-        return ("empty","empty")
+        return result
         
-    @use_cache(14)
-    def get_musicartwork(self, artist="",album="",title="",tuple_list_prefix=""):
+    #@use_cache(14)
+    def get_musicartwork(self, artist="",album="",title=""):
+        result = {}
         log_msg("get_musicartwork is not yet supported!")
-        return ("empty","empty")
+        return result
         
-    @use_cache(14)
-    def get_extended_artwork(self, imdb_id="",tvdb_id="",title="",year="",media_type="",tuple_list_prefix=""):
+    #@use_cache(14)
+    def get_extended_artwork(self, imdb_id="",tvdb_id="",title="",year="",media_type=""):
         '''returns details from tmdb'''
+        result = {}
         log_msg("get_extended_artwork is not yet supported!")
-        return [ ("empty","empty") ]
+        return result
     
     @use_cache(14)
-    def get_tmdb_details(self, imdb_id="",tvdb_id="",title="",year="",media_type="",tuple_list_prefix=""):
+    def get_tmdb_details(self, imdb_id="",tvdb_id="",title="",year="",media_type=""):
         '''returns details from tmdb'''
-        if imdb_id and media_type in ["movies","setmovies", "movie"]:
-            result = self.tmdb.get_movie_details_by_imdbid(imdb_id)
-        elif tvdb_id and media_type in ["tvshows", "tvshow"]:
-            result = self.tmdb.get_tvshow_details_by_tvdbid(tvdb_id)
-        elif imdb_id and media_type in ["tvshows","tvshow"]:
-            result = self.tmdb.get_tvshow_details_by_imdbid(imdb_id)
+        result = {}
+        title = title.split(" (")[0]
+        if imdb_id:
+            result = self.tmdb.get_video_details_by_external_id(imdb_id, "imdb_id")
+        elif tvdb_id:
+            result = self.tmdb.get_video_details_by_external_id(tvdb_id, "tvdb_id")
         elif title and media_type in ["movies","setmovies","movie"]:
             result = self.tmdb.search_movie(title, year)
         elif title and media_type in ["tvshows","tvshow"]:
             result = self.tmdb.search_tvshow(title, year)
         elif title:
             result = self.tmdb.search_video(title, year)
-        else:
-            result = {}
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
         return result
          
-    def get_moviesetdetails(self,set_id,tuple_list_prefix=""):
+    def get_moviesetdetails(self,set_id):
         '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
         details = {}
-        if not set_id or set_id == "-1":
-            log_msg("movieset-->  setid is none !!")
-            return details
-        #try to get from cache first - use checksum compare because moviesets do not get refreshed automatically
-        movieset = self.kodidb.movieset(set_id,True)
-        log_msg("movieset-->%s" %movieset)
-        cache_checksum = [movie["playcount"] for movie in movieset["movies"]] if movieset else None
-        cache_str = "MovieSetDetails.%s.%s"%(set_id,tuple_list_prefix)
-        cache = self.cache.get(cache_str,checksum=cache_checksum)
-        if cache:
-            return details
+        #try to get from cache first
+        #use checksum compare based on playcounts because moviesets do not get refreshed automatically
+        movieset = self.kodidb.movieset(set_id,["playcount"])
+        cache_str = "MovieSetDetails.%s"%(set_id)
+        cache_checksum = []
         if movieset:
+            cache_checksum = [movie["playcount"] for movie in movieset["movies"]]
+            cache = self.cache.get(cache_str,checksum=cache_checksum)
+            if cache:
+                return cache
+            #process movieset listing - get full movieset including all movie fields
+            movieset = self.kodidb.movieset(set_id,kodi_constants.FIELDS_MOVIES)
             count = 0
             runtime = 0
             unwatchedcount = 0
@@ -196,17 +198,17 @@ class ArtUtils(object):
             details["Genre"] = genre
             details["Studio"] = studio
             details["Years"] = years
+            details["WatchedCount"] = watchedcount
+            details["UnwatchedCount"] = unwatchedcount
             details["Extrafanarts"] = all_fanarts
             details.update( StudioLogos().get_studio_logo(studio, self.studiologos_path) )
             details["Count"] = total_movies
-            details["extrafanartpath"] = "plugin://script.skin.helper.service/?action=EXTRAFANART&path=movieset-%s"%set_id
-            self.cache.set(cache_str,details,checksum=cache_checksum)
-        if tuple_list_prefix:
-            details = self.pretty_format_dict(result,tuple_list_prefix)
+            details["extrafanartpath"] = "plugin://script.skin.helper.service/?action=EXTRAFANART&fanarts=%s"%repr(all_fanarts)
+        self.cache.set(cache_str,details,checksum=cache_checksum)
         return details
     
     @use_cache(14)
-    def get_streamdetails(self,db_id,media_type,ignore_cache=False,tuple_list_prefix=""):
+    def get_streamdetails(self,db_id,media_type,ignore_cache=False):
         '''get a nicely formatted dict of the streamdetails '''
 
         streamdetails = {}
@@ -290,81 +292,50 @@ class ArtUtils(object):
                 streamdetails['videowidth'] = stream.get("width",0)
         if json_result.get("tag"):
             streamdetails["tags"] = json_result["tag"]
-        if tuple_list_prefix:
-            streamdetails = self.pretty_format_dict(streamdetails,tuple_list_prefix)
         return streamdetails
-    
-    def pretty_format_dict(self, details,prefix="SkinHelper.ListItem."):
-        '''helper to pretty string-format a dict with details so it can be used as window props'''
-        items = []
-        for key, value in details.iteritems():
-            if value:
-                if prefix and not key.startswith(prefix.split(".")[0]):
-                    key = "%s%s"%(prefix,key)
-                if isinstance(value,(str,unicode)):
-                    items.append( (key, value) )
-                elif isinstance(value,(int,float)):
-                    items.append( (key, "%s"%value) )
-                elif isinstance(value,dict):
-                    items.extend( self.pretty_format_dict(value, key + ".") )
-                elif isinstance(value,list):
-                    list_strings = []
-                    for listvalue in value:
-                        if isinstance(listvalue,(str,unicode)):
-                            list_strings.append(listvalue)
-                    if list_strings:
-                        items.append( (key, " / ".join(list_strings) ) )
-                    elif len(value) == 1 and isinstance(value[0], (str,unicode)):
-                        items.append( (key, value ) )
-                else:
-                    log_msg("wrong value for key %s -  %s" %(key,value),xbmc.LOGWARNING)
-        return items
-        
-    @use_cache(14)
-    def get_pvr_artwork(title, channel="", year="", genre="", manual_lookup=False, ignore_cache=False, tuple_list_prefix=""):
-        result = self.pvrart.get_pvr_artwork(title, channel, year, genre, manual_lookup, ignore_cache)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+     
+    def get_pvr_artwork(self, title, channel="", genre="", manual_select=False, ignore_cache=False):
+        '''get artwork and mediadetails for PVR entries'''
+        if not channel:
+            #workaround for grouped recordings, lookup recordinginfo in local db'''
+            recordings = self.kodidb.recordings()
+            for item in recordings:
+                if item["title"].lower() in title.lower() or title.lower() in item["label"].lower():
+                    channel = item["channel"]
+                    genre = " / ".join(item["genre"])
+                    break
+        return self.pvrart.get_pvr_artwork(title=title, channel=channel, genre=genre, manual_select=manual_select, ignore_cache=ignore_cache)
     
     @use_cache(14)    
-    def get_channellogo(self,channelname,tuple_list_prefix=""):
-        result = self.channellogos.get_channellogo(channelname)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+    def get_channellogo(self,channelname):
+        return self.channellogos.get_channellogo(channelname)
         
     @use_cache(14)
-    def get_studio_logo(self, studio,tuple_list_prefix=""):
-        result = self.studiologos.get_studio_logo(studio, self.studiologos_path)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+    def get_studio_logo(self, studio):
+        return self.studiologos.get_studio_logo(studio, self.studiologos_path)
         
     @use_cache(14)
-    def get_animated_artwork(self, imdb_id, tuple_list_prefix=""):
-        result = self.animatedart.get_animated_artwork(imdb_id)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+    def get_animated_artwork(self, imdb_id):
+        return self.animatedart.get_animated_artwork(imdb_id)
     
     @use_cache(14)
-    def get_omdb_info(self, imdb_id, tuple_list_prefix=""):
-        result = self.omdb.get_details_by_imdbid(imdb_id)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+    def get_omdb_info(self, imdb_id, title="", year="", content_type=""):
+        title = title.split(" (")[0] #strip year appended to title
+        if imdb_id:
+            return self.omdb.get_details_by_imdbid(imdb_id)
+        elif title and content_type in ["seasons","season","episodes","episode","tvshows","tvshow"]:
+            return self.omdb.get_details_by_title(title,"","tvshows")
+        elif title and year:
+            return self.omdb.get_details_by_title(title,year,content_type)
+        else:
+            return {}
         
     @use_cache(7)
-    def get_top250_rating(self, imdb_id, tuple_list_prefix=""):
-        result = self.imdb.get_top250_rating(imdb_id)
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
-        return result
+    def get_top250_rating(self, imdb_id):
+        return self.imdb.get_top250_rating(imdb_id)
         
     @use_cache(7)
-    def get_duration(self, duration, tuple_list_prefix=""):
-        log_msg("get duration called duration=%s - prefix=%s" %(duration,tuple_list_prefix))
+    def get_duration(self, duration):
         result = {}
         if ":" in duration:
             dur_lst = duration.split(":")
@@ -380,12 +351,52 @@ class ArtUtils(object):
                 result['Duration'] =  duration_str[2]
                 result['Duration.Hours'] =  duration_str[0]
                 result['Duration.Minutes'] =  duration_str[1]
-        if tuple_list_prefix:
-            return self.pretty_format_dict(result,tuple_list_prefix) if result else []
         return result
 
-        
-        
-    
-    
-    
+    @use_cache(7)
+    def get_tvdb_details(self, imdbid="", tvdbid=""):
+        result = {}
+        showdetails = None
+        self.thetvdb.days_ahead = 120
+        if tvdbid:
+            showdetails = self.thetvdb.get_series(tvdbid)
+        elif imdbid:
+            showdetails = self.thetvdb.get_series_by_imdb_id(imdbid)
+        if showdetails:
+            result = {
+                        "status": showdetails["status"], #TODO: translate this
+                        "tvdbid": showdetails["id"],
+                        "tvdb.network": showdetails["network"],
+                        "airsDayOfWeek": showdetails["airsDayOfWeek"],#TODO translate to regional format
+                        "airsTime": showdetails["airsTime"],#TODO translate to regional format
+                        "tvdb.rating": showdetails["siteRating"],
+                        "tvdb.ratingcount": showdetails["siteRatingCount"],
+                        "runtime": showdetails["runtime"] }
+            if showdetails["status"] == "Continuing":
+                #include next episode info
+                eps_details = self.thetvdb.get_nextaired_episode(showdetails["id"])
+                if eps_details:
+                    result["nextepisode.title"] = eps_details["episodeName"]
+                    result["nextepisode.airdate"] = datetime.datetime.strptime(eps_details["firstAired"],"%Y-%m-%d").date().strftime(xbmc.getRegion('datelong'))
+                    result["nextepisode.episode"] = eps_details["airedEpisodeNumber"]
+                    result["nextepisode.season"] = eps_details["airedSeason"]
+                    result["nextepisode.thumb"] = eps_details.get("thumbnail","")
+                    result["nextepisode.gueststars"] = eps_details["guestStars"]
+                    result["nextepisode.director"] = eps_details["directors"]
+                    result["nextepisode.writer"] = eps_details["writers"]
+                    result["nextepisode.plot"] = eps_details["overview"]
+            #include last episode info
+            eps_details = self.thetvdb.get_last_episode_for_series(showdetails["id"])
+            if eps_details:
+                result["lastepisode.title"] = eps_details["episodeName"]
+                result["lastepisode.airdate"] = datetime.datetime.strptime(eps_details["firstAired"],"%Y-%m-%d").date().strftime(xbmc.getRegion('datelong'))
+                result["lastepisode.episode"] = eps_details["airedEpisodeNumber"]
+                result["lastepisode.season"] = eps_details["airedSeason"]
+                result["lastepisode.thumb"] = eps_details.get("thumbnail","")
+                result["lastepisode.gueststars"] = eps_details["guestStars"]
+                result["lastepisode.director"] = eps_details["directors"]
+                result["lastepisode.writer"] = eps_details["writers"]
+                result["lastepisode.plot"] = eps_details["overview"]
+        return result
+                    
+ 

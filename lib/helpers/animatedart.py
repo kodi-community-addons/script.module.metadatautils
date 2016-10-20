@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, DialogSelect, log_msg
+from utils import get_json, DialogSelect
 from kodidb import KodiDb
 import xbmc, xbmcvfs, xbmcgui
 from simplecache import SimpleCache, use_cache
@@ -16,7 +16,7 @@ class AnimatedArt(object):
         self.kodidb = KodiDb()
     
     def get_animated_artwork(self,imdb_id,manual_select=False):
-        '''returns both the animated poster and fanart for use in kodi'''
+        '''returns all available animated art for the given imdbid/tmdbid'''
         if manual_select:
             xbmc.executebuiltin( "ActivateWindow(busydialog)" )
         #no cache so grab the results
@@ -142,18 +142,16 @@ class AnimatedArt(object):
         
     def write_kodidb(self,artwork):
         '''store the animated artwork in kodi database to access it with ListItem.Art(animatedartX)'''
-        filters = [{ "operator":"is", "field":"imdbnumber", "value":artwork["imdb_id"]}]
-        kodi_movies = self.kodidb.movies(filters=filters)
-        if kodi_movies:
-            kodi_movie = kodi_movies[0]
+        kodi_movie = self.kodidb.movie_by_imdbid(artwork["imdb_id"])
+        if kodi_movie:
             cur_poster = kodi_movie["art"].get("animatedposter","")
             cur_fanart = kodi_movie["art"].get("animatedfanart","")
-            #only perform write if there are changes
-            if cur_poster != artwork["animatedposter"] or cur_fanart != artwork["animatedfanart"]:
+            #only perform write if needed
+            if artwork or not artwork and (cur_fanart or cur_poster):
                 params = {
                     "movieid": kodi_movie["movieid"],
                     "art": {"animatedfanart": artwork["animatedfanart"], "animatedposter": artwork["animatedposter"]}
                     }
-                self.kodidb.set_kodi_json('VideoLibrary.SetMovieDetails', params)
+                self.kodidb.set_json('VideoLibrary.SetMovieDetails', params)
             
             

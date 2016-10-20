@@ -10,7 +10,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from simplecache import SimpleCache
-
+import urllib
 
 simplecache = SimpleCache()
 
@@ -80,12 +80,7 @@ def rate_limiter(milliseconds=500):
     def decorate(func):
         def func_wrapper(*args, **kwargs):
             self = args[0]
-            limit_str = "rate_limit.%s.%s" %(self.__class__.__name__, func.__name__)
-            for item in args:
-                if not item == self:
-                    limit_str += ".%s" %item
-            for item in kwargs.itervalues():
-                limit_str += ".%s" %item
+            limit_str = "rate_limit.%s.%s" %(func.__class__.__name__, func.__name__)
             count = 0
             while WINDOW.getProperty(limit_str) and count < 20:
                 xbmc.sleep(250)
@@ -177,7 +172,17 @@ def int_with_commas(x):
     except Exception: 
         return ""
 
-       
+def try_parse_int(string):
+    try:
+        return int(string)
+    except Exception:
+        return 0
+        
+def extend_dict(a,b):
+    '''Create a new dictionary with a's properties extended by b,
+    without overwriting.'''
+    return dict(b,**a)
+        
 class DialogSelect( xbmcgui.WindowXMLDialog ):
     '''wrapper around Kodi dialogselect to present a list of items'''
     def __init__( self, *args, **kwargs ):

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import rate_limiter, get_json, KODI_LANGUAGE, process_method_on_list
+from utils import rate_limiter, get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int
 from operator import itemgetter
 
 class FanartTv(object):
@@ -22,8 +22,8 @@ class FanartTv(object):
         data = self.get_data("music/albums/%s" %album_id)
         if data:
             mapping_table = [("cdart","discart"), ("albumcover","thumb")]
-            for album in data["albums"].itervalues():
-                artwork += self.map_artwork(album,mapping_table)
+            for item in data["albums"].itervalues():
+                artwork.update(self.map_artwork(item,mapping_table))
         return artwork
         
     def musiclabel(self,label_id):
@@ -75,37 +75,38 @@ class FanartTv(object):
                     artwork[kodi_type] = images[0]
         return artwork
         
-    @staticmethod
-    @rate_limiter
-    def get_data(query):
+    @classmethod
+    @rate_limiter(500)
+    def get_data(cls, query):
         '''helper method to get data from fanart.tv json API'''
         url = 'http://webservice.fanart.tv/v3/%s?api_key=639191cb0774661597f28a47e7e2bad5' %(query)
         return get_json(url)
 
-    @staticmethod
-    def map_artwork(data, mapping_table):
+    def map_artwork(self, data, mapping_table):
         '''helper method to map the artwork received from fanart.tv to kodi known formats'''
         artwork = {}
-        for artwork_mapping in mapping_table:
-            fanarttv_type = artwork_mapping[0]
-            kodi_type = artwork_mapping[1]
-            images = []
-            if fanarttv_type in data and not kodi_type in artwork:
-                #artworktype is found in the data, now do some magic to select the best one
-                images = process_method_on_list(self.score_image, data[fanarttv_type])
-            #set all images in list and select the item with highest score
-            if images:
-                images = sorted(images,key=itemgetter("score"),reverse=True)
-                images = [item["url"] for item in images]
-                artwork[kodi_type + "s"] = images
-                artwork[kodi_type] = images[0]
+        if data:
+            for artwork_mapping in mapping_table:
+                fanarttv_type = artwork_mapping[0]
+                kodi_type = artwork_mapping[1]
+                images = []
+                if fanarttv_type in data and not kodi_type in artwork:
+                    #artworktype is found in the data, now do some magic to select the best one
+                    images = process_method_on_list(self.score_image, data[fanarttv_type])
+                #set all images in list and select the item with highest score
+                if images:
+                    images = sorted(images,key=itemgetter("score"),reverse=True)
+                    images = [item["url"] for item in images]
+                    artwork[kodi_type + "s"] = images
+                    artwork[kodi_type] = images[0]
         return artwork
         
     @staticmethod
     def score_image(item):
         '''score item based on number of likes and the language'''
         score = 0
-        score += item["likes"]
+        item["url"] = item["url"].replace(" ","%20")
+        score += try_parse_int(item["likes"])
         if "lang" in item:
             if item["lang"] == KODI_LANGUAGE:
                 score += 1000

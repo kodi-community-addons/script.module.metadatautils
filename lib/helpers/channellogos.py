@@ -32,12 +32,11 @@ class ChannelLogos(object):
                     break
         return result
         
-    @staticmethod
-    def search_kodi(searchphrase):
+    def search_kodi(self, searchphrase):
         '''search kodi json api for channel logo'''
         result = ""
         if xbmc.getCondVisibility("PVR.HasTVChannels"):
-            results = kodidb.get_json('PVR.GetChannels',fields=[ "thumbnail" ],returntype="tvchannels", optparam=("channelgroupid", "alltv") )
+            results = self.kodidb.get_json('PVR.GetChannels',fields=[ "thumbnail" ],returntype="tvchannels", optparam=("channelgroupid", "alltv") )
             for item in results:
                 if item["label"] == searchphrase:
                     channelicon = item['thumbnail']

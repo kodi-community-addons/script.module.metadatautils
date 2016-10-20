@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import requests
+from utils import requests, try_parse_int
 import BeautifulSoup
 from simplecache import SimpleCache, use_cache
 
@@ -13,9 +13,10 @@ class Imdb(object):
     
     def get_top250_rating(self,imdb_id):
         '''get the top250 rating for the given imdbid'''
-        return {"IMDB.Top250": self.get_top250_db().get(imdb_id,"")}
+        return {"IMDB.Top250": self.get_top250_db().get(imdb_id,0)}
+
     
-    @use_cache(14)
+    @use_cache(7)
     def get_top250_db(self):
         '''
             get the top250 listing for both movies and tvshows as dict with imdbid as key
@@ -34,6 +35,6 @@ class Imdb(object):
                                 url = a["href"]
                                 imdb_id = url.split("/")[2]
                                 imdb_rank = url.split(listing[1])[1]
-                                results[imdb_id] = int(imdb_rank)
+                                results[imdb_id] = try_parse_int(imdb_rank)
         return results
     

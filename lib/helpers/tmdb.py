@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, KODI_LANGUAGE, rate_limiter
+from utils import get_json, KODI_LANGUAGE, rate_limiter, try_parse_int, DialogSelect
+from difflib import SequenceMatcher as SM
 from operator import itemgetter
+import xbmc, xbmcgui
+import re
 
 class Tmdb(object):
     '''get metadata from tmdb'''
@@ -14,7 +17,7 @@ class Tmdb(object):
             year: (optional) the year of the movie to search for (enhances search result if supplied)
             manual_select: (optional) if True will show select dialog with all results
         '''
-        details = self.select_best_match(self.search_movies(title,year), manual_select)
+        details = self.select_best_match(self.search_movies(title,year), manual_select=manual_select)
         if details:
             details = self.get_movie_details(details["id"])
         return details
@@ -27,45 +30,47 @@ class Tmdb(object):
             year: (optional) the year of the movie to search for (enhances search result if supplied)
             manual_select: (optional) if True will show select dialog with all results
         '''
-        details = self.select_best_match(self.search_movies(title,year), manual_select)
+        details = self.select_best_match(self.search_movies(title,year), manual_select=manual_select)
         if details:
             details = self.get_movie_details(details["id"])
         return details
         
-    def search_video(self,title,year="",manual_select=False):
+    def search_video(self,title, prefyear="", preftype="", manual_select=False):
         '''
             Search tmdb for a specific entry (can be movie or tvshow), returns full details of best match
             parameters:
             title: (required) the title of the movie/tvshow to search for
-            year: (optional) the year of the media to search for (enhances search result if supplied)
+            prefyear: (optional) prefer result if year matches
+            preftype: (optional) prefer result if type matches
             manual_select: (optional) if True will show select dialog with all results
         '''
-        details = self.select_best_match(self.search_videos(title,year), manual_select)
+        results = self.search_videos(title)
+        details = self.select_best_match(results, prefyear=prefyear, preftype=preftype, preftitle=title, manual_select=manual_select)
         if details and details["media_type"] == "movie":
             details = self.get_movie_details(details["id"])
-        elif details and details["media_type"] == "tv":
+        elif details and "tv" in details["media_type"]:
             details = self.get_tvshow_details(details["id"])
         return details
 
-    def search_videos(self,title,year=""):
+    def search_videos(self,title):
         '''
             Search tmdb for a specific entry (can be movie or tvshow), parameters:
             title: (required) the title of the movie/tvshow to search for
-            year: (optional) the year of the media to search for (enhances search result if supplied)
         '''
-        params = {"query": title, "language": KODI_LANGUAGE}
-        data = self.get_data("search/multi",params)
-        if data and year:
-            #prefer result with correct year if year is supplied
-            newdata = []
-            for item in data:
-                if item.get("first_air_date") and year in item["first_air_date"]:
-                    newdata.append(item)
-                elif item.get("release_date") and year in item["release_date"]:
-                    newdata.append(item)
-            if newdata:
-                data = newdata
-        return data
+        results = []
+        page = 1
+        maxpages = 5
+        while page < maxpages:
+            params = {"query": title, "language": KODI_LANGUAGE, "page": page}
+            subresults = self.get_data("search/multi",params)
+            page += 1
+            if subresults:
+                for item in subresults:
+                    if item["media_type"] in ["movie","tv"]:
+                        results.append(item)
+            else:
+                break
+        return results
 
     def search_movies(self,title,year=""):
         '''
@@ -76,7 +81,7 @@ class Tmdb(object):
         '''
         params = {"query": title, "language": KODI_LANGUAGE}
         if year:
-            params["year"] = int(year)
+            params["year"] = try_parse_int(year)
         return self.get_data("search/movie",params)
 
     def search_tvshows(self,title,year=""):
@@ -88,7 +93,7 @@ class Tmdb(object):
         '''
         params = {"query": title, "language": KODI_LANGUAGE}
         if year:
-            params["first_air_date_year"] = int(year)
+            params["first_air_date_year"] = try_parse_int(year)
         return self.get_data("search/tv",params)
 
     def get_actor(self,name):
@@ -115,8 +120,7 @@ class Tmdb(object):
             "include_image_language": "%s,en"%KODI_LANGUAGE,
             "language": KODI_LANGUAGE
             }
-        details = self.map_details(self.get_data("movie/%s"%movie_id,params),"movie")
-        return details
+        return self.map_details(self.get_data("movie/%s"%movie_id,params),"movie")
         
     def get_tvshow_details(self,tvshow_id):
         '''get all tvshowdetails'''
@@ -125,54 +129,31 @@ class Tmdb(object):
             "include_image_language": "%s,en"%KODI_LANGUAGE,
             "language": KODI_LANGUAGE
             }
-        details = self.map_details(self.get_data("movie/%s"%tvshow_id,params),"tvshow")
-        return details
+        return self.map_details(self.get_data("tv/%s"%tvshow_id, params),"tvshow")
     
-    def get_movie_details_by_imdbid(self,imdb_id):
-        '''get all moviedetails by providing imdbid'''
-        tmdb_id = self.get_tmdbid_by_imdbid(imdb_id)
-        return self.get_movie_details(tmdb_id) if tmdb_id else {}
+    def get_video_details_by_external_id(self, extid, extid_type):
+        params = {"external_source": extid_type, "language": KODI_LANGUAGE}
+        results = self.get_data("find/%s" %extid,params)
+        if results and results["movie_results"]:
+            return self.get_movie_details( results["movie_results"][0]["id"] )
+        elif results and results["tv_results"]:
+            return self.get_tvshow_details( results["tv_results"][0]["id"] )
+        return None
         
-    def get_tvshow_details_by_imdbid(self,imdb_id):
-        '''get all tvshowdetails by providing imdbid'''
-        tmdb_id = self.get_tmdbid_by_imdbid(imdb_id)
-        return self.get_tvshow_details(tmdb_id) if tmdb_id else {}
-        
-    def get_tvshow_details_by_tvdbid(self,tvdb_id):
-        '''get all tvshowdetails by providing imdbid'''
-        tmdb_id = self.get_tmdbid_by_tvdbid(tvdb_id)
-        return self.get_tvshow_details(tmdb_id) if tmdb_id else {}
-    
-    def get_tmdbid_by_imdbid(self,imdb_id):
-        '''
-            get tmdb_id for movie with given imdbid
-        '''
-        params = {"external_source": "imdb_id", "language": KODI_LANGUAGE}
-        results = self.get_data("find/%s" %imdb_id,params)["movie_results"]
-        return results[0]["id"] if results else None
-        
-    def get_tmdbid_by_tvdbid(self,tvdb_id):
-        '''
-            get tmdb_id for tvshow with given tvdbid
-        '''
-        results = self.get_data("find/%s" %tvdb_id,params)["tv_results"]
-        return results[0]["id"] if results else None
-    
-    @staticmethod
-    @rate_limiter(1)
-    def get_data(endpoint, params):
+    @classmethod
+    @rate_limiter(250)
+    def get_data(cls,endpoint, params):
         '''helper method to get data from tmdb json API'''
         params["api_key"] = "ae06df54334aa653354e9a010f4b81cb"
         url = u'http://api.themoviedb.org/3/%s'%endpoint
         return get_json(url,params)
 
     def map_details(self, data,media_type):
-        '''helper method to map the details received from tmdb to kodi-json compatible formatting'''
+        '''helper method to map the details received from tmdb to kodi compatible formatting'''
         if not data:
             return {}
         details = {}
         details["tmdb_id"] = data["id"]
-        details["originaltitle"] = data["original_title"]
         details["rating"] = data["vote_average"]
         details["votes"] = data["vote_count"]
         details["popularity"] = data["popularity"]
@@ -184,62 +165,88 @@ class Tmdb(object):
         details["castandrole"] = []
         details["writer"] = []
         details["director"] = []
+        details["media_type"] = media_type
         #cast
-        for cast_member in data["credits"]["cast"]:
-            cast_thumb = ""
-            if cast_member["profile_path"]: 
-                cast_thumb = "http://image.tmdb.org/t/p/original%s" %cast_member["profile_path"]
-            details["cast"].append( {"name": cast_member["name"], "role": cast_member["character"], 
-                "thumbnail": cast_member } )
-            details["castandrole"].append( (cast_member["name"], cast_member["character"]) )
-        #crew (including writers and directors)
-        for crew_member in data["credits"]["crew"]:
-            cast_thumb = ""
-            if cast_member["profile_path"]: 
-                cast_thumb = "http://image.tmdb.org/t/p/original%s" %cast_member["profile_path"]
-            if crew_member["job"] in ["Author","Writer"]: 
-                details["writer"] += crew_member["name"]
-            if crew_member["job"] in ["Producer","Executive Producer"]: 
-                details["director"] += crew_member["name"]
-            if crew_member["job"] in ["Producer","Executive Producer","Author","Writer"]: 
-                details["cast"].append( {"name": crew_member["name"], "role": crew_member["job"], 
-                    "thumbnail": cast_member } ) 
+        if "credits" in data:
+            if "cast" in data["credits"]:
+                for cast_member in data["credits"]["cast"]:
+                    cast_thumb = ""
+                    if cast_member["profile_path"]: 
+                        cast_thumb = "http://image.tmdb.org/t/p/original%s" %cast_member["profile_path"]
+                    details["cast"].append( {"name": cast_member["name"], "role": cast_member["character"], 
+                        "thumbnail": cast_thumb } )
+                    details["castandrole"].append( (cast_member["name"], cast_member["character"]) )
+            #crew (including writers and directors)
+            if "crew" in data["credits"]:
+                for crew_member in data["credits"]["crew"]:
+                    cast_thumb = ""
+                    if crew_member["profile_path"]: 
+                        cast_thumb = "http://image.tmdb.org/t/p/original%s" %crew_member["profile_path"]
+                    if crew_member["job"] in ["Author","Writer"]: 
+                        details["writer"].append(crew_member["name"])
+                    if crew_member["job"] in ["Producer","Executive Producer"]: 
+                        details["director"].append(crew_member["name"])
+                    if crew_member["job"] in ["Producer","Executive Producer","Author","Writer"]: 
+                        details["cast"].append( {"name": crew_member["name"], "role": crew_member["job"], 
+                            "thumbnail": cast_thumb } ) 
         #artwork
         details["art"] = {}
-        fanarts = self.get_best_images( data["images"]["backdrops"] )
-        posters = self.get_best_images( data["images"]["posters"] )
-        details["art"]["fanarts"] = fanarts
-        details["art"]["posters"] = posters
-        details["art"]["fanart"] = fanarts[0] if fanarts else ""
-        details["art"]["poster"] = fanarts[0] if fanarts else ""
+        if data.get("images"):
+            if data["images"].get("backdrops"):
+                fanarts = self.get_best_images( data["images"]["backdrops"] )
+                details["art"]["fanarts"] = fanarts
+                details["art"]["fanart"] = fanarts[0] if fanarts else ""
+            if data["images"].get("posters"):    
+                posters = self.get_best_images( data["images"]["posters"] )
+                details["art"]["posters"] = posters
+                details["art"]["poster"] = posters[0] if posters else ""
+        if not details["art"].get("poster") and data.get("poster_path"):
+            details["art"]["poster"] = "http://image.tmdb.org/t/p/original%s"%data["poster_path"]
+        if not details["art"].get("fanart") and data.get("backdrop_path"):
+            details["art"]["fanart"] = "http://image.tmdb.org/t/p/original%s"%data["backdrop_path"]
         #movies only
         if media_type == "movie":
             details["title"] = data["title"]
+            details["originaltitle"] = data["original_title"]
             if data["belongs_to_collection"]:
                 details["set"] = data["belongs_to_collection"].get("name","")
-            details["premiered"] = data["release_date"]
-            details["year"] = int(data["release_date"].split("-")[0])
+            if data.get("release_date"):
+                details["premiered"] = data["release_date"]
+                details["year"] = try_parse_int(data["release_date"].split("-")[0])
             details["tagline"] = data["tagline"]
-            details["runtime"] = data["runtime"]
+            if data["runtime"]:
+                details["runtime"] = data["runtime"]
             details["imdbnumber"] = data["imdb_id"]
             details["budget"] = data["budget"]
             details["revenue"] = data["revenue"]
-            details["studio"] = [item["name"] for item in data["production_companies"]]
-            details["country"] = [item["name"] for item in data["production_countries"]]
-            details["tag"] = [item["name"] for item in data["keywords"]["keywords"]]
+            if data.get("production_companies"):
+                details["studio"] = [item["name"] for item in data["production_companies"]]
+            if data.get("production_countries"):
+                details["country"] = [item["name"] for item in data["production_countries"]]
+            if data.get("keywords"):
+                details["tag"] = [item["name"] for item in data["keywords"]["keywords"]]
         #tvshows only
         if media_type == "tvshow":
-            details["title"] = data["name"] if data.data.get("name") else data["title"]
-            details["director"] += [item["name"] for item in data["created_by"]]
-            details["runtime"] = data["episode_run_time"][0] if data["episode_run_time"] else 0
-            details["premiered"] = data["first_air_date"]
-            details["year"] = int(data["first_air_date"].split("-")[0])
-            details["lastaired"] = data["last_air_date"]
-            details["studio"] = [item["name"] for item in data["networks"]]
-            details["country"] = [item["name"] for item in data["origin_country"]]
-            details["imdbnumber"] = data["external_ids"]["imdb_id"]
-            details["tvdb_id"] = data["external_ids"]["tvdb_id"]
-            details["tag"] = [item["name"] for item in data["keywords"]["results"]]
+            details["title"] = data["name"]
+            details["originaltitle"] = data["original_name"]
+            if data.get("created_by"):
+                details["director"] += [item["name"] for item in data["created_by"]]
+            if data.get("episode_run_time"):
+                details["runtime"] = data["episode_run_time"][0]
+            if data.get("first_air_date"):
+                details["premiered"] = data["first_air_date"]
+                details["year"] = try_parse_int(data["first_air_date"].split("-")[0])
+            if "last_air_date" in data:
+                details["lastaired"] = data["last_air_date"]
+            if data.get("networks"):
+                details["studio"] = [item["name"] for item in data["networks"]]
+            if "origin_country" in data:
+                details["country"] = data["origin_country"]
+            if data.get("external_ids"):
+                details["imdbnumber"] = data["external_ids"].get("imdb_id","")
+                details["tvdb_id"] = data["external_ids"].get("tvdb_id","")
+            if "results" in data["keywords"]:
+                details["tag"] = [item["name"] for item in data["keywords"]["results"]]
         #trailer
         for video in data["videos"]["results"]:
             if video["site"] == "YouTube" and video["type"] == "Trailer":
@@ -264,17 +271,70 @@ class Tmdb(object):
         return [image["file_path"] for image in images]
             
     @staticmethod
-    def select_best_match(results,manual_select=False):
+    def select_best_match(results, prefyear="", preftype="", preftitle="", manual_select=False):
         '''helper to select best match or let the user manually select the best result from the search'''
         details = {}
+        #score results if one or more preferences are given
+        if results and (prefyear or preftype or preftitle):
+            newdata = []
+            preftitle = preftitle.lower()
+            for item in results:
+                item["score"] = 0
+                itemtitle = item["title"] if item.get("title") else item["name"]
+                itemtitle = itemtitle.lower()
+                itemorgtitle = item["original_title"] if item.get("original_title") else item["original_name"]
+                itemorgtitle = itemorgtitle.lower()
+                
+                #high score if year matches
+                if prefyear:
+                    if item.get("first_air_date") and prefyear in item["first_air_date"]:
+                        item["score"] += 800 #matches preferred year
+                    if item.get("release_date") and prefyear in item["release_date"]:
+                        item["score"] += 800 #matches preferred year
+                        
+                #higher score if result matches our preferred type
+                if preftype and (item["media_type"] in preftype) or (preftype in item["media_type"]):
+                    item["score"] += 250 #matches preferred type
+                
+                #find exact match on title
+                if preftitle and preftitle == itemtitle:
+                    item["score"] += 1000 #exact match!
+                if preftitle and preftitle == itemorgtitle:
+                    item["score"] += 1000 #exact match!
+                
+                #match title by replacing some characters
+                if preftitle and re.sub('\*|,|.\"|\'| |:|;','',preftitle) == re.sub('\*|,|.\"|\'| |:|;','',itemtitle):
+                    item["score"] += 750
+                if preftitle and re.sub('\*|,|.\"|\'| |:|;','',preftitle) == re.sub('\*|,|.\"|\'| |:|;','',itemorgtitle):
+                    item["score"] += 750 
+                    
+                #add SequenceMatcher score to the results
+                if preftitle:
+                    stringmatchscore = SM(None, preftitle, itemtitle).ratio() + SM(None, preftitle, itemorgtitle).ratio()
+                    if stringmatchscore > 1.6:
+                        item["score"] += stringmatchscore * 500
+                
+                #prefer items in same language
+                if item["original_language"] == KODI_LANGUAGE:
+                    item["score"] += 500 #native language!
+                if KODI_LANGUAGE.upper() in item.get("origin_country",[]):
+                    item["score"] += 500 #native language!
+                if KODI_LANGUAGE in item.get("languages",[]):
+                    item["score"] += 500 #native language!
+                
+                if item["score"] > 500:
+                    newdata.append(item)
+            results = sorted(newdata,key=itemgetter("score"),reverse=True)
+
         if results and manual_select:
             #show selectdialog to manually select the item
             results_list = []
-            for item in self.get_data(search_query):
+            for item in results:
                 label = item["name"] if "name" in item else item["title"]
-                year = data["premiered"].split("-")[0] if "premiered" in item else data["release_date"].split("-")[0]
+                year = item["premiered"].split("-")[0] if "premiered" in item else item.get("first_air_date","").split("-")[0]
                 label = "%s (%s)" %(label,year)
-                listitem = xbmcgui.ListItem(label=label,iconImage="http://image.tmdb.org/t/p/original%s"%item["poster_path"])
+                thumb = "http://image.tmdb.org/t/p/original%s"%item["poster_path"] if item["poster_path"] else ""
+                listitem = xbmcgui.ListItem(label=label,iconImage=thumb)
                 results_list.append(listitem)
             if manual_select and results_list:
                 w = DialogSelect( "DialogSelect.xml", "", listing=results_list, window_title="%s - TMDB"%xbmc.getLocalizedString(283) )
@@ -282,7 +342,10 @@ class Tmdb(object):
                 selected_item = w.result
                 if selected_item != -1:
                     details = results[selected_item]
-        elif results:
+                else:
+                    results = []
+        
+        if not details and results:
             #just grab the first item as best match
             details = results[0]
         return details
