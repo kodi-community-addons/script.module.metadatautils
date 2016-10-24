@@ -1,20 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import *
+from utils import DialogSelect, log_msg, requests
 import BeautifulSoup
-import xbmcvfs
-from simplecache import SimpleCache, use_cache
+import xbmc, xbmcvfs, xbmcgui
+from simplecache import use_cache
 
 class GoogleImages(object):
     '''get images from google images'''
-    
-    def __init__(self, *args):
-        self.cache = SimpleCache()
-    
+
+    def __init__(self, simplecache=None):
+        '''Initialize - optionaly provide simplecache object'''
+        if not simplecache:
+            from simplecache import SimpleCache
+            self.cache = SimpleCache()
+        else:
+            self.cache = simplecache
+
     def search_images(self,search_query):
         '''search google images with the given query, returns list of all images found'''
         return self.get_data(search_query)
-        
+
     def search_image(self,search_query, manual_select=False):
         '''
             search google images with the given query, returns first/best match
@@ -33,14 +38,16 @@ class GoogleImages(object):
                     listitem = xbmcgui.ListItem(label=img,iconImage=img)
                     images_list.append(listitem)
         if manual_select and images_list:
-            w = DialogSelect( "DialogSelect.xml", "", listing=images_list, window_title="%s - Google"%xbmc.getLocalizedString(283) )
+            w = DialogSelect( "DialogSelect.xml", "", listing=images_list, window_title="%s - Google"
+                %xbmc.getLocalizedString(283) )
             w.doModal()
             selectedItem = w.result
+            del w
             if selectedItem != -1:
                 selectedItem = images_list[selectedItem]
                 image = selectedItem.getLabel()
         return image
-        
+
     @use_cache(30)
     def get_data(self,search_query):
         '''helper method to get data from google images by scraping and parsing'''
@@ -62,6 +69,6 @@ class GoogleImages(object):
                         img = page.split("imgurl=")[-1]
                         img = img.split("&imgrefurl=")[0]
                         results.append( img )
-                    except Exception: 
+                    except Exception:
                         pass
         return results

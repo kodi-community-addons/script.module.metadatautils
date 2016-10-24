@@ -1,13 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, formatted_number, rate_limiter, log_msg, int_with_commas, try_parse_int
+from utils import get_json, formatted_number, log_msg, int_with_commas, try_parse_int
+from simplecache import use_cache
 import datetime
 
 class Omdb(object):
     '''get metadata from omdb'''
+    base_url = 'http://www.omdbapi.com/'
     
-    def __init__(self, *args):
-        pass
+    def __init__(self, simplecache=None):
+        '''Initialize - optionaly provide simplecache object'''
+        if not simplecache:
+            from simplecache import SimpleCache
+            self.cache = SimpleCache()
+        else:
+            self.cache = simplecache
     
     def get_details_by_imdbid(self,imdb_id):
         '''get omdb details by providing an imdb id'''
@@ -23,20 +30,19 @@ class Omdb(object):
         '''
         if "movie" in media_type:
             media_type = "movie"
-        if "show" in media_type:
+        elif media_type in ["tvshows", "tvshow"]:
             media_type = "series"
         params = {"t": title, "y": year, "type": media_type}
         data = self.get_data(params)
         return self.map_details(data)
         
-    @staticmethod
-    @rate_limiter(250)
-    def get_data(params):
+    @use_cache(7)
+    def get_data(self, params):
         '''helper method to get data from omdb json API'''
         params["plot"] = "short"
         params["tomatoes"] = True
         params["r"] = "json"
-        data = get_json('http://www.omdbapi.com/',params)
+        data = get_json(self.base_url,params)
         if data:
             return data
         else:
@@ -80,15 +86,17 @@ class Omdb(object):
                 result["awards"] = value
                 result["RottenTomatoesAwards"] = value#legacy
             elif key == "Poster": 
-                result["thumb"] = value
+                result["thumbnail"] = value
+                result["art"] = {}
+                result["art"]["thumb"] = value
             elif key == "Metascore": 
                 result["metacritic.rating"] = value
             elif key == "imdbRating":
-                result["imdb.rating"] = value
+                result["rating.imdb"] = value
                 result["rating"] = float(value)
-                result["imdb.rating.percent"] = "%s" %(try_parse_int(float(value) * 10))
+                result["rating.percent.imdb"] = "%s" %(try_parse_int(float(value) * 10))
             elif key == "imdbVotes": 
-                result["imdb.votes"] = value
+                result["votes.imdb"] = value
                 result["votes"] = try_parse_int(value.replace(",",""))
             elif key == "imdbID": 
                 result["imdbnumber"] = value
@@ -108,6 +116,7 @@ class Omdb(object):
             if key == "tomatoRating": 
                 result["rottentomatoes.rating"] = value
                 result["rottentomatoes.rating.percent"] = "%s" %(try_parse_int(float(value) * 10))
+                result["rating.rt"] = value
             elif key == "tomatoFresh": 
                 result["rottentomatoes.fresh"] = value
                 result["rottentomatoesfresh"] = value#legacy

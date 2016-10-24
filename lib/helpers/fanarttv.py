@@ -1,21 +1,29 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import rate_limiter, get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int
+from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int
 from operator import itemgetter
+from simplecache import use_cache
 
 class FanartTv(object):
     '''get artwork from fanart.tv'''
-    
-    def __init__(self, *args):
-        pass
-    
+    base_url = 'http://webservice.fanart.tv/v3/'
+    api_key = '639191cb0774661597f28a47e7e2bad5'
+
+    def __init__(self, simplecache=None):
+        '''Initialize - optionaly provide simplecache object'''
+        if not simplecache:
+            from simplecache import SimpleCache
+            self.cache = SimpleCache()
+        else:
+            self.cache = simplecache
+
     def artist(self,artist_id):
         '''get artist artwork'''
         data = self.get_data("music/%s" %artist_id)
         mapping_table = [("artistbackground","fanart"), ("artistthumb","thumb"),
             ("hdmusiclogo","clearlogo"), ("musiclogo","clearlogo"), ("musicbanner","banner")]
         return self.map_artwork(data,mapping_table)
-        
+
     def album(self,album_id):
         '''get album artwork'''
         artwork = {}
@@ -25,7 +33,7 @@ class FanartTv(object):
             for item in data["albums"].itervalues():
                 artwork.update(self.map_artwork(item,mapping_table))
         return artwork
-        
+
     def musiclabel(self,label_id):
         '''get musiclabel logo'''
         artwork = {}
@@ -40,23 +48,23 @@ class FanartTv(object):
                 elif item["colour"] == "white" and not "logo_white" in artwork:
                     artwork["logo_white"] = item["url"]
         return artwork
-        
+
     def movie(self,movie_id):
         '''get artist artwork'''
         data = self.get_data("movies/%s" %movie_id)
-        mapping_table = [("hdmovielogo","clearlogo"), ("moviedisc","discart"), ("movielogo","clearlogo"), 
-            ("movieposter","poster"), ("hdmovieclearart","clearart"), ("movieart","clearart"), 
+        mapping_table = [("hdmovielogo","clearlogo"), ("moviedisc","discart"), ("movielogo","clearlogo"),
+            ("movieposter","poster"), ("hdmovieclearart","clearart"), ("movieart","clearart"),
             ("moviebackground","fanart"),("moviebanner","banner"),("moviethumb","landscape")]
         return self.map_artwork(data,mapping_table)
-        
+
     def tvshow(self,tvshow_id):
         '''get artist artwork'''
         data = self.get_data("tv/%s" %tvshow_id)
-        mapping_table = [("hdtvlogo","clearlogo"), ("clearlogo","clearlogo"), ("hdclearart","clearart"), 
-            ("clearart","clearart"), ("showbackground","fanart"), ("tvthumb","landscape"), 
+        mapping_table = [("hdtvlogo","clearlogo"), ("clearlogo","clearlogo"), ("hdclearart","clearart"),
+            ("clearart","clearart"), ("showbackground","fanart"), ("tvthumb","landscape"),
             ("tvbanner","banner"),("characterart","characterart"),("tvposter","poster")]
         return self.map_artwork(data,mapping_table)
-        
+
     def tvseason(self,tvshow_id,season):
         '''get season artwork - banner+landscape only as the seasonposters lacks a season in the json response'''
         data = self.get_data("tv/%s" %tvshow_id)
@@ -74,12 +82,11 @@ class FanartTv(object):
                     artwork[kodi_type + "s"] = images
                     artwork[kodi_type] = images[0]
         return artwork
-        
-    @classmethod
-    @rate_limiter(500)
-    def get_data(cls, query):
+
+    @use_cache(7)
+    def get_data(self, query):
         '''helper method to get data from fanart.tv json API'''
-        url = 'http://webservice.fanart.tv/v3/%s?api_key=639191cb0774661597f28a47e7e2bad5' %(query)
+        url = '%s%s?api_key=%s' %(self.base_url, query, self.api_key)
         return get_json(url)
 
     def map_artwork(self, data, mapping_table):
@@ -100,7 +107,7 @@ class FanartTv(object):
                     artwork[kodi_type + "s"] = images
                     artwork[kodi_type] = images[0]
         return artwork
-        
+
     @staticmethod
     def score_image(item):
         '''score item based on number of likes and the language'''
@@ -114,4 +121,3 @@ class FanartTv(object):
                 score += 500
         item["score"] = score
         return item
-        

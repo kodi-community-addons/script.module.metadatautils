@@ -2,20 +2,23 @@
 # -*- coding: utf-8 -*-
 from utils import requests, try_parse_int
 import BeautifulSoup
-from simplecache import SimpleCache, use_cache
+from simplecache import use_cache
 
 class Imdb(object):
     '''Info from IMDB (currently only top250)'''
-    cache = SimpleCache()
     
-    def __init__(self, *args):
-        pass
+    def __init__(self, simplecache=None):
+        '''Initialize - optionaly provide simplecache object'''
+        if not simplecache:
+            from simplecache import SimpleCache
+            self.cache = SimpleCache()
+        else:
+            self.cache = simplecache
     
     def get_top250_rating(self,imdb_id):
         '''get the top250 rating for the given imdbid'''
         return {"IMDB.Top250": self.get_top250_db().get(imdb_id,0)}
 
-    
     @use_cache(7)
     def get_top250_db(self):
         '''

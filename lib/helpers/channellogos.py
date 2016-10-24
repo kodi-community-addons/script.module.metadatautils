@@ -1,15 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, rate_limiter
-from kodidb import KodiDb
+from utils import get_json, get_clean_image
 import xbmc, xbmcvfs
 
 class ChannelLogos(object):
     '''get channellogo'''
-    
-    def __init__(self, *args):
-        self.kodidb = KodiDb()
-    
+
+    def __init__(self, kodidb=None):
+        '''Initialize - optionaly provide KodiDb object'''
+        if not kodidb:
+            from kodidb import KodiDb
+            self.kodidb = KodiDb()
+        else:
+            self.kodidb = kodidb
+
     def get_channellogo(self,channelname):
         '''get channellogo for the supplied channelname'''
         result = {}
@@ -18,12 +22,12 @@ class ChannelLogos(object):
                 break
             result["ChannelLogo"] = searchmethod(channelname)
         return result
-        
+
     @staticmethod
     def search_logosdb(searchphrase):
         result = ""
         for searchphrase in [searchphrase, searchphrase.lower().replace(" hd","")]:
-            if result: 
+            if result:
                 break
             for item in self.get_data_from_logosdb(searchphrase):
                 img = item['strLogoWide']
@@ -31,7 +35,7 @@ class ChannelLogos(object):
                     result = img
                     break
         return result
-        
+
     def search_kodi(self, searchphrase):
         '''search kodi json api for channel logo'''
         result = ""
@@ -39,14 +43,13 @@ class ChannelLogos(object):
             results = self.kodidb.get_json('PVR.GetChannels',fields=[ "thumbnail" ],returntype="tvchannels", optparam=("channelgroupid", "alltv") )
             for item in results:
                 if item["label"] == searchphrase:
-                    channelicon = item['thumbnail']
+                    channelicon = get_clean_image(item['thumbnail'])
                     if channelicon and xbmcvfs.exists(channelicon):
                         result = channelicon
                         break
         return result
-    
+
     @staticmethod
-    @rate_limiter(500)
     def get_data_from_logosdb(searchphrase):
         '''helper method to get data from thelogodb json API'''
         params = {"s": searchphrase}
@@ -56,4 +59,3 @@ class ChannelLogos(object):
         else:
             return []
 
-    

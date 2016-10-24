@@ -1,22 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import xbmc, xbmcgui
-from utils import json, try_encode, log_msg, log_exception, get_clean_image, get_duration_string, ADDON, try_parse_int
+from utils import json, try_encode, log_msg, log_exception, get_clean_image, try_parse_int
 from kodi_constants import *
 
 class KodiDb(object):
     '''various methods and helpers to get data from kodi json api'''
-    
+
     def movie(self,db_id):
         '''get moviedetails from kodi db'''
         return self.get_json("VideoLibrary.GetMovieDetails",returntype="moviedetails",
             fields=FIELDS_MOVIES,optparam=("movieid",try_parse_int(db_id)))
-    
+
     def movies(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get moviedetails from kodi db'''
-        return self.get_json("VideoLibrary.GetMovies", sort=sort, filters=filters, 
+        return self.get_json("VideoLibrary.GetMovies", sort=sort, filters=filters,
             fields=FIELDS_MOVIES, limits=limits, returntype="movies", filtertype=filtertype)
-            
+
     def movie_by_imdbid(self,imdb_id):
         '''gets a movie from kodidb by imdbid.'''
         #apparently you can't filter on imdb so we have to do this the complicated way
@@ -25,17 +25,17 @@ class KodiDb(object):
             if item["imdbnumber"] == imdb_id:
                 return self.movie(item["movieid"])
         return {}
-    
+
     def tvshow(self,db_id):
         '''get tvshow from kodi db'''
         return self.get_json("VideoLibrary.GetTvShowDetails",returntype="tvshowdetails",
             fields=FIELDS_TVSHOWS,optparam=("tvshowid",try_parse_int(db_id)))
-    
+
     def tvshows(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get tvshows from kodi db'''
-        return self.get_json("VideoLibrary.GetTvShows", sort=sort, filters=filters, 
+        return self.get_json("VideoLibrary.GetTvShows", sort=sort, filters=filters,
             fields=FIELDS_TVSHOWS, limits=limits, returntype="tvshows", filtertype=filtertype)
-            
+
     def tvshow_by_imdbid(self,imdb_id):
         '''gets a tvshow from kodidb by imdbid.'''
         #apparently you can't filter on imdb so we have to do this the complicated way
@@ -44,40 +44,40 @@ class KodiDb(object):
             if item["imdbnumber"] == imdb_id:
                 return self.tvshow(item["tvshowid"])
         return {}
-    
+
     def episode(self,db_id):
         '''get episode from kodi db'''
         return self.get_json("VideoLibrary.GetEpisodeDetails",returntype="episodedetails",
             fields=FIELDS_EPISODES,optparam=("episodeid",try_parse_int(db_id)))
-    
+
     def episodes(self,sort=None, filters=None, limits=None, filtertype=None, tvshowid=None):
         '''get episodes from kodi db'''
         if tvshowid:
             params = ( "tvshowid", try_parse_int(tvshowid) )
         else:
             params=None
-        return self.get_json("VideoLibrary.GetEpisodes", sort=sort, filters=filters, 
+        return self.get_json("VideoLibrary.GetEpisodes", sort=sort, filters=filters,
             fields=FIELDS_EPISODES, limits=limits, returntype="episodes", filtertype=filtertype, optparam=params)
-            
+
     def musicvideo(self,db_id):
         '''get musicvideo from kodi db'''
         return self.get_json("VideoLibrary.GetMusicVideoDetails",returntype="musicvideodetails",
             fields=FIELDS_MUSICVIDEOS,optparam=("musicvideoid",try_parse_int(db_id)))
-    
+
     def musicvideos(self,sort=None, filters=None, limits=None, filtertype=None):
         '''get musicvideos from kodi db'''
-        return self.get_json("VideoLibrary.GetMusicVideos", sort=sort, filters=filters, 
+        return self.get_json("VideoLibrary.GetMusicVideos", sort=sort, filters=filters,
             fields=FIELDS_MUSICVIDEOS, limits=limits, returntype="musicvideos", filtertype=filtertype)
-           
+
     def recording(self,db_id):
         '''get pvr recording from kodi db'''
         return self.get_json("PVR.GetRecordingDetails",returntype="recordingdetails",
             fields=FIELDS_PVR,optparam=("recordingid",try_parse_int(db_id)))
-    
+
     def recordings(self,limits=None):
         '''get pvr recordings from kodi db'''
         return self.get_json("PVR.GetRecordings", fields=FIELDS_PVR, limits=limits, returntype="recordings")
-    
+
     def movieset(self,db_id,include_set_movies_fields=""):
         '''get movieset from kodi db'''
         if include_set_movies_fields:
@@ -86,25 +86,25 @@ class KodiDb(object):
             optparams = ("setid",try_parse_int(db_id))
         return self.get_json("VideoLibrary.GetMovieSetDetails",returntype="",
             fields=["title", "art", "playcount"],optparam=optparams)
-    
+
     def moviesets(self,sort=None, filters=None, limits=None, filtertype=None,include_set_movies=False):
         '''get moviesetdetails from kodi db'''
         if include_set_movies:
             optparams = ( "movies", {"properties": FIELDS_MOVIES} )
         else:
             optparams = None
-        return self.get_json("VideoLibrary.GetMovieSets", sort=sort, filters=filters, 
+        return self.get_json("VideoLibrary.GetMovieSets", sort=sort, filters=filters,
             fields=["title", "art", "playcount"], limits=limits, returntype="", filtertype=filtertype)
-    
+
     def files(self, vfspath):
         '''gets all items in a kodi vfs path'''
         return self.get_json("Files.GetDirectory",returntype="",optparam=("directory",vfspath),fields=FIELDS_FILES)
-    
+
     def genres(self, media_type):
         '''return all genres for the given media type (movie/tvshow/musicvideo)'''
         return self.get_json("VideoLibrary.GetGenres", fields=["thumbnail","title"], returntype="genres", optparam=("type",media_type))
-    
-    @staticmethod    
+
+    @staticmethod
     def set_json(jsonmethod,params):
         kodi_json = {}
         kodi_json["jsonrpc"] = "2.0"
@@ -121,7 +121,7 @@ class KodiDb(object):
         kodi_json["method"] = jsonmethod
         kodi_json["params"] = {}
         if optparam:
-            if isinstance(optparam,list):   
+            if isinstance(optparam,list):
                 for param in optparam:
                     kodi_json["params"][param[0]] = param[1]
             else:
@@ -157,7 +157,7 @@ class KodiDb(object):
                 for key, value in json_object['result'].iteritems():
                     if not key=="limits" and (isinstance(value, list) or isinstance(value,dict)):
                         result = value
-        else: 
+        else:
             log_msg(json_response)
             log_msg(kodi_json)
         return result
@@ -257,20 +257,20 @@ class KodiDb(object):
                 liz.setIconImage(item['icon'])
             if "thumbnail" in item:
                 liz.setThumbnailImage(item['thumbnail'])
-                
+
             #contextmenu
             if item["type"] in ["episode","season"] and "season" in item and "tvshowid" in item:
                 #add series and season level to widgets
                 if not "contextmenu" in item:
                     item["contextmenu"] = []
-                item["contextmenu"] += [ 
-                    (ADDON.getLocalizedString(32051), "ActivateWindow(Video,videodb://tvshows/titles/%s/,return)"
+                item["contextmenu"] += [
+                    (xbmc.getLocalizedString(20364), "ActivateWindow(Video,videodb://tvshows/titles/%s/,return)"
                         %(item["tvshowid"])),
-                    (ADDON.getLocalizedString(32052), "ActivateWindow(Video,videodb://tvshows/titles/%s/%s/,return)"
+                    (xbmc.getLocalizedString(20373), "ActivateWindow(Video,videodb://tvshows/titles/%s/%s/,return)"
                         %(item["tvshowid"],item["season"])) ]
             if "contextmenu" in item:
                 liz.addContextMenuItems(item["contextmenu"])
-        
+
             if as_tuple:
                 return (item["file"], liz, item.get("isFolder",False))
             else:
@@ -278,7 +278,7 @@ class KodiDb(object):
         except Exception as exc:
             log_exception(__name__,exc)
             return None
-    
+
     @staticmethod
     def prepare_listitem(item):
         '''helper to convert kodi output from json api to compatible format for listitems'''
@@ -295,18 +295,30 @@ class KodiDb(object):
                     break
 
             #general properties
-            if item.get('genre') and isinstance(item.get('genre'), list): item["genre"] = " / ".join(item.get('genre'))
-            if item.get('studio') and isinstance(item.get('studio'), list): item["studio"] = " / ".join(item.get('studio'))
-            if item.get('writer') and isinstance(item.get('writer'), list): item["writer"] = " / ".join(item.get('writer'))
-            if item.get('director') and isinstance(item.get('director'), list): item["director"] = " / ".join(item.get('director'))
-            if not isinstance(item.get('artist'), list) and item.get('artist'): item["artist"] = [item.get('artist')]
+            if item.get('genre') and isinstance(item.get('genre'), list): 
+                item["genre"] = " / ".join(item.get('genre'))
+            if item.get('studio') and isinstance(item.get('studio'), list): 
+                item["studio"] = " / ".join(item.get('studio'))
+            if item.get('writer') and isinstance(item.get('writer'), list): 
+                item["writer"] = " / ".join(item.get('writer'))
+            if item.get('director') and isinstance(item.get('director'), list): 
+                item["director"] = " / ".join(item.get('director'))
+            if not isinstance(item.get('artist'), list) and item.get('artist'): 
+                item["artist"] = [item.get('artist')]
             if not item.get('artist'): item["artist"] = []
-            if item.get('type') == "album" and not item.get('album'): item['album'] = item.get('label')
-            if not item.get("duration") and item.get("runtime"): item["duration"] = item.get("runtime")
-            if not item.get("plot") and item.get("comment"): item["plot"] = item.get("comment")
-            if not item.get("tvshowtitle") and item.get("showtitle"): item["tvshowtitle"] = item.get("showtitle")
-            if not item.get("premiered") and item.get("firstaired"): item["premiered"] = item.get("firstaired")
-            if not properties.get("imdbnumber") and item.get("imdbnumber"): properties["imdbnumber"] = item.get("imdbnumber")
+            if item.get('type') == "album" and not item.get('album'): 
+                item['album'] = item.get('label')
+            if not item.get("duration") and item.get("runtime"): 
+                item["duration"] = item.get("runtime")
+            if not item.get("plot") and item.get("comment"): 
+                item["plot"] = item.get("comment")
+            if not item.get("tvshowtitle") and item.get("showtitle"): 
+                item["tvshowtitle"] = item.get("showtitle")
+            if not item.get("premiered") and item.get("firstaired"): 
+                item["premiered"] = item.get("firstaired")
+            if not properties.get("imdbnumber") and item.get("imdbnumber"): 
+                properties["imdbnumber"] = item.get("imdbnumber")
+                
             properties["dbtype"] = item.get("type")
             properties["type"] = item.get("type")
             properties["path"] = item.get("file")
@@ -423,23 +435,24 @@ class KodiDb(object):
             if not item.get("thumbnail") and art.get('thumb'): item["thumbnail"] = art["thumb"]
 
             item["extraproperties"] = properties
-            
+
             if not "file" in item:
                 log_msg("Item is missing file path ! --> %s" %item["label"], xbmc.LOGWARNING)
                 item["file"] = ""
-            
+
             #return the result
             return item
 
         except Exception as exc:
             log_exception(__name__,exc)
+            log_msg(item)
             return None
 
     @staticmethod
     def create_main_entry(item):
         '''helper to create a simple (directory) listitem'''
         return {
-                "label": item[0], 
+                "label": item[0],
                 "file": "plugin://script.skin.helper.widgets/?action=%s" %item[1],
                 "icon": item[2],
                 "art": {"fanart": "special://home/addons/script.skin.helper.widgets/fanart.jpg"},
@@ -447,6 +460,5 @@ class KodiDb(object):
                 "type": "file",
                 "IsPlayable": "false"
                 }
-         
 
-        
+
