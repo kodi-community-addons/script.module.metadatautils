@@ -49,12 +49,15 @@ class PvrArtwork(object):
         details["pvrchannel"] = channel
         details["pvrgenre"] = genre
         details["cachestr"] = cache_str
-        if xbmc.getLocalizedString(19499).lower() in genre.lower():
-            details["genre"] = [] #filter unknown genre
+        
+        #filter genre unknown/other
+        if genre in xbmc.getLocalizedString(19499) or xbmc.getLocalizedString(19499) in genre.lower():
+            details["genre"] = [] 
             genre = ""
+            log_msg("genre is unknown so ignore....")
         else:
             details["genre"] = genre.split(" / ")
-        details["media_type"] = self.get_mediatype_from_genre(genre)
+            details["media_type"] = self.get_mediatype_from_genre(genre)
         searchtitle = self.get_searchtitle(title, channel)
         
         #only continue if we pass our basic checks
@@ -95,7 +98,8 @@ class PvrArtwork(object):
                         tvdb_match, "tvdb_id"), ["poster","fanart"] )
                 else:
                     #tmdb scraping for movies
-                    tmdb_result = self.artutils.tmdb.search_video(searchtitle, preftype=details["media_type"], manual_select=manual_select)
+                    tmdb_result = self.artutils.get_tmdb_details("","",searchtitle, "", 
+                        manual_select=manual_select, preftype=details["media_type"])
                     if tmdb_result:
                         details["media_type"] = tmdb_result["media_type"]
                         details = extend_dict(details, tmdb_result)
@@ -106,13 +110,16 @@ class PvrArtwork(object):
                 #fanart.tv scraping - append result to existing art
                 fanarttv_art = {}
                 if details.get("imdbnumber") and details["media_type"] == "movie":
-                    details["art"] = extend_dict(details["art"], self.artutils.fanarttv.movie(details["imdbnumber"]), ["poster","fanart","landscape"])
+                    details["art"] = extend_dict(details["art"], 
+                        self.artutils.fanarttv.movie(details["imdbnumber"]), ["poster","fanart","landscape"])
                 elif details.get("tvdb_id") and details["media_type"] == "tvshow":
-                    details["art"] = extend_dict(details["art"], self.artutils.fanarttv.tvshow(details["tvdb_id"]), ["poster","fanart","landscape"])
+                    details["art"] = extend_dict(details["art"], 
+                        self.artutils.fanarttv.tvshow(details["tvdb_id"]), ["poster","fanart","landscape"])
                         
                 #append omdb details
                 if details.get("imdbnumber"):
-                    details = extend_dict(details, self.artutils.omdb.get_details_by_imdbid(details["imdbnumber"]), ["rating","votes"])
+                    details = extend_dict(details, 
+                        self.artutils.omdb.get_details_by_imdbid(details["imdbnumber"]), ["rating","votes"])
 
                 #set thumbnail - prefer scrapers
                 thumb = ""
@@ -139,8 +146,9 @@ class PvrArtwork(object):
                     for count, item in enumerate(details["art"]["fanarts"]):
                         details["art"]["fanart.%s" %count] = item
                     if not details["art"].get("extrafanart") and len(details["art"]["fanarts"]) > 1:
-                        details["art"]["extrafanart"] = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s"\
-                            %quote_plus(repr(details["art"]["fanarts"]))
+                        details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
+                            "?action=extrafanart&fanarts=%s"%quote_plus(repr(details["art"]["fanarts"]))
+                            
         #store result in cache and return details
         self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
         return details
@@ -447,7 +455,7 @@ class PvrArtwork(object):
                             break
             if title_path:
                 #we have found a folder for the title, look for artwork
-                dirs, files = xbmcvfs.listdir(title_path)
+                files = xbmcvfs.listdir(title_path)[1]
                 for item in files:
                     item = item.decode("utf-8")
                     if item in ["banner.jpg", "clearart.png", "poster.png", "fanart.jpg", "landscape.jpg"]:
@@ -456,14 +464,14 @@ class PvrArtwork(object):
                     elif item == "logo.png":
                         details["art"]["clearlogo"] = title_path + item
                     elif item == "thumb.jpg":
-                        details["art"]["clearlogo"] = title_path + item
+                        details["art"]["thumb"] = title_path + item
                 #extrafanarts
                 efa_path = title_path + "extrafanart" + delim
                 if xbmcvfs.exists(title_path + "extrafanart"):
-                    dirs, files = xbmcvfs.listdir(efa_path)
+                    files = xbmcvfs.listdir(efa_path)[1]
                     details["art"]["fanarts"] = []
                     if files:
-                        details["extrafanart"] = efa_path
+                        details["art"]["extrafanart"] = efa_path
                         for item in files:
                             item = efa_path + item.decode("utf-8")
                             details["art"]["fanarts"].append(item)

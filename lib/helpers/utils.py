@@ -4,12 +4,13 @@
 import xbmcgui, xbmc
 import os,sys
 from traceback import format_exc
-from datetime import datetime, timedelta
-import time
 import requests
+import arrow
+from datetime import timedelta
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib, urlparse
+import unicodedata
 
 try:
     from multiprocessing.pool import ThreadPool as Pool
@@ -41,24 +42,12 @@ def log_exception(modulename, exceptiondetails):
     log_msg(format_exc(sys.exc_info()),xbmc.LOGWARNING)
     log_msg("ERROR in %s ! --> %s" %(modulename,exceptiondetails), xbmc.LOGERROR)
 
-def get_json(url, params=None ,rate_limiter=True):
+def get_json(url, params=None):
     '''get info from a rest api - protect webserver (and api keys!) by applying a rate limiter'''
-    
-    #very basic rate limiter to make sure a domain is only hit once at the same time
-    win = xbmcgui.Window(10000)
-    limit_str = "rate_limit.%s" %urlparse.urlparse(url).hostname
-    count = 0
-    #if url already active (rate limited), we'll have to wait
-    while rate_limiter and win.getProperty(limit_str) and count < 100:
-        xbmc.sleep(50)
-        log_msg("Rate limiter active for %s"%limit_str, xbmc.LOGWARNING)
-        count += 1
-    result = None
+    result = {}
     if not params:
         params = {}
     try:
-        #mark url as active in the rate limit win prop while our request is busy
-        win.setProperty(limit_str,"active")
         response = requests.get(url,params=params, timeout=15)
         if response and response.content and response.status_code == 200:
             result = json.loads(response.content.decode('utf-8','replace'))
@@ -68,9 +57,6 @@ def get_json(url, params=None ,rate_limiter=True):
                 result = result["result"]
     except Exception as e:
         log_msg("get_json failed for url: %s -- exception: %s" %(url,e))
-    #mark url as free again and return the results
-    win.clearProperty(limit_str)
-    del win
     return result
 
 def try_encode(text, encoding="utf-8"):
@@ -84,6 +70,11 @@ def try_decode(text, encoding="utf-8"):
         return text.decode(encoding,"ignore")
     except Exception:
         return text
+        
+def urlencode(text):
+   blah = urllib.urlencode({'blahblahblah':try_encode(text)})
+   blah = blah[13:]
+   return blah
 
 def formatted_number(x):
     try:
@@ -122,21 +113,33 @@ def get_clean_image(image):
         image=urllib.unquote(image.encode("utf-8"))
         if image.endswith("/"):
             image = image[:-1]
-    return try_decode(image)
+        if not isinstance(image, unicode):
+            image = image.decode("utf8")
+    return image
 
-def get_duration_string(duration):
-    if duration == None or duration == 0:
-        return ""
+def get_duration(duration):
+    '''transform duration time in minutes to hours:minutes'''
+    if not duration:
+        return {}
+    if isinstance(duration,(unicode,str)):
+        duration.replace("min","").replace("","").replace(".","")
     try:
-        full_minutes = int(duration)
-        minutes = str(full_minutes % 60)
-        minutes = str(minutes).zfill(2)
-        hours   = str(full_minutes // 60)
-        formatted_time = hours + ':' + minutes
+        total_minutes = int(duration)
+        hours = total_minutes / 60
+        minutes = total_minutes - (hours * 60)
+        formatted_time = "%s:%s" %(hours, str(minutes).zfill(2))
     except Exception as exc:
         log_exception(__name__,exc)
-        return ""
-    return ( hours, minutes, formatted_time )
+        return {}
+    return {
+            "Duration": formatted_time, 
+            "Duration.Hours": hours, 
+            "Duration.Minutes": minutes,
+            "Runtime": total_minutes,
+            "RuntimeExtended": "%s %s" %(total_minutes,xbmc.getLocalizedString(12391)),
+            "DurationAndRuntime": "%s (%s min.)" %(formatted_time, total_minutes),
+            "DurationAndRuntimeExtended": "%s (%s %s)" %(formatted_time, total_minutes, xbmc.getLocalizedString(12391))
+           }
 
 def int_with_commas(x):
     try:
@@ -175,35 +178,51 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
                         for item in value:
                             if not item in org_dict[key]:
                                 org_dict[key].append(item)
-                    else:
-                        log_msg("extend_dict: type mismatch! key: %s - newvalue: %s  -  existing value: %s" 
-                            %(key, value, org_dict[key]))
+                    #previous value was str, combine both in list
+                    elif isinstance(org_dict[key], (str,unicode)):
+                        org_dict[key] = [ org_dict[key] ]
+                        for item in value:
+                            if not item in org_dict[key]:
+                                org_dict[key].append(item)
                 elif isinstance(value, dict):
                     org_dict[key] = extend_dict(org_dict[key], value)
                 elif allow_overwrite and key in allow_overwrite:
-                    log_msg("extend_dict: key %s overwriting existing value in dict - orgvalue: %s - newvalue: %s" 
-                        %(key,org_dict[key],value))
+                    #value may be overwritten
                     org_dict[key] = value
                 else:
-                    log_msg("extend_dict: key %s already has value in dict - orgvalue: %s - newvalue: %s" 
-                        %(key,org_dict[key],value))
+                    #conflicht, leave alone
+                    pass
     return org_dict
+          
+def localdate_from_utc_string(timestring):
+    '''helper to convert internal utc time (used in pvr) to local timezone'''
+    utc_datetime = arrow.get(timestring)
+    local_datetime = utc_datetime.to('local')
+    return local_datetime.format("YYYY-MM-DD HH:mm:ss")
 
-def get_local_date_from_utc(timestring):
-    try:
-        systemtime = xbmc.getInfoLabel("System.Time")
-        utc = datetime.fromtimestamp(time.mktime(time.strptime(timestring, '%Y-%m-%d %H:%M:%S')))
-        epoch = time.mktime(utc.timetuple())
-        offset = datetime.fromtimestamp (epoch) - datetime.utcfromtimestamp(epoch)
-        correcttime = utc + offset
-        if "AM" in systemtime or "PM" in systemtime:
-            return (correcttime.strftime("%Y-%m-%d"),correcttime.strftime("%I:%M %p"))
-        else:
-            return (correcttime.strftime("%d-%m-%Y"),correcttime.strftime("%H:%M"))
-    except Exception as e:
-        log_exception(__name__,e)
-        return (timestring,timestring)
-        
+def localized_date_time(timestring):
+    '''returns localized version of the timestring (used in pvr)'''
+    date_time = arrow.get(timestring)
+    local_date = date_time.strftime(xbmc.getRegion("dateshort"))
+    local_time = date_time.strftime(xbmc.getRegion("time").replace(":%S",""))
+    return (local_date, local_time)
+    
+def normalize_string(text):
+    text = text.replace(":", "")
+    text = text.replace("/", "-")
+    text = text.replace("\\", "-")
+    text = text.replace("<", "")
+    text = text.replace(">", "")
+    text = text.replace("*", "")
+    text = text.replace("?", "")
+    text = text.replace('|', "")
+    text = text.replace('(', "")
+    text = text.replace(')', "")
+    text = text.replace("\"","")
+    text = text.strip()
+    text = text.rstrip('.')
+    text = unicodedata.normalize('NFKD', try_decode(text))
+    return text
 
 class DialogSelect( xbmcgui.WindowXMLDialog ):
     '''wrapper around Kodi dialogselect to present a list of items'''

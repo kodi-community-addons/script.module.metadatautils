@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from kodi_constants import FIELDS_MOVIES
-from utils import get_duration_string, get_clean_image
+from utils import get_duration, get_clean_image
 from urllib import quote_plus
 import xbmc
 
@@ -119,11 +119,7 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
             details["ExtendedPlot"] = plot
         details["Title"] = title_list
         details["Runtime"] = runtime / 60
-        duration = get_duration_string(runtime / 60)
-        if duration:
-            details["Duration"] = duration[2]
-            details["Duration.Hours"] = duration[0]
-            details["Duration.Minutes"] = duration[1]
+        details.update(get_duration(runtime / 60))
         details["Writer"] = writer
         details["Director"] = director
         details["Genre"] = genre

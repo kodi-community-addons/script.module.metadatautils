@@ -73,7 +73,7 @@ class Omdb(object):
                 result["premiered"] = datetime.datetime.strptime(value,"%d %b %Y").strftime('%Y-%m-%d')
                 result["premiered.formatted"] = value
             elif key == "Runtime":
-                result["runtime"] = try_parse_int(value.replace(" min",""))
+                result["runtime"] = try_parse_int(value.replace(" min","")) * 60
             elif key == "Genre":
                 result["genre"] = value.split(", ")
             elif key == "Director":

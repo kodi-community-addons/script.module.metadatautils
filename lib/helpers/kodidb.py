@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import xbmc, xbmcgui
-from utils import json, try_encode, log_msg, log_exception, get_clean_image, try_parse_int
+import xbmc, xbmcgui, xbmcvfs
+from utils import json, try_encode, log_msg, log_exception, get_clean_image
+from utils import try_parse_int, localdate_from_utc_string, localized_date_time
 from kodi_constants import *
+import arrow
 
 class KodiDb(object):
     '''various methods and helpers to get data from kodi json api'''
@@ -69,15 +71,6 @@ class KodiDb(object):
         return self.get_json("VideoLibrary.GetMusicVideos", sort=sort, filters=filters,
             fields=FIELDS_MUSICVIDEOS, limits=limits, returntype="musicvideos", filtertype=filtertype)
 
-    def recording(self,db_id):
-        '''get pvr recording from kodi db'''
-        return self.get_json("PVR.GetRecordingDetails",returntype="recordingdetails",
-            fields=FIELDS_PVR,optparam=("recordingid",try_parse_int(db_id)))
-
-    def recordings(self,limits=None):
-        '''get pvr recordings from kodi db'''
-        return self.get_json("PVR.GetRecordings", fields=FIELDS_PVR, limits=limits, returntype="recordings")
-
     def movieset(self,db_id,include_set_movies_fields=""):
         '''get movieset from kodi db'''
         if include_set_movies_fields:
@@ -102,7 +95,71 @@ class KodiDb(object):
 
     def genres(self, media_type):
         '''return all genres for the given media type (movie/tvshow/musicvideo)'''
-        return self.get_json("VideoLibrary.GetGenres", fields=["thumbnail","title"], returntype="genres", optparam=("type",media_type))
+        return self.get_json("VideoLibrary.GetGenres", fields=["thumbnail","title"],
+            returntype="genres", optparam=("type",media_type))
+
+    def song(self,db_id):
+        '''get songdetails from kodi db'''
+        return self.get_json("AudioLibrary.GetSongDetails",returntype="songdetails",
+            fields=FIELDS_SONGS,optparam=("songid",try_parse_int(db_id)))
+
+    def songs(self,sort=None, filters=None, limits=None, filtertype=None):
+        '''get songs from kodi db'''
+        return self.get_json("AudioLibrary.GetSongs", sort=sort, filters=filters,
+            fields=FIELDS_SONGS, limits=limits, returntype="songs", filtertype=filtertype)
+
+    def album(self,db_id):
+        '''get albumdetails from kodi db'''
+        return self.get_json("AudioLibrary.GetAlbumDetails",returntype="albumdetails",
+            fields=FIELDS_ALBUMS,optparam=("albumid",try_parse_int(db_id)))
+
+    def albums(self,sort=None, filters=None, limits=None, filtertype=None):
+        '''get albums from kodi db'''
+        return self.get_json("AudioLibrary.GetAlbums", sort=sort, filters=filters,
+            fields=FIELDS_ALBUMS, limits=limits, returntype="albums", filtertype=filtertype)
+            
+    def artist(self,db_id):
+        '''get artistdetails from kodi db'''
+        return self.get_json("AudioLibrary.GetArtistDetails",returntype="artistdetails",
+            fields=FIELDS_ARTISTS,optparam=("artistid",try_parse_int(db_id)))
+
+    def artists(self,sort=None, filters=None, limits=None, filtertype=None):
+        '''get artists from kodi db'''
+        return self.get_json("AudioLibrary.GetArtists", sort=sort, filters=filters,
+            fields=FIELDS_ARTISTS, limits=limits, returntype="artists", filtertype=filtertype)
+
+    def recording(self,db_id):
+        '''get pvr recording from kodi db'''
+        return self.get_json("PVR.GetRecordingDetails",returntype="recordingdetails",
+            fields=FIELDS_RECORDINGS, optparam=("recordingid", try_parse_int(db_id)))
+
+    def recordings(self,limits=None):
+        '''get pvr recordings from kodi db'''
+        return self.get_json("PVR.GetRecordings", fields=FIELDS_RECORDINGS, limits=limits, returntype="recordings")
+
+    def channel(self,db_id):
+        '''get pvr channel from kodi db'''
+        return self.get_json("PVR.GetChannelDetails",returntype="channeldetails",
+            fields=FIELDS_CHANNELS, optparam=("channelid",try_parse_int(db_id)))
+
+    def channels(self,limits=None):
+        '''get pvr recordings from kodi db'''
+        return self.get_json("PVR.GetChannels", fields=FIELDS_CHANNELS, limits=limits,
+            returntype="channels", optparam=("channelgroupid","alltv"))
+
+    def timers(self,limits=None):
+        '''get pvr recordings from kodi db'''
+        fields = [ "title","endtime","starttime","channelid","summary","file" ]
+        return self.get_json("PVR.GetTimers", fields=fields, limits=limits, returntype="timers")
+        
+    def favourites(self):
+        '''get kodi favourites'''
+        items = self.get_favourites_from_file()
+        if not items:
+            fields = [ "path", "thumbnail", "window", "windowparameter" ]
+            optparams = ("type", None)
+            items = self.get_json("Favourites.GetFavourites",fields=fields, optparam=optparams)
+        return items
 
     @staticmethod
     def set_json(jsonmethod,params):
@@ -115,7 +172,8 @@ class KodiDb(object):
         return json.loads(json_response.decode('utf-8','replace'))
 
     @staticmethod
-    def get_json(jsonmethod,sort=None,filters=None,fields=None,limits=None,returntype=None,optparam=None,filtertype=None):
+    def get_json(jsonmethod, sort=None, filters=None, fields=None, limits=None, 
+        returntype=None, optparam=None, filtertype=None):
         kodi_json = {}
         kodi_json["jsonrpc"] = "2.0"
         kodi_json["method"] = jsonmethod
@@ -133,8 +191,7 @@ class KodiDb(object):
             if not filtertype:
                 filtertype = "and"
             if len(filters) > 1:
-                kodi_json["params"]["filter"] = {}
-                kodi_json["params"]["filter"][filtertype] = filters
+                kodi_json["params"]["filter"] = { filtertype: filters}
             else:
                 kodi_json["params"]["filter"] = filters[0]
         if fields:
@@ -163,13 +220,53 @@ class KodiDb(object):
         return result
 
     @staticmethod
+    def get_favourites_from_file():
+        #json method for favourites doesn't return all items (such as android apps) so retrieve them from file
+        from xml.dom.minidom import parse
+        allfavourites = []
+        favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
+        if xbmcvfs.exists(favourites_path):
+            doc = parse(favourites_path)
+            result = doc.documentElement.getElementsByTagName('favourite')
+            for fav in result:
+                action = fav.childNodes[0].nodeValue
+                action = action.replace('"','')
+                label = fav.attributes['name'].nodeValue
+                try: 
+                    thumb = fav.attributes['thumb'].nodeValue
+                except Exception: 
+                    thumb = ""
+                window = ""
+                windowparameter = ""
+                actionType = "unknown"
+                if action.startswith("StartAndroidActivity"):
+                    actionType = "androidapp"
+                elif action.startswith("ActivateWindow"):
+                    actionType = "window"
+                    actionparts = action.replace("ActivateWindow(","").replace(",return)","").split(",")
+                    window = actionparts[0]
+                    if len(actionparts) > 1:
+                        windowparameter = actionparts[1]
+                elif action.startswith("PlayMedia"):
+                    actionType = "media"
+                    action = action.replace("PlayMedia(","")[:-1]
+                allfavourites.append( {"label":label, "path":action, "thumbnail": thumb, "window":window, 
+                    "windowparameter":windowparameter, "type":actionType} )
+        return allfavourites
+    
+    @staticmethod
     def create_listitem(item,as_tuple=True):
         '''helper to create a kodi listitem from kodi compatible dict with mediainfo'''
         try:
             liz = xbmcgui.ListItem(label=item.get("label",""),label2=item.get("label2",""))
-            liz.setProperty('IsPlayable', item.get('IsPlayable','true'))
-            liz.setPath(item.get('file'))
+            liz.setPath(item['file'])
 
+            #only set isPlayable prop if really needed
+            if item.get("isFolder",False):
+                liz.setProperty('IsPlayable', 'false')
+            elif not "plugin://script.skin.helper" in item['file']:
+                liz.setProperty('IsPlayable', 'true')
+                    
             nodetype = "Video"
             if item["type"] in ["song","album","artist"]:
                 nodetype = "Music"
@@ -246,9 +343,12 @@ class KodiDb(object):
                     "lyrics": item.get("lyrics"),
                     "playcount": item.get("playcount")
                 }
-                if "date" in item: infolabels["date"] = item["date"]
-                if "duration" in item: infolabels["duration"] = item["duration"]
-                if "lastplayed" in item: infolabels["lastplayed"] = item["lastplayed"]
+                if "date" in item:
+                    infolabels["date"] = item["date"]
+                if "duration" in item:
+                    infolabels["duration"] = item["duration"]
+                if "lastplayed" in item:
+                    infolabels["lastplayed"] = item["lastplayed"]
                 liz.setInfo( type="Music", infoLabels=infolabels)
 
             #artwork
@@ -277,17 +377,25 @@ class KodiDb(object):
                 return liz
         except Exception as exc:
             log_exception(__name__,exc)
+            log_msg(item)
             return None
 
-    @staticmethod
-    def prepare_listitem(item):
+    def prepare_listitem(self, item):
         '''helper to convert kodi output from json api to compatible format for listitems'''
         try:
             #fix values returned from json to be used as listitem values
             properties = item.get("extraproperties",{})
 
             #set type
-            for idvar in [ ('episode','DefaultTVShows.png'),('tvshow','DefaultTVShows.png'),('movie','DefaultMovies.png'),('song','DefaultAudio.png'),('musicvideo','DefaultMusicVideos.png'),('recording','DefaultTVShows.png'),('album','DefaultAudio.png') ]:
+            for idvar in [
+                ('episode','DefaultTVShows.png'),
+                ('tvshow','DefaultTVShows.png'),
+                ('movie','DefaultMovies.png'),
+                ('song','DefaultAudio.png'),
+                ('musicvideo','DefaultMusicVideos.png'),
+                ('recording','DefaultTVShows.png'),
+                ('channel','DefaultAddonPVRClient.png'),
+                ('album','DefaultAudio.png') ]:
                 if item.get(idvar[0] + "id"):
                     properties["DBID"] = str(item.get(idvar[0] + "id"))
                     if not item.get("type"): item["type"] = idvar[0]
@@ -295,30 +403,30 @@ class KodiDb(object):
                     break
 
             #general properties
-            if item.get('genre') and isinstance(item.get('genre'), list): 
+            if item.get('genre') and isinstance(item.get('genre'), list):
                 item["genre"] = " / ".join(item.get('genre'))
-            if item.get('studio') and isinstance(item.get('studio'), list): 
+            if item.get('studio') and isinstance(item.get('studio'), list):
                 item["studio"] = " / ".join(item.get('studio'))
-            if item.get('writer') and isinstance(item.get('writer'), list): 
+            if item.get('writer') and isinstance(item.get('writer'), list):
                 item["writer"] = " / ".join(item.get('writer'))
-            if item.get('director') and isinstance(item.get('director'), list): 
+            if item.get('director') and isinstance(item.get('director'), list):
                 item["director"] = " / ".join(item.get('director'))
-            if not isinstance(item.get('artist'), list) and item.get('artist'): 
+            if not isinstance(item.get('artist'), list) and item.get('artist'):
                 item["artist"] = [item.get('artist')]
             if not item.get('artist'): item["artist"] = []
-            if item.get('type') == "album" and not item.get('album'): 
+            if item.get('type') == "album" and not item.get('album'):
                 item['album'] = item.get('label')
-            if not item.get("duration") and item.get("runtime"): 
-                item["duration"] = item.get("runtime")
-            if not item.get("plot") and item.get("comment"): 
+            if not item.get("duration") and item.get("runtime"):
+                item["duration"] = item.get("runtime") / 60
+            if not item.get("plot") and item.get("comment"):
                 item["plot"] = item.get("comment")
-            if not item.get("tvshowtitle") and item.get("showtitle"): 
+            if not item.get("tvshowtitle") and item.get("showtitle"):
                 item["tvshowtitle"] = item.get("showtitle")
-            if not item.get("premiered") and item.get("firstaired"): 
+            if not item.get("premiered") and item.get("firstaired"):
                 item["premiered"] = item.get("firstaired")
-            if not properties.get("imdbnumber") and item.get("imdbnumber"): 
+            if not properties.get("imdbnumber") and item.get("imdbnumber"):
                 properties["imdbnumber"] = item.get("imdbnumber")
-                
+
             properties["dbtype"] = item.get("type")
             properties["type"] = item.get("type")
             properties["path"] = item.get("file")
@@ -392,24 +500,30 @@ class KodiDb(object):
 
             #pvr properties
             if item.get("starttime"):
-                starttime = get_localdate_from_utc(item['starttime'])
-                endtime = get_localdate_from_utc(item['endtime'])
-                properties["StartTime"] = starttime[1]
-                properties["StartDate"] = starttime[0]
-                properties["EndTime"] = endtime[1]
-                properties["EndDate"] = endtime[0]
-                fulldate = starttime[0] + " " + starttime[1] + "-" + endtime[1]
-                properties["Date"] = fulldate
-                properties["StartDateTime"] = starttime[0] + " " + starttime[1]
-                item["date"] = starttime[0]
-                item["premiered"] = starttime[0]
+                #convert utc time to local time
+                item["starttime"] = localdate_from_utc_string(item["starttime"])
+                item["endtime"] = localdate_from_utc_string(item["endtime"])
+                #set some localized versions of the time and date as additional properties
+                startdate, starttime = localized_date_time(item['starttime'])
+                enddate, endtime = localized_date_time(item['endtime'])
+                properties["StartTime"] = starttime
+                properties["StartDate"] = startdate
+                properties["EndTime"] = endtime
+                properties["EndDate"] = enddate
+                properties["Date"] = "%s %s-%s" %(startdate,starttime,endtime)
+                properties["StartDateTime"] = "%s %s" %(startdate,starttime)
+                properties["EndDateTime"] = "%s %s" %(enddate,endtime)
+                #set date to startdate
+                item["date"] = arrow.get(item["starttime"]).format("DD.MM.YYYY")
             if item.get("channellogo"):
                 properties["channellogo"] = item["channellogo"]
                 properties["channelicon"] = item["channellogo"]
-            if item.get("episodename"): properties["episodename"] = item.get("episodename","")
-            if item.get("channel"): properties["channel"] = item.get("channel","")
-            if item.get("channel"): properties["channelname"] = item.get("channel","")
-            if item.get("channel"): item["label2"] = item.get("channel","")
+            if item.get("episodename"):
+                properties["episodename"] = item["episodename"]
+            if item.get("channel"):
+                properties["channel"] = item["channel"]
+                properties["channelname"] = item["channel"]
+                item["label2"] = item["channel"]
 
             #artwork
             art = item.get("art",{})
@@ -428,11 +542,20 @@ class KodiDb(object):
                     art["clearlogo"] = art.get("tvshow.clearlogo")
                 if not art.get("landscape") and art.get("tvshow.landscape"):
                     art["landscape"] = art.get("tvshow.landscape")
-            if not art.get("fanart") and item.get('fanart'): art["fanart"] = item.get('fanart')
-            if not art.get("thumb") and item.get('thumbnail'): art["thumb"] = get_clean_image(item.get('thumbnail'))
-            if not art.get("thumb") and art.get('poster'): art["thumb"] = get_clean_image(item.get('poster'))
-            if not art.get("thumb") and item.get('icon'): art["thumb"] = get_clean_image(item.get('icon'))
-            if not item.get("thumbnail") and art.get('thumb'): item["thumbnail"] = art["thumb"]
+            if not art.get("fanart") and item.get('fanart'):
+                art["fanart"] = item.get('fanart')
+            if not art.get("thumb") and item.get('thumbnail'):
+                art["thumb"] = get_clean_image(item.get('thumbnail'))
+            if not art.get("thumb") and art.get('poster'):
+                art["thumb"] = get_clean_image(item.get('poster'))
+            if not art.get("thumb") and item.get('icon'):
+                art["thumb"] = get_clean_image(item.get('icon'))
+            if not item.get("thumbnail") and art.get('thumb'):
+                item["thumbnail"] = art["thumb"]
+            for key, value in art.iteritems():
+                if not isinstance(value, (str,unicode)):
+                    art[key] = ""
+            item["art"] = art
 
             item["extraproperties"] = properties
 
@@ -447,18 +570,4 @@ class KodiDb(object):
             log_exception(__name__,exc)
             log_msg(item)
             return None
-
-    @staticmethod
-    def create_main_entry(item):
-        '''helper to create a simple (directory) listitem'''
-        return {
-                "label": item[0],
-                "file": "plugin://script.skin.helper.widgets/?action=%s" %item[1],
-                "icon": item[2],
-                "art": {"fanart": "special://home/addons/script.skin.helper.widgets/fanart.jpg"},
-                "isFolder": True,
-                "type": "file",
-                "IsPlayable": "false"
-                }
-
 

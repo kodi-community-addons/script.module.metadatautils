@@ -11,8 +11,9 @@ from helpers.kodidb import KodiDb
 import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
-from helpers.utils import log_msg, get_duration_string, log_exception, ADDON_ID
-from simplecache import use_cache
+from helpers.musicartwork import MusicArtwork
+from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID, extend_dict, get_clean_image
+from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmc, xbmcaddon, xbmcvfs
 import datetime
@@ -26,40 +27,42 @@ class ArtUtils(object):
     #path to use to lookup studio logos, must be set by the calling addon
     studiologos_path = ""
     
-    def __init__(self, simplecache=None):
-        '''Initialize and load all our helpers - optionally provide simplecache instance'''
-        if simplecache:
-            self.cache = simplecache
-        else:
-            from simplecache import SimpleCache
-            self.cache = SimpleCache()
+    def __init__(self):
+        '''Initialize and load all our helpers'''
+        self.cache = SimpleCache()
+        self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodidb = KodiDb()
         self.omdb = Omdb(self.cache)
         self.tmdb = Tmdb(self.cache)
-        self.pvrart = PvrArtwork(self)
         self.channellogos = ChannelLogos(self.kodidb)
         self.fanarttv = FanartTv(self.cache)
         self.imdb = Imdb(self.cache)
         self.google = GoogleImages(self.cache)
         self.studiologos = StudioLogos(self.cache)
         self.animatedart = AnimatedArt(self.cache,self.kodidb)
-        self.thetvdb = TheTvDb(self.cache)
-        self.addon = xbmcaddon.Addon(ADDON_ID)
+        self.thetvdb = TheTvDb()
+        self.musicart = MusicArtwork(self)
+        self.pvrart = PvrArtwork(self)
         log_msg("Initialized")
         
-    def __del__(self):
+    def close(self):
         '''Cleanup Kodi Cpython instances'''
+        self.cache.close()
         del self.addon
-        log_msg("MainModule exited")
-    
+        log_msg("Exited")
+            
     @use_cache(14,True)
     def get_extrafanart(self, file_path, media_type):
         from helpers.extrafanart import get_extrafanart
         return get_extrafanart(file_path, media_type)
         
-    def get_musicartwork(self, artist="",album="",title=""):
+    def get_music_artwork(self, artist="",album="",title="", disc="", ignore_cache=False):
         result = {}
-        return result
+        return self.musicart.get_music_artwork(artist, album, track, disc,)
+        
+    def music_artwork_options(self, artist="",album="",title="", disc=""):
+        '''options for music metadata for specific item'''
+        return self.musicart.music_artwork_options(artist, album, title, disc)
         
     #@use_cache(14,True)
     def get_extended_artwork(self, imdb_id="",tvdb_id="",title="",year="",media_type=""):
@@ -68,7 +71,7 @@ class ArtUtils(object):
         return result
     
     @use_cache(14,True)
-    def get_tmdb_details(self, imdb_id="",tvdb_id="",title="",year="",media_type=""):
+    def get_tmdb_details(self, imdb_id="",tvdb_id="",title="",year="",media_type="", manual_select=False, preftype=""):
         '''returns details from tmdb'''
         result = {}
         title = title.split(" (")[0]
@@ -77,11 +80,16 @@ class ArtUtils(object):
         elif tvdb_id:
             result = self.tmdb.get_video_details_by_external_id(tvdb_id, "tvdb_id")
         elif title and media_type in ["movies","setmovies","movie"]:
-            result = self.tmdb.search_movie(title, year)
+            result = self.tmdb.search_movie(title, year, manual_select=manual_select)
         elif title and media_type in ["tvshows","tvshow"]:
-            result = self.tmdb.search_tvshow(title, year)
+            result = self.tmdb.search_tvshow(title, year, manual_select=manual_select)
         elif title:
-            result = self.tmdb.search_video(title, year)
+            result = self.tmdb.search_video(title, year, preftype=preftype, manual_select=manual_select)
+        if result.get("status"):
+            result["status"] = self.translate_string(result["status"])
+        if result.get("runtime"):
+            result["runtime"] = result["runtime"] / 60
+            result.update( get_duration(result["runtime"]) )
         return result
          
     def get_moviesetdetails(self,set_id):
@@ -119,39 +127,38 @@ class ArtUtils(object):
     @use_cache(14,True)
     def get_omdb_info(self, imdb_id, title="", year="", content_type=""):
         title = title.split(" (")[0] #strip year appended to title
+        result = {}
         if imdb_id:
-            return self.omdb.get_details_by_imdbid(imdb_id)
+            result = self.omdb.get_details_by_imdbid(imdb_id)
         elif title and content_type in ["seasons","season","episodes","episode","tvshows","tvshow"]:
-            return self.omdb.get_details_by_title(title,"","tvshows")
+            result = self.omdb.get_details_by_title(title,"","tvshows")
         elif title and year:
-            return self.omdb.get_details_by_title(title, year, content_type)
-        else:
-            return {}
+            result = self.omdb.get_details_by_title(title, year, content_type)
+        if result.get("status"):
+            result["status"] = self.translate_string(result["status"])
+        if result.get("runtime"):
+            result["runtime"] = result["runtime"] / 60
+            result.update( get_duration(result["runtime"]) )
+        return result
         
     @use_cache(7,True)
     def get_top250_rating(self, imdb_id):
         return self.imdb.get_top250_rating(imdb_id)
         
-    @use_cache(7,True)
+    #@use_cache(7,True)
     def get_duration(self, duration):
-        result = {}
         if ":" in duration:
             dur_lst = duration.split(":")
-            if len(dur_lst) == 1:
-                duration = "0"
-            elif len(dur_lst) == 2:
-                duration = dur_lst[0]
-            elif len(dur_lst) == 3:
-                duration = str((int(dur_lst[0])*60) + int(dur_lst[1]))
-        if duration:
-            duration_str = get_duration_string(duration)
-            if duration_str:
-                result['Duration'] =  duration_str[2]
-                result['Duration.Hours'] =  duration_str[0]
-                result['Duration.Minutes'] =  duration_str[1]
-        return result
+            return {
+                    "Duration": "%s:%s" %(dur_lst[0],dur_lst[1]), 
+                    "Duration.Hours": dur_lst[0], 
+                    "Duration.Minutes": dur_lst[1],
+                    "Runtime": str((int(dur_lst[0]) * 60) + dur_lst[1]),
+                   }
+        else:
+            return get_duration(duration)
 
-    @use_cache(7,True)
+    @use_cache(1,True)
     def get_tvdb_details(self, imdbid="", tvdbid=""):
         result = {}
         self.thetvdb.days_ahead = 365
@@ -162,43 +169,24 @@ class ArtUtils(object):
         if result:
             if result["status"] == "Continuing":
                 #include next episode info
-                eps_details = self.thetvdb.get_nextaired_episode(result["tvdb_id"])
-                if eps_details:
-                    result["nextepisode.title"] = eps_details["episodeName"]
-                    result["nextepisode.airdate"] = datetime.datetime.strptime(eps_details["firstAired"],
-                        "%Y-%m-%d").date().strftime(xbmc.getRegion('dateshort'))
-                    result["nextepisode.airdate.long"] = datetime.datetime.strptime(eps_details["firstAired"],
-                        "%Y-%m-%d").date().strftime(xbmc.getRegion('datelong'))
-                    result["nextepisode.episode"] = eps_details["airedEpisodeNumber"]
-                    result["nextepisode.season"] = eps_details["airedSeason"]
-                    result["nextepisode.thumb"] = eps_details.get("thumbnail","")
-                    result["nextepisode.gueststars"] = eps_details["guestStars"]
-                    result["nextepisode.director"] = eps_details["directors"]
-                    result["nextepisode.writer"] = eps_details["writers"]
-                    result["nextepisode.plot"] = eps_details["overview"]
-                    eps_lbl = str(eps_details["airedEpisodeNumber"]).zfill(2)
-                    seas_lbl = str(eps_details["airedSeason"]).zfill(2)
-                    result["nextepisode.label"] = "S%sE%s %s (%s)" %(seas_lbl, eps_lbl, eps_details["episodeName"], 
-                        result["nextepisode.airdate"])
+                result["nextepisode"] = self.thetvdb.get_nextaired_episode(result["tvdb_id"])
             #include last episode info
-            eps_details = self.thetvdb.get_last_episode_for_series(result["tvdb_id"])
-            if eps_details:
-                result["lastepisode.title"] = eps_details["episodeName"]
-                result["lastepisode.airdate"] = datetime.datetime.strptime(eps_details["firstAired"],
-                    "%Y-%m-%d").date().strftime(xbmc.getRegion('dateshort'))
-                result["lastepisode.airdate.long"] = datetime.datetime.strptime(eps_details["firstAired"],
-                    "%Y-%m-%d").date().strftime(xbmc.getRegion('datelong'))
-                result["lastepisode.episode"] = eps_details["airedEpisodeNumber"]
-                result["lastepisode.season"] = eps_details["airedSeason"]
-                result["lastepisode.thumb"] = eps_details.get("thumbnail","")
-                result["lastepisode.gueststars"] = eps_details["guestStars"]
-                result["lastepisode.director"] = eps_details["directors"]
-                result["lastepisode.writer"] = eps_details["writers"]
-                result["lastepisode.plot"] = eps_details["overview"]
-                eps_lbl = str(eps_details["airedEpisodeNumber"]).zfill(2)
-                seas_lbl = str(eps_details["airedSeason"]).zfill(2)
-                result["lastepisode.label"] = "S%sE%s %s (%s)" %(seas_lbl, eps_lbl, eps_details["episodeName"], 
-                    result["lastepisode.airdate"])
+            result["lastepisode"] = self.thetvdb.get_last_episode_for_series(result["tvdb_id"])
+            result["status"] = self.translate_string(result["status"])
+            if result.get("runtime"):
+                result["runtime"] = result["runtime"] / 60
+                result.update(get_duration(result["runtime"]))
         return result
                     
- 
+    def translate_string(self, _str):
+        '''translate the received english string from the various sources like tvdb, tmbd etc'''
+        translation = _str
+        _str = _str.lower()
+        if "continuing" in _str:
+            translation = self.addon.getLocalizedString(32037)
+        elif "ended" in _str:
+            translation = self.addon.getLocalizedString(32038)
+        elif "released" in _str:
+            translation = self.addon.getLocalizedString(32040)
+        return translation
+     

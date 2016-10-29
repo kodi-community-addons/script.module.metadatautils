@@ -148,7 +148,7 @@ class Tmdb(object):
             return self.get_movie_details( results["movie_results"][0]["id"] )
         elif results and results["tv_results"]:
             return self.get_tvshow_details( results["tv_results"][0]["id"] )
-        return None
+        return {}
 
     @use_cache(7)
     def get_data(self, endpoint, params):
@@ -227,7 +227,7 @@ class Tmdb(object):
                 details["year"] = try_parse_int(data["release_date"].split("-")[0])
             details["tagline"] = data["tagline"]
             if data["runtime"]:
-                details["runtime"] = data["runtime"]
+                details["runtime"] = data["runtime"]*60
             details["imdbnumber"] = data["imdb_id"]
             details["budget"] = data["budget"]
             details["revenue"] = data["revenue"]
@@ -244,7 +244,7 @@ class Tmdb(object):
             if data.get("created_by"):
                 details["director"] += [item["name"] for item in data["created_by"]]
             if data.get("episode_run_time"):
-                details["runtime"] = data["episode_run_time"][0]
+                details["runtime"] = data["episode_run_time"][0]*60
             if data.get("first_air_date"):
                 details["premiered"] = data["first_air_date"]
                 details["year"] = try_parse_int(data["first_air_date"].split("-")[0])

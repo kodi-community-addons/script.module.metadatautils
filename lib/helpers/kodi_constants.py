@@ -15,16 +15,20 @@ FIELDS_FILES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "trai
     "genre", "mpaa", "rating", "tagline", "writer", "originaltitle", "imdbnumber", "premiered","episode", "showtitle",
     "firstaired","watchedepisodes","duration", "season"]
 FIELDS_SONGS = ["artist","displayartist", "title", "rating", "fanart", "thumbnail", "duration",
-    "playcount", "comment", "file", "album", "lastplayed", "genre", "musicbrainzartistid", "track"]
+    "playcount", "comment", "file", "album", "lastplayed", "genre", "musicbrainzartistid", "track","dateadded"]
 FIELDS_ALBUMS = ["title", "fanart", "thumbnail", "genre", "displayartist", "artist", "genreid",
     "musicbrainzalbumartistid", "year", "rating", "artistid", "musicbrainzalbumid", "theme", "description",
-    "type", "style", "playcount", "albumlabel", "mood"]
-FIELDS_PVR = ["art", "channel", "directory", "endtime", "file", "genre", "icon", "playcount", "plot",
+    "type", "style", "playcount", "albumlabel", "mood", "dateadded"]
+FIELDS_ARTISTS = ["born", "formed", "died", "style", "yearsactive", "mood", "fanart", "thumbnail",
+    "musicbrainzartistid", "disbanded", "description", "instrument"]
+FIELDS_RECORDINGS = ["art", "channel", "directory", "endtime", "file", "genre", "icon", "playcount", "plot",
     "plotoutline", "resume", "runtime", "starttime", "streamurl", "title"]
+FIELDS_CHANNELS = ["broadcastnow","channeltype", "hidden", "locked", "lastplayed", "thumbnail", "channel"]
 
 FILTER_UNWATCHED = {"operator":"lessthan", "field":"playcount", "value":"1"}
 FILTER_WATCHED = {"operator":"isnot", "field":"playcount", "value":"0"}
 FILTER_RATING = {"operator":"greaterthan","field":"rating", "value":"7"}
+FILTER_RATING_MUSIC = {"operator":"greaterthan","field":"rating", "value":"3"}
 FILTER_INPROGRESS = {"operator":"true", "field":"inprogress", "value":""}
 SORT_RATING = {"method": "rating", "order": "descending"}
 SORT_RANDOM = {"method": "random", "order": "descending"}

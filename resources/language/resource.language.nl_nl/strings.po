@@ -166,12 +166,12 @@ msgstr ""
 
 msgctxt "#32037"
 msgid "Continuing"
-msgstr ""
+msgstr "Terugkerend"
 
 msgctxt "#32038"
 msgid "Ended"
-msgstr ""
+msgstr "Beëindigd"
 
 msgctxt "#32040"
 msgid "Released"
-msgstr ""
+msgstr "Uitgegeven"

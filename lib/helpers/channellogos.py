@@ -20,20 +20,20 @@ class ChannelLogos(object):
         for searchmethod in [self.search_kodi,self.search_logosdb]:
             if result:
                 break
-            result["ChannelLogo"] = searchmethod(channelname)
+            result = searchmethod(channelname)
         return result
 
-    @staticmethod
-    def search_logosdb(searchphrase):
+    def search_logosdb(self, searchphrase):
         result = ""
         for searchphrase in [searchphrase, searchphrase.lower().replace(" hd","")]:
             if result:
                 break
             for item in self.get_data_from_logosdb(searchphrase):
                 img = item['strLogoWide']
-                if img and ".jpg" or ".png" in img:
-                    result = img
-                    break
+                if img:
+                    if ".jpg" in img or ".png" in img:
+                        result = img
+                        break
         return result
 
     def search_kodi(self, searchphrase):

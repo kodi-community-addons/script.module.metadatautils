@@ -6,7 +6,6 @@ import xbmc, xbmcvfs, xbmcgui
 from simplecache import SimpleCache, use_cache
 
 
-
 class AnimatedArt(object):
     '''get animated artwork'''
 
