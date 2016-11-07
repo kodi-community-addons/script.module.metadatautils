@@ -8,6 +8,7 @@ from simplecache import SimpleCache, use_cache
 
 class AnimatedArt(object):
     '''get animated artwork'''
+    ignore_cache = False
 
     def __init__(self, simplecache=None, kodidb=None):
         '''Initialize - optionaly provide SimpleCache and KodiDb object'''
@@ -24,7 +25,8 @@ class AnimatedArt(object):
         else:
             self.cache = simplecache
 
-    def get_animated_artwork(self,imdb_id,manual_select=False):
+    @use_cache(14)
+    def get_animated_artwork(self,imdb_id,manual_select=False,ignore_cache=False):
         '''returns all available animated art for the given imdbid/tmdbid'''
         #no cache so grab the results
         result = {

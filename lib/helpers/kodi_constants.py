@@ -14,7 +14,7 @@ FIELDS_MUSICVIDEOS = FIELDS_FILE + ["genre", "artist", "tag", "album", "track", 
 FIELDS_FILES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "trailer", "year", "country", "studio",
     "genre", "mpaa", "rating", "tagline", "writer", "originaltitle", "imdbnumber", "premiered","episode", "showtitle",
     "firstaired","watchedepisodes","duration", "season"]
-FIELDS_SONGS = ["artist","displayartist", "title", "rating", "fanart", "thumbnail", "duration",
+FIELDS_SONGS = ["artist","displayartist", "title", "rating", "fanart", "thumbnail", "duration", "disc",
     "playcount", "comment", "file", "album", "lastplayed", "genre", "musicbrainzartistid", "track","dateadded"]
 FIELDS_ALBUMS = ["title", "fanart", "thumbnail", "genre", "displayartist", "artist", "genreid",
     "musicbrainzalbumartistid", "year", "rating", "artistid", "musicbrainzalbumid", "theme", "description",

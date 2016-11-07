@@ -204,7 +204,7 @@ class PvrArtwork(object):
                         listitem.setProperty("icon",item)
                         artoptions.append(listitem)
 
-                w2 = DialogSelect( "DialogSelect.xml", "", listing=artoptions, windowtitle=heading )
+                w2 = DialogSelect( "DialogSelect.xml", "", listing=artoptions, window_title=heading )
                 w2.doModal()
                 selected_item = w2.result
                 del w2

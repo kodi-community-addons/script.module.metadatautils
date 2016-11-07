@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect
+from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
 from operator import itemgetter
 import xbmc, xbmcgui
-import re
 
 class Tmdb(object):
     '''get metadata from tmdb'''
@@ -316,9 +315,9 @@ class Tmdb(object):
                     item["score"] += 1000 #exact match!
 
                 #match title by replacing some characters
-                if preftitle and re.sub('\*|,|.\"|\'| |:|;','',preftitle) == re.sub('\*|,|.\"|\'| |:|;','',itemtitle):
+                if preftitle and get_compare_string(preftitle) == get_compare_string(itemtitle):
                     item["score"] += 750
-                if preftitle and re.sub('\*|,|.\"|\'| |:|;','',preftitle) == re.sub('\*|,|.\"|\'| |:|;','',itemorgtitle):
+                if preftitle and get_compare_string(preftitle) == get_compare_string(itemorgtitle):
                     item["score"] += 750
 
                 #add SequenceMatcher score to the results

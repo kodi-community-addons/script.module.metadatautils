@@ -11,6 +11,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib, urlparse
 import unicodedata
+import re
 
 try:
     from multiprocessing.pool import ThreadPool as Pool
@@ -33,7 +34,7 @@ retries = Retry(total=5, backoff_factor=2, status_forcelist=[ 500, 502, 503, 504
 s.mount('http://', HTTPAdapter(max_retries=retries))
 s.mount('https://', HTTPAdapter(max_retries=retries))
 
-def log_msg(msg, loglevel = xbmc.LOGNOTICE):
+def log_msg(msg, loglevel = xbmc.LOGDEBUG):
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')
     xbmc.log("Skin Helper ArtUtils --> %s" %msg, level=loglevel)
@@ -42,8 +43,8 @@ def log_exception(modulename, exceptiondetails):
     log_msg(format_exc(sys.exc_info()),xbmc.LOGWARNING)
     log_msg("ERROR in %s ! --> %s" %(modulename,exceptiondetails), xbmc.LOGERROR)
 
-def get_json(url, params=None):
-    '''get info from a rest api - protect webserver (and api keys!) by applying a rate limiter'''
+def get_json(url, params=None, retries=0):
+    '''get info from a rest api'''
     result = {}
     if not params:
         params = {}
@@ -55,10 +56,20 @@ def get_json(url, params=None):
                 result = result["results"]
             elif "result" in result:
                 result = result["result"]
+            return result
     except Exception as e:
-        log_msg("get_json failed for url: %s -- exception: %s" %(url,e))
+        if "Read timed out" in str(e) and not retries == 10:
+            #auto retry...
+            xbmc.sleep(500)
+            log_msg("get_json time-out for url: %s -- auto retrying..." %(url))
+            return get_json(url, params, retries+1)
+        elif "getaddrinfo failed" in str(e):
+            log_msg("No internet or server not reachable - request failed for url: %s" %url, xbmc.LOGWARNING)
+            return None
+        else:
+            log_exception(__name__, e)
     return result
-
+    
 def try_encode(text, encoding="utf-8"):
     try:
         return text.encode(encoding,"ignore")
@@ -223,6 +234,18 @@ def normalize_string(text):
     text = text.rstrip('.')
     text = unicodedata.normalize('NFKD', try_decode(text))
     return text
+    
+def get_compare_string(text):
+    '''strip special chars in a string for better comparing of searchresults'''
+    if not isinstance(text, unicode):
+        text.decode("utf-8")
+    text = text.lower()
+    text = ''.join(e for e in text if e.isalnum())
+    return text
+    
+def strip_newlines(text):
+    '''strip any newlines from a string'''
+    return text.replace('\n', ' ').replace('\r', '').rstrip()
 
 class DialogSelect( xbmcgui.WindowXMLDialog ):
     '''wrapper around Kodi dialogselect to present a list of items'''

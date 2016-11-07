@@ -1,12 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import log_msg, extend_dict, get_clean_image
+from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines
 from simplecache import SimpleCache, use_cache
 from mbrainz import MusicBrainz
 from lastfm import LastFM
 from theaudiodb import TheAudioDb
 import os
 import xbmc, xbmcvfs, xbmcgui
+from urllib import quote_plus
+from datetime import timedelta
+from difflib import SequenceMatcher as SM
 
 class MusicArtwork(object):
     '''get metadata and artwork for music'''
@@ -22,46 +25,42 @@ class MusicArtwork(object):
         self.lastfm = LastFM()
         self.mb = MusicBrainz()
         self.audiodb = TheAudioDb()
-        self.music_art_scraper = self.artutils.addon.getSetting("music_art_scraper") == "true"
-        self.music_art_musicfolders = self.artutils.addon.getSetting("music_art_musicfolders") == "true"
-        self.music_art_custom = self.artutils.addon.getSetting("music_art_custom") == "true"
-        self.music_art_custom = self.artutils.addon.getSetting("music_art_custom") == "true"
         
-    @use_cache(7)
     def get_music_artwork(self, artist, album, track, disc, ignore_cache=False):
         '''get music metadata by providing artist and/or track'''
         if artist == track or album == track:
             track = ""
         artist = artist.split(" / ")[0]
-        log_msg("get music_artwork artist: %s - album: %s - track: %s - disc:  %s" %(artist, album, track, disc))    
+        artist = artist.split("/")[0]
         details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
-        log_msg("music_artwork artist--> %s" %details)
         if album or track:
             album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
-            log_msg("music_artwork album--> %s" %album_details)
             if details.get("plot") and album_details.get("plot"):
                 details["plot"] = "%s  --  %s" %(album_details["plot"], details["plot"])
                 extend_dict(details, album_details)
-        log_msg("music_artwork end result--> %s" %details)
         return details
     
     def manual_set_music_artwork(self, artist, album, track, disc):
         '''manual override artwork options'''
 
-        artwork = self.get_pvr_artwork(title, channel, genre)
+        if album:
+            artwork = self.get_album_metadata(artist, album, track, disc)
+            art_types = ["thumb","discart"]
+        else:
+            artwork = self.get_artist_metadata(artist, album, track)
+            art_types = ["thumb","poster","fanart","banner","clearart","clearlogo","landscape"]
         cache_str = artwork["cachestr"]
 
         #show dialogselect with all artwork options
         abort = False
         while not abort:
             listitems = []
-            for arttype in ["thumb","poster","fanart","banner","clearart","clearlogo",
-                "discart","landscape","characterart"]:
+            for arttype in art_types:
                 listitem = xbmcgui.ListItem(label=arttype, iconImage=artwork["art"].get(arttype,""))
                 listitem.setProperty("icon",artwork["art"].get(arttype,""))
                 listitems.append(listitem)
             w = DialogSelect( "DialogSelect.xml", "", listing=listitems,
-                windowtitle=xbmc.getLocalizedString(13511),multiselect=False )
+                window_title=xbmc.getLocalizedString(13511),multiselect=False )
             w.doModal()
             selected_item = w.result
             del w
@@ -73,10 +72,10 @@ class MusicArtwork(object):
                 selected_item = listitems[selected_item]
                 image = selected_item.getProperty("icon")
                 label = selected_item.getLabel()
-                heading = "%s: %s" %(xbmc.getLocalizedString(13511),label)
+                heading = "%s: %s" %(xbmc.getLocalizedString(13511), label)
                 if image:
                     #current image
-                    listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), iconImage=image)
+                    listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), iconImage=image, label2=image)
                     listitem.setProperty("icon",image)
                     artoptions.append(listitem)
                     #none option
@@ -96,7 +95,7 @@ class MusicArtwork(object):
                         listitem.setProperty("icon",item)
                         artoptions.append(listitem)
 
-                w2 = DialogSelect( "DialogSelect.xml", "", listing=artoptions, windowtitle=heading )
+                w2 = DialogSelect( "DialogSelect.xml", "", listing=artoptions, window_title=heading )
                 w2.doModal()
                 selected_item = w2.result
                 del w2
@@ -122,16 +121,20 @@ class MusicArtwork(object):
         options.append(self.artutils.addon.getLocalizedString(32028)) #Refresh item (auto lookup)
         options.append(self.artutils.addon.getLocalizedString(32036)) #Choose art
         options.append(self.artutils.addon.getLocalizedString(32034)) #Open addon settings
-        header = self.artutils.addon.getLocalizedString(32035)
+        header = self.artutils.addon.getLocalizedString(32015)
         dialog = xbmcgui.Dialog()
         ret = dialog.select(header, options)
         del dialog
         if ret == 0:
             #Refresh item (auto lookup)
+            self.artutils.fanarttv.ignore_cache = True
+            self.audiodb.ignore_cache = True
+            self.mb.ignore_cache = True
+            self.lastfm.ignore_cache = True
             self.get_music_artwork(artist, album, track, disc, ignore_cache=True)
         elif ret == 1:
             #Choose art
-            self.manual_set_pvr_artwork(title,channel,genre)
+            self.manual_set_music_artwork(artist, album, track, disc)
         elif ret == 2:
             #Open addon settings
             xbmc.executebuiltin("Addon.OpenSettings(%s)" %ADDON_ID)
@@ -142,14 +145,16 @@ class MusicArtwork(object):
         cache_str = "music_artwork.artist.%s" %artist.lower()
         cache = self.artutils.cache.get(cache_str)
         if cache and not ignore_cache:
-            log_msg("get_artist_metadata - return data from cache - %s" %cache_str)
             return cache
+            
+        log_msg("get_artist_metadata --> artist: %s - album: %s - track: %s" %(artist, album, track))
         
         details = { "art": {} }
+        details["cachestr"] = cache_str
         local_path = ""
         local_path_custom = ""
         #get metadata from kodi db
-        details = self.get_artist_kodi_metadata(artist, album, track)
+        extend_dict(details, self.get_artist_kodi_metadata(artist, album, track))
         #get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
             extend_dict(details["art"], self.lookup_artistart_in_folder(details["diskpath"]))
@@ -163,7 +168,10 @@ class MusicArtwork(object):
                     extend_dict(details["art"], self.lookup_artistart_in_folder(diskpath))
                     local_path_custom = diskpath
         #lookup online metadata
-        if self.artutils.addon.getSetting("music_art_scraper") == "true": 
+        if self.artutils.addon.getSetting("music_art_scraper") == "true":
+            if not album and not track:
+                album = details.get("ref_album")
+                track = details.get("ref_track")
             mb_artistid = self.get_mb_artist_id(artist, album, track)
             if mb_artistid:
                 #get artwork from fanarttv
@@ -200,14 +208,14 @@ class MusicArtwork(object):
             cache_str = "music_artwork.album.%s.%s" %(artist.lower(),track.lower())
         cache = self.artutils.cache.get(cache_str)
         if cache and not ignore_cache:
-            log_msg("get_album_metadata - return data from cache - %s" %cache_str)
             return cache
         
         details = { "art": {} }
+        details["cachestr"] = cache_str
         local_path = ""
         local_path_custom = ""
         #get metadata from kodi db
-        details = self.get_album_kodi_metadata(artist, album, track, disc)
+        extend_dict(details, self.get_album_kodi_metadata(artist, album, track, disc))
         #get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
             extend_dict(details["art"], self.lookup_albumart_in_folder(details["diskpath"]))
@@ -230,6 +238,9 @@ class MusicArtwork(object):
                 extend_dict(details, self.audiodb.album_info(mb_albumid))
                 #get metadata from lastfm
                 extend_dict(details, self.lastfm.album_info(mb_albumid))
+                #musicbrainz thumb as last resort
+                if not details["art"].get("thumb"):
+                    details["art"]["thumb"] = self.mb.get_albumthumb(mb_albumid)
                 
                 #download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
@@ -251,7 +262,7 @@ class MusicArtwork(object):
             details = result[0]
             song_path = ""
             details["title"] = details["artist"]
-            details["plot"] = details["description"]
+            details["plot"] = strip_newlines(details["description"])
             filters = [{"artistid": details["artistid"]}]
             artist_albums = self.artutils.kodidb.albums(filters=filters)
             details["albums"] = []
@@ -264,6 +275,8 @@ class MusicArtwork(object):
                     if album_tracks:
                         song_path = album_tracks[0]["file"]
                         details["diskpath"] = self.get_artistpath_by_songpath(song_path, artist)
+                        details["ref_album"] = item["title"]
+                        details["ref_track"] = album_tracks[0]["title"]
             joinchar = "[CR]• ".decode("utf-8")
             details["albums.formatted"] = joinchar.join(details["albums"])
             details["art"] = {}
@@ -292,7 +305,7 @@ class MusicArtwork(object):
             result = self.artutils.kodidb.albums(filters=filters)
             if result:
                 details = result[0]
-                details["plot"] = details["description"]
+                details["plot"] = strip_newlines(details["description"])
                 filters = [{"albumid":details["albumid"]}]
                 album_tracks = self.artutils.kodidb.songs(filters=filters)
                 details["tracks"] = []
@@ -313,19 +326,7 @@ class MusicArtwork(object):
                     details["art"]["thumb"] = thumbnail
                 del details["thumbnail"]
         return details
-            
-    def get_artist_online_metadata(self, artistid):
-        '''get online metadata for the given musicbrainz artist id'''
-        pass
-        
-    def get_album_online_metadata(self, albumid):
-        '''get online metadata for the given musicbrainz artist id'''
-        pass
-        
-    def lookup_local_folder(self, artist, album):
-        '''lookup artwork in local folder'''
-        pass
-        
+                    
     def get_mb_artist_id(self, artist, album, track):
         '''lookup musicbrainz artist id with query of artist and album/track'''
         artistid = self.mb.get_artist_id(artist, album, track)
@@ -336,7 +337,7 @@ class MusicArtwork(object):
         return artistid
         
     def get_mb_album_id(self, artist, album, track):
-        '''lookup musicbrainz artist id with query of artist and album/track'''
+        '''lookup musicbrainz album id with query of artist and album/track'''
         albumid = self.mb.get_album_id(artist, album, track)
         if not albumid:
             albumid = self.audiodb.get_album_id(artist, album, track)
@@ -352,8 +353,9 @@ class MusicArtwork(object):
         else: 
             delim = "/"
         #just move up the directory tree (max 3 levels) untill we find the directory
-        for trypath in [songpath.rsplit(delim, 2)[0] + delim, songpath.rsplit(delim, 3)[0] + delim, songpath.rsplit(delim, 1)[0] + delim]:
-            if trypath.split(delim)[-1].lower() == artist.lower():
+        for trypath in [songpath.rsplit(delim, 2)[0] + delim, 
+			songpath.rsplit(delim, 3)[0] + delim, songpath.rsplit(delim, 1)[0] + delim]:
+            if trypath.split(delim)[-2].lower() == artist.lower():
                 result = trypath
                 break
         return result
@@ -387,7 +389,7 @@ class MusicArtwork(object):
             artwork["fanarts"] = []
             if files:
                 artwork["extrafanart"] = efa_path
-                for item in files:
+                for count, item in enumerate(files):
                     item = efa_path + item.decode("utf-8")
                     artwork["fanarts"].append(item)
         return artwork
@@ -443,35 +445,38 @@ class MusicArtwork(object):
     def download_artwork(self, folderpath, artwork):
         '''download artwork to local folder'''
         efa_path = ""
+        new_dict = {}
         for key, value in artwork.iteritems():
             if key == "fanart":
-                value = self.download_image(os.path.join(folderpath,"fanart.jpg", value))
+                new_dict[key] = self.download_image(os.path.join(folderpath,"fanart.jpg"), value)
             elif key == "thumb":
-                value = self.download_image(os.path.join(folderpath,"folder.jpg", value))
+                new_dict[key] = self.download_image(os.path.join(folderpath,"folder.jpg"), value)
             elif key == "discart":
-                value = self.download_image(os.path.join(folderpath,"disc.png", value))
+                new_dict[key] = self.download_image(os.path.join(folderpath,"disc.png"), value)
             elif key == "banner":
-                value = self.download_image(os.path.join(folderpath,"banner.jpg", value))
+                new_dict[key] = self.download_image(os.path.join(folderpath,"banner.jpg"), value)
             elif key == "clearlogo":
-                value = self.download_image(os.path.join(folderpath,"logo.png", value))
+                new_dict[key] = self.download_image(os.path.join(folderpath,"logo.png"), value)
             elif key == "fanarts":
-                efa_path = "%s/extrafanart/"%folderpath
+                efa_path = "%sextrafanart/"%folderpath
                 if value and not xbmcvfs.exists(efa_path):
                     xbmcvfs.mkdir(efa_path)
                 images = []
                 for count, image in enumerate(value):
-                    image = self.download_image(os.path.join(efa_path,"fanart%s.jpg"%count, image))
+                    image = self.download_image(os.path.join(efa_path,"fanart%s.jpg"%count), image)
                     images.append(image)
-                value = images
+                new_dict[key] = images
+            else:
+                new_dict[key] = value
         if efa_path:
-            artwork["extrafanart"] = efa_path
-        return artwork
+            new_dict["extrafanart"] = efa_path
+        return new_dict
                 
     @staticmethod
     def download_image(filename, url):
         '''download specific image to local folder'''
         if xbmcvfs.exists(filename):
-            #we do not overwrite existing images
+            #we do not overwrite existing images!
             return filename
         else:
             if xbmcvfs.copy(url, filename):
