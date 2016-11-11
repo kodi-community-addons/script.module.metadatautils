@@ -68,16 +68,12 @@ class ArtUtils(object):
         from helpers.extrafanart import get_extrafanart
         return get_extrafanart(file_path, media_type)
 
-    def get_music_artwork(self, artist="", album="", track="", disc="", ignore_cache=False):
+    def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False):
         '''method to get music artwork for the goven artist/album/song'''
-        result = self.musicart.get_music_artwork(
+        return self.musicart.get_music_artwork(
             artist, album, track, disc, ignore_cache=ignore_cache)
-        log_msg(
-            "get_music_artwork --> artist: %s - album: %s - track: %s --- result: %s" %
-            (artist, album, track, result))
-        return result
 
-    def music_artwork_options(self, artist="", album="", track="", disc=""):
+    def music_artwork_options(self, artist, album="", track="", disc=""):
         '''options for music metadata for specific item'''
         return self.musicart.music_artwork_options(artist, album, track, disc)
 
@@ -148,20 +144,10 @@ class ArtUtils(object):
         from helpers.streamdetails import get_streamdetails
         return get_streamdetails(self.kodidb, db_id, media_type)
 
-    def get_pvr_artwork(
-            self,
-            title,
-            channel="",
-            genre="",
-            manual_select=False,
-            ignore_cache=False):
+    def get_pvr_artwork(self, title, channel="", genre="", manual_select=False, ignore_cache=False):
         '''get artwork and mediadetails for PVR entries'''
         return self.pvrart.get_pvr_artwork(
-            title,
-            channel,
-            genre,
-            manual_select=manual_select,
-            ignore_cache=ignore_cache)
+            title, channel, genre, manual_select=manual_select, ignore_cache=ignore_cache)
 
     def pvr_artwork_options(self, title, channel="", genre=""):
         '''options for pvr metadata for specific item'''
@@ -188,11 +174,7 @@ class ArtUtils(object):
         self._studiologos_path = value
 
     @use_cache(1, False)
-    def get_animated_artwork(
-            self,
-            imdb_id,
-            ignore_cache=False,
-            manual_select=False):
+    def get_animated_artwork(self, imdb_id, manual_select=False, ignore_cache=False):
         '''get animated artwork, perform extra check if local version still exists'''
         artwork = self.animatedart.get_animated_artwork(
             imdb_id, manual_select, ignore_cache=ignore_cache)
@@ -209,7 +191,7 @@ class ArtUtils(object):
         return artwork
 
     @use_cache(14, True)
-    def get_omdb_info(self, imdb_id, title="", year="", content_type=""):
+    def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):
         title = title.split(" (")[0]  # strip year appended to title
         result = {}
         if imdb_id:
