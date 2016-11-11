@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''get metadata from omdb'''
+
 from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE
 from simplecache import use_cache
 import arrow
-import xbmc
 
 
 class Omdb(object):
@@ -74,7 +76,7 @@ class Omdb(object):
             elif key == "Released" and value:
                 date_time = arrow.get(value, "DD MMM YYYY")
                 result["premiered"] = date_time.format('YYYY-MM-DD')
-                result["premiered.formatted"] = date_time.format('DD MMM YYYY',locale=KODI_LANGUAGE)
+                result["premiered.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
             elif key == "Runtime" and value:
                 result["runtime"] = try_parse_int(value.replace(" min", "")) * 60
             elif key == "Genre":
@@ -108,7 +110,7 @@ class Omdb(object):
             elif key == "DVD" and value:
                 date_time = arrow.get(value, "DD MMM YYYY")
                 result["dvdrelease"] = date_time.format('YYYY-MM-DD')
-                result["dvdrelease.formatted"] = date_time.format('DD MMM YYYY',locale=KODI_LANGUAGE)               
+                result["dvdrelease.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
             elif key == "Production":
                 result["studio"] = value.split(", ")
             elif key == "Website":

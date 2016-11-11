@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''Get artwork for media from fanart.tv'''
+
 from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int
 from operator import itemgetter
 from simplecache import use_cache

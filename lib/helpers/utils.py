@@ -8,7 +8,6 @@ import sys
 from traceback import format_exc
 import requests
 import arrow
-from datetime import timedelta
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib
@@ -26,10 +25,10 @@ KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
 
 # setup requests with some additional options
 requests.packages.urllib3.disable_warnings()
-s = requests.Session()
-retries = Retry(total=5, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
-s.mount('http://', HTTPAdapter(max_retries=retries))
-s.mount('https://', HTTPAdapter(max_retries=retries))
+SESSION = requests.Session()
+RETRIES = Retry(total=5, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
+SESSION.mount('http://', HTTPAdapter(max_retries=RETRIES))
+SESSION.mount('https://', HTTPAdapter(max_retries=RETRIES))
 
 
 def log_msg(msg, loglevel=xbmc.LOGDEBUG):
@@ -91,16 +90,16 @@ def urlencode(text):
     return blah
 
 
-def formatted_number(x):
+def formatted_number(number):
     try:
-        x = int(x)
-        if x < 0:
-            return '-' + formatted_number(-x)
+        number = int(number)
+        if number < 0:
+            return '-' + formatted_number(-number)
         result = ''
-        while x >= 1000:
-            x, r = divmod(x, 1000)
-            result = ",%03d%s" % (r, result)
-        return "%d%s" % (x, result)
+        while number >= 1000:
+            number, number2 = divmod(number, 1000)
+            result = ",%03d%s" % (number2, result)
+        return "%d%s" % (number, result)
     except Exception:
         return ""
 
@@ -108,13 +107,13 @@ def formatted_number(x):
 def process_method_on_list(method_to_run, items):
     '''helper method that processes a method on each listitem with pooling if the system supports it'''
     all_items = []
-    
+
     try:
         from multiprocessing.pool import ThreadPool as Pool
         supports_pool = True
     except Exception:
         supports_pool = False
-    
+
     if supports_pool:
         pool = Pool()
         try:
@@ -317,7 +316,7 @@ def detect_plugin_content(plugin_path):
     # if we didn't get the content based on the path, we need to probe the addon...
     if not content_type and not xbmc.getCondVisibility("Window.IsMedia"):  # safety check
         from kodidb import KodiDb
-        media_array = KodiDb().files(plugin_path, limits=(0,1) )
+        media_array = KodiDb().files(plugin_path, limits=(0, 1))
         for item in media_array:
             if item.get("filetype", "") == "directory":
                 content_type = "folder"

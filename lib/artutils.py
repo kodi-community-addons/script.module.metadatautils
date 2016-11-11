@@ -1,5 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.artutils
+    Provides all kind of mediainfo for kodi media, returned as dict with details
+'''
+
 from helpers.animatedart import AnimatedArt
 from helpers.tmdb import Tmdb
 from helpers.omdb import Omdb
@@ -12,7 +18,8 @@ import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
-from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID, extend_dict, get_clean_image, process_method_on_list, detect_plugin_content
+from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID
+from helpers.utils import extend_dict, get_clean_image, process_method_on_list, detect_plugin_content
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmc
@@ -57,10 +64,12 @@ class ArtUtils(object):
 
     @use_cache(14, True)
     def get_extrafanart(self, file_path, media_type):
+        '''helper to retrieve the extrafanart path for a kodi media item'''
         from helpers.extrafanart import get_extrafanart
         return get_extrafanart(file_path, media_type)
 
     def get_music_artwork(self, artist="", album="", track="", disc="", ignore_cache=False):
+        '''method to get music artwork for the goven artist/album/song'''
         result = self.musicart.get_music_artwork(
             artist, album, track, disc, ignore_cache=ignore_cache)
         log_msg(
