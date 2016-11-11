@@ -1,24 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    Returns complete (nicely formatted) information about the movieset and it's movies
+'''
+
 from kodi_constants import FIELDS_MOVIES
 from utils import get_duration, get_clean_image
 from urllib import quote_plus
 import xbmc
 
+
 def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_path):
+    '''Returns complete (nicely formatted) information about the movieset and it's movies'''
     details = {}
-    #try to get from cache first
-    #use checksum compare based on playcounts because moviesets do not get refreshed automatically
-    movieset = kodidb.movieset(set_id,["playcount"])
-    cache_str = "MovieSetDetails.%s"%(set_id)
+    # try to get from cache first
+    # use checksum compare based on playcounts because moviesets do not get refreshed automatically
+    movieset = kodidb.movieset(set_id, ["playcount"])
+    cache_str = "MovieSetDetails.%s" % (set_id)
     cache_checksum = []
     if movieset:
-        cache_checksum = "%s.%s.%s" %(set_id, [movie["playcount"] for movie in movieset["movies"]], studiologos_path)
-        cache = simplecache.get(cache_str,checksum=cache_checksum)
+        cache_checksum = "%s.%s.%s" % (set_id, [movie["playcount"] for movie in movieset["movies"]], studiologos_path)
+        cache = simplecache.get(cache_str, checksum=cache_checksum)
         if cache:
             return cache
-        #process movieset listing - get full movieset including all movie fields
-        movieset = kodidb.movieset(set_id,FIELDS_MOVIES)
+        # process movieset listing - get full movieset including all movie fields
+        movieset = kodidb.movieset(set_id, FIELDS_MOVIES)
         count = 0
         runtime = 0
         unwatchedcount = 0
@@ -33,7 +40,7 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         plot = ""
         title_list = ""
         total_movies = len(movieset['movies'])
-        title_header = "[B]%s %s[/B][CR]"%(total_movies,xbmc.getLocalizedString(20342))
+        title_header = "[B]%s %s[/B][CR]" % (total_movies, xbmc.getLocalizedString(20342))
         all_fanarts = []
         details["art"] = movieset["art"]
         for count, item in enumerate(movieset['movies']):
@@ -42,31 +49,31 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
             else:
                 watchedcount += 1
 
-            #generic labels
-            for label in ["label","plot","year","rating"]:
-                details['%s.%s'%(count,label)] = item[label]
-            details["%s.DBID" %count] = item["movieid"]
-            details["%s.Duration" %count] = item['runtime'] / 60
+            # generic labels
+            for label in ["label", "plot", "year", "rating"]:
+                details['%s.%s' % (count, label)] = item[label]
+            details["%s.DBID" % count] = item["movieid"]
+            details["%s.Duration" % count] = item['runtime'] / 60
 
-            #art labels
+            # art labels
             art = item['art']
-            for label in ["poster","fanart","landscape","clearlogo","clearart","banner","discart"]:
+            for label in ["poster", "fanart", "landscape", "clearlogo", "clearart", "banner", "discart"]:
                 if art.get(label):
-                    details['%s.Art.%s'%(count,label)] = get_clean_image(art[label])
+                    details['%s.Art.%s' % (count, label)] = get_clean_image(art[label])
                     if not movieset["art"].get(label):
                         movieset["art"][label] = get_clean_image(art[label])
             all_fanarts.append(get_clean_image(art.get("fanart")))
 
-            #streamdetails
-            if item.get('streamdetails',''):
+            # streamdetails
+            if item.get('streamdetails', ''):
                 streamdetails = item["streamdetails"]
-                audiostreams = streamdetails.get('audio',[])
-                videostreams = streamdetails.get('video',[])
-                subtitles = streamdetails.get('subtitle',[])
+                audiostreams = streamdetails.get('audio', [])
+                videostreams = streamdetails.get('video', [])
+                subtitles = streamdetails.get('subtitle', [])
                 if len(videostreams) > 0:
                     stream = videostreams[0]
-                    height = stream.get("height","")
-                    width = stream.get("width","")
+                    height = stream.get("height", "")
+                    width = stream.get("width", "")
                     if height and width:
                         resolution = ""
                         if width <= 720 and height <= 480:
@@ -81,25 +88,25 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
                             resolution = "1080"
                         elif width * height >= 6000000:
                             resolution = "4K"
-                        details["%s.Resolution" %count] = resolution
-                    details["%s.Codec" %count] = stream.get("codec","")
-                    if stream.get("aspect",""):
-                        details["%s.AspectRatio" %count] = round(stream["aspect"], 2)
+                        details["%s.Resolution" % count] = resolution
+                    details["%s.Codec" % count] = stream.get("codec", "")
+                    if stream.get("aspect", ""):
+                        details["%s.AspectRatio" % count] = round(stream["aspect"], 2)
                 if len(audiostreams) > 0:
-                    #grab details of first audio stream
+                    # grab details of first audio stream
                     stream = audiostreams[0]
-                    details["%s.AudioCodec" %count] = stream.get('codec','')
-                    details["%s.AudioChannels" %count] = stream.get('channels','')
-                    details["%s.AudioLanguage" %count] = stream.get('language','')
+                    details["%s.AudioCodec" % count] = stream.get('codec', '')
+                    details["%s.AudioChannels" % count] = stream.get('channels', '')
+                    details["%s.AudioLanguage" % count] = stream.get('language', '')
                 if len(subtitles) > 0:
-                    #grab details of first subtitle
-                    details["%s.SubTitle" %count] = subtitles[0].get('language','')
+                    # grab details of first subtitle
+                    details["%s.SubTitle" % count] = subtitles[0].get('language', '')
 
-            title_list += "%s (%s)[CR]" %(item['label'],item['year'])
+            title_list += "%s (%s)[CR]" % (item['label'], item['year'])
             if item['plotoutline']:
-                plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" %(item['label'],item['year'],item['plotoutline'])
+                plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" % (item['label'], item['year'], item['plotoutline'])
             else:
-                plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" %(item['label'],item['year'],item['plot'])
+                plot += "[B]%s (%s)[/B][CR]%s[CR][CR]" % (item['label'], item['year'], item['plot'])
             runtime += item['runtime']
             if item.get("writer"):
                 writer += [w for w in item["writer"] if w and w not in writer]
@@ -128,9 +135,9 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         details["WatchedCount"] = watchedcount
         details["UnwatchedCount"] = unwatchedcount
         details["art"]["fanarts"] = all_fanarts
-        details.update( studiologos.get_studio_logo(studio, studiologos_path) )
+        details.update(studiologos.get_studio_logo(studio, studiologos_path))
         details["Count"] = total_movies
         details["art"]["ExtraFanart"] = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s"\
-            %quote_plus(repr(all_fanarts))
-    simplecache.set(cache_str,details,checksum=cache_checksum)
+            % quote_plus(repr(all_fanarts))
+    simplecache.set(cache_str, details, checksum=cache_checksum)
     return details

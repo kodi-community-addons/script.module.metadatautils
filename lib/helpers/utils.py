@@ -71,6 +71,7 @@ def get_json(url, params=None, retries=0):
 
 
 def try_encode(text, encoding="utf-8"):
+    '''helper to encode a string to utf-8'''
     try:
         return text.encode(encoding, "ignore")
     except Exception:
@@ -78,6 +79,7 @@ def try_encode(text, encoding="utf-8"):
 
 
 def try_decode(text, encoding="utf-8"):
+    '''helper to decode a string to unicode'''
     try:
         return text.decode(encoding, "ignore")
     except Exception:
@@ -85,6 +87,7 @@ def try_decode(text, encoding="utf-8"):
 
 
 def urlencode(text):
+    '''helper to properly urlencode a string'''
     blah = urllib.urlencode({'blahblahblah': try_encode(text)})
     blah = blah[13:]
     return blah
@@ -170,17 +173,17 @@ def get_duration(duration):
     }
 
 
-def int_with_commas(x):
+def int_with_commas(number):
     '''helper to pretty format a number'''
     try:
-        x = int(x)
-        if x < 0:
-            return '-' + int_with_commas(-x)
+        number = int(number)
+        if number < 0:
+            return '-' + int_with_commas(-number)
         result = ''
-        while x >= 1000:
-            x, r = divmod(x, 1000)
-            result = ",%03d%s" % (r, result)
-        return "%d%s" % (x, result)
+        while number >= 1000:
+            number, number2 = divmod(number, 1000)
+            result = ",%03d%s" % (number2, result)
+        return "%d%s" % (number, result)
     except Exception:
         return ""
 
@@ -381,6 +384,7 @@ class DialogSelect(xbmcgui.WindowXMLDialog):
         self.result = -1
 
     def onInit(self):
+        '''called when the dialog is drawn'''
         self.list_control = self.getControl(6)
         self.getControl(1).setLabel(self.window_title)
         self.getControl(3).setVisible(False)
@@ -396,11 +400,13 @@ class DialogSelect(xbmcgui.WindowXMLDialog):
         self.setFocus(self.list_control)
 
     def onAction(self, action):
+        '''On kodi action'''
         if action.getId() in (9, 10, 92, 216, 247, 257, 275, 61467, 61448, ):
             self.result = -1
             self.close()
 
     def onClick(self, control_id):
+        '''Triggers if our dialog is clicked'''
         if control_id in (6, 3,):
             num = self.list_control.getSelectedPosition()
             self.result = num

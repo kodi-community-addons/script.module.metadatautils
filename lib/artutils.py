@@ -33,12 +33,9 @@ class ArtUtils(object):
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
 
-    # path to use to lookup studio logos, must be set by the calling addon
-    studiologos_path = ""
-
     def __init__(self):
         '''Initialize and load all our helpers'''
-        self.studiologos_path = ""
+        self._studiologos_path = ""
         self.cache = SimpleCache()
         self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodidb = KodiDb()
@@ -205,8 +202,8 @@ class ArtUtils(object):
         '''get the position in the IMDB top250 for the given IMDB ID'''
         return self.imdb.get_top250_rating(imdb_id)
 
-    @use_cache(7, True)
-    def get_duration(self, duration):
+    @staticmethod
+    def get_duration(duration):
         '''helper to get a formatted duration'''
         if ":" in duration:
             dur_lst = duration.split(":")

@@ -65,11 +65,11 @@ class MusicArtwork(object):
                 listitem = xbmcgui.ListItem(label=arttype, iconImage=artwork["art"].get(arttype, ""))
                 listitem.setProperty("icon", artwork["art"].get(arttype, ""))
                 listitems.append(listitem)
-            w = DialogSelect("DialogSelect.xml", "", listing=listitems,
+            dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
                              window_title=xbmc.getLocalizedString(13511), multiselect=False)
-            w.doModal()
-            selected_item = w.result
-            del w
+            dialog.doModal()
+            selected_item = dialog.result
+            del dialog
             if selected_item == -1:
                 abort = True
             else:
@@ -427,10 +427,10 @@ class MusicArtwork(object):
                 else:
                     delim = "/"
                 dirs = xbmcvfs.listdir(album_path)[0]
-                for dir in dirs:
-                    dir = dir.decode("utf-8")
-                    if disc in dir:
-                        return os.path.join(customfolder, dir) + delim
+                for directory in dirs:
+                    directory = directory.decode("utf-8")
+                    if disc in directory:
+                        return os.path.join(customfolder, directory) + delim
         return album_path
 
     def get_customfolder_path(self, customfolder, foldername):
@@ -441,10 +441,10 @@ class MusicArtwork(object):
             delim = "/"
         dirs = xbmcvfs.listdir(customfolder)[0]
         for strictness in [1, 0.95, 0.9, 0.8]:
-            for dir in dirs:
-                dir = dir.decode("utf-8")
-                curpath = os.path.join(customfolder, dir) + delim
-                match = SM(None, foldername.lower(), dir.lower()).ratio()
+            for directory in dirs:
+                directory = directory.decode("utf-8")
+                curpath = os.path.join(customfolder, directory) + delim
+                match = SM(None, foldername.lower(), directory.lower()).ratio()
                 if match >= strictness:
                     return curpath
                 else:

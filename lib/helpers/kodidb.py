@@ -444,19 +444,19 @@ class KodiDb(object):
             properties["path"] = item.get("file")
 
             # cast
-            listCast = []
-            listCastAndRole = []
+            list_cast = []
+            list_castandrole = []
             if item.get("cast") and isinstance(item["cast"], list):
                 for castmember in item["cast"]:
                     if isinstance(castmember, dict):
-                        listCast.append(castmember.get("name", ""))
-                        listCastAndRole.append((castmember["name"], castmember["role"]))
+                        list_cast.append(castmember.get("name", ""))
+                        list_castandrole.append((castmember["name"], castmember["role"]))
                     else:
-                        listCast.append(castmember)
-                        listCastAndRole.append((castmember, ""))
+                        list_cast.append(castmember)
+                        list_castandrole.append((castmember, ""))
 
-            item["cast"] = listCast
-            item["castandrole"] = listCastAndRole
+            item["cast"] = list_cast
+            item["castandrole"] = list_castandrole
 
             if item.get("season") and item.get("episode"):
                 properties["episodeno"] = "s%se%s" % (item.get("season"), item.get("episode"))

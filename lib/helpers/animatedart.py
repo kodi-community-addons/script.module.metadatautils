@@ -3,7 +3,7 @@
 
 '''Retrieve animated artwork for kodi movies'''
 
-from utils import get_json, DialogSelect, log_msg
+from utils import get_json, DialogSelect
 from kodidb import KodiDb
 import xbmc
 import xbmcvfs

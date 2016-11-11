@@ -91,7 +91,7 @@ class PvrArtwork(object):
 
                 # prefer tvdb scraping
                 tvdb_match = None
-                if not "movie" in details["media_type"]:
+                if "movie" not in details["media_type"]:
                     tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select)
 
                 if tvdb_match:
@@ -308,19 +308,22 @@ class PvrArtwork(object):
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item.lower() == title.lower():
                 log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> Title is in list of titles to ignore" %
+                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
+                    "Title is in list of titles to ignore" %
                     (title, channel, genre))
                 return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_channels").split("|"):
             if item.lower() == channel.lower():
                 log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> Channel is in list of channels to ignore" %
+                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
+                    "Channel is in list of channels to ignore" %
                     (title, channel, genre))
                 return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_genres").split("|"):
             if genre and item.lower() in genre.lower():
                 log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> Genre is in list of Genres to ignore" %
+                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
+                    "Genre is in list of Genres to ignore" %
                     (title, channel, genre))
                 return False
         if self.artutils.addon.getSetting("pvr_art_ignore_commongenre") == "true":
@@ -332,14 +335,16 @@ class PvrArtwork(object):
                 kodi_string = xbmc.getLocalizedString(kodi_string).lower()
                 if (genre and (genre in kodi_string or kodi_string in genre)) or kodi_string in title:
                     log_msg(
-                        "PVR artwork - filter active for title: %s channel: %s genre: %s --> Common genres like weather/sports are set to be ignored" %
+                        "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
+                        "Common genres like weather/sports are set to be ignored" %
                         (title, channel, genre))
                     return False
         if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true":
             recordings = self.lookup_local_recordings(title)
             if not recordings:
                 log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> PVR artwork is only enabled for recordings" %
+                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
+                    "PVR artwork is only enabled for recordings" %
                     (title, channel, genre))
                 return False
         return True
@@ -391,7 +396,7 @@ class PvrArtwork(object):
                 if item.get("art"):
                     details["thumbnail"] = get_clean_image(item["art"].get("thumb"))
                 # ignore tvheadend thumb as it returns the channellogo
-                elif item.get("icon") and not "imagecache" in item["icon"]:
+                elif item.get("icon") and "imagecache" not in item["icon"]:
                     details["thumbnail"] = get_clean_image(item["icon"])
                 details["channelname"] = item["channel"]
         if len(recordings) > 1:
@@ -504,6 +509,7 @@ class PvrArtwork(object):
         return details
 
     def lookup_local_library(self, title, media_type):
+        '''lookup the title in the local video db'''
         details = {}
         filters = [{"operator": "is", "field": "title", "value": title}]
         if not media_type or media_type == "tvshow":

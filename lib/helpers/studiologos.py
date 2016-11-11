@@ -83,17 +83,18 @@ class StudioLogos():
         # read data from our permanent cache file to prevent that we have to query the resource addon
         return self.list_files_in_path(resourcePath)
 
-    def list_files_in_path(self, filespath):
+    @staticmethod
+    def list_files_in_path(filespath):
         # used for easy matching of studio logos
-        allFilesList = {}
+        all_files = {}
         dirs, files = xbmcvfs.listdir(filespath)
         for file in files:
             file = file.decode("utf-8")
             name = file.split(".png")[0].lower()
-            allFilesList[name] = filespath + file
+            all_files[name] = filespath + file
         for directory in dirs:
-            dirs2, files2 = xbmcvfs.listdir(os.path.join(filespath, directory) + os.sep)
-            for file in files2:
+            files = xbmcvfs.listdir(os.path.join(filespath, directory) + os.sep)[1]
+            for file in files:
                 file = file.decode("utf-8")
                 directory = directory.decode("utf-8")
                 name = directory + "/" + file.split(".png")[0].lower()
@@ -101,6 +102,6 @@ class StudioLogos():
                     sep = "/"
                 else:
                     sep = "\\"
-                allFilesList[name] = filespath + directory + sep + file
+                all_files[name] = filespath + directory + sep + file
         # return the list
-        return allFilesList
+        return all_files
