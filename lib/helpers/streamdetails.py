@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 def get_streamdetails(kodidb, db_id, media_type):
     '''helper to get all streamdetails from a video item in kodi db'''
     streamdetails = {}
@@ -22,7 +23,7 @@ def get_streamdetails(kodidb, db_id, media_type):
         all_subs = []
         all_lang = []
         for count, item in enumerate(audio):
-            #audio codec
+            # audio codec
             codec = item['codec']
             if "ac3" in codec:
                 codec = u"Dolby D"
@@ -30,7 +31,7 @@ def get_streamdetails(kodidb, db_id, media_type):
                 codec = u"DTS"
             elif "dts-hd" in codec or "dtshd" in codec:
                 codec = u"DTS HD"
-            #audio channels
+            # audio channels
             channels = item['channels']
             if channels == 1:
                 channels = u"1.0"
@@ -54,20 +55,20 @@ def get_streamdetails(kodidb, db_id, media_type):
                 channels = u"9.1"
             else:
                 channels = str(channels)
-            #audio language
-            language = item.get('language','')
+            # audio language
+            language = item.get('language', '')
             if language and language not in all_lang:
                 all_lang.append(language)
             if language:
-                streamdetails['AudioStreams.%d.Language'% count] = item['language']
+                streamdetails['AudioStreams.%d.Language' % count] = item['language']
             if item['codec']:
-                streamdetails['AudioStreams.%d.AudioCodec'%count] = item['codec']
+                streamdetails['AudioStreams.%d.AudioCodec' % count] = item['codec']
             if item['channels']:
-                streamdetails['AudioStreams.%d.AudioChannels'%count] = str(item['channels'])
+                streamdetails['AudioStreams.%d.AudioChannels' % count] = str(item['channels'])
             joinchar = " • ".decode("utf-8")
-            audio_str = joinchar.join([language,codec,channels])
+            audio_str = joinchar.join([language, codec, channels])
             if audio_str:
-                streamdetails['AudioStreams.%d'%count] = audio_str
+                streamdetails['AudioStreams.%d' % count] = audio_str
                 all_audio_str.append(audio_str)
         subs_count = 0
         subs_count_unique = 0
@@ -75,7 +76,7 @@ def get_streamdetails(kodidb, db_id, media_type):
             subs_count += 1
             if item['language'] not in all_subs:
                 all_subs.append(item['language'])
-                streamdetails['Subtitles.%d'%subs_count_unique] = item['language']
+                streamdetails['Subtitles.%d' % subs_count_unique] = item['language']
                 subs_count_unique += 1
         streamdetails['subtitles'] = all_subs
         streamdetails['subtitles.count'] = str(subs_count)
@@ -85,8 +86,8 @@ def get_streamdetails(kodidb, db_id, media_type):
         streamdetails['languages.count'] = len(all_lang)
         if len(video) > 0:
             stream = video[0]
-            streamdetails['videoheight'] = stream.get("height",0)
-            streamdetails['videowidth'] = stream.get("width",0)
+            streamdetails['videoheight'] = stream.get("height", 0)
+            streamdetails['videowidth'] = stream.get("width", 0)
     if json_result.get("tag"):
         streamdetails["tags"] = json_result["tag"]
     return streamdetails

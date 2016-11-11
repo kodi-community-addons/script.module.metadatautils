@@ -366,7 +366,8 @@ class MusicArtwork(object):
                 break
         return result
 
-    def get_albumpath_by_songpath(self, songpath):
+    @staticmethod
+    def get_albumpath_by_songpath(songpath):
         '''get the album path on disk by listing the song's path'''
         result = ""
         if "\\" in songpath:
@@ -375,7 +376,8 @@ class MusicArtwork(object):
             delim = "/"
         return songpath.rsplit(delim, 1)[0] + delim
 
-    def lookup_artistart_in_folder(self, folderpath):
+    @staticmethod
+    def lookup_artistart_in_folder(folderpath):
         '''lookup artwork in given folder'''
         artwork = {}
         files = xbmcvfs.listdir(folderpath)[1]
@@ -400,7 +402,8 @@ class MusicArtwork(object):
                     artwork["fanarts"].append(item)
         return artwork
 
-    def lookup_albumart_in_folder(self, folderpath):
+    @staticmethod
+    def lookup_albumart_in_folder(folderpath):
         '''lookup artwork in given folder'''
         artwork = {}
         files = xbmcvfs.listdir(folderpath)[1]

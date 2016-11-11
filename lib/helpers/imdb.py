@@ -33,9 +33,9 @@ class Imdb(object):
                 if table.get("class") == "chart full-width":
                     for td in table.findAll('td'):
                         if td.get("class") == "titleColumn":
-                            a = td.find("a")
-                            if a:
-                                url = a["href"]
+                            a_link = td.find("a")
+                            if a_link:
+                                url = a_link["href"]
                                 imdb_id = url.split("/")[2]
                                 imdb_rank = url.split(listing[1])[1]
                                 results[imdb_id] = try_parse_int(imdb_rank)

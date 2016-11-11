@@ -91,16 +91,16 @@ class StudioLogos():
             file = file.decode("utf-8")
             name = file.split(".png")[0].lower()
             allFilesList[name] = filespath + file
-        for dir in dirs:
-            dirs2, files2 = xbmcvfs.listdir(os.path.join(filespath, dir) + os.sep)
+        for directory in dirs:
+            dirs2, files2 = xbmcvfs.listdir(os.path.join(filespath, directory) + os.sep)
             for file in files2:
                 file = file.decode("utf-8")
-                dir = dir.decode("utf-8")
-                name = dir + "/" + file.split(".png")[0].lower()
+                directory = directory.decode("utf-8")
+                name = directory + "/" + file.split(".png")[0].lower()
                 if "/" in filespath:
                     sep = "/"
                 else:
                     sep = "\\"
-                allFilesList[name] = filespath + dir + sep + file
+                allFilesList[name] = filespath + directory + sep + file
         # return the list
         return allFilesList

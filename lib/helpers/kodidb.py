@@ -167,6 +167,7 @@ class KodiDb(object):
 
     @staticmethod
     def set_json(jsonmethod, params):
+        '''method to set info in the kodi json api'''
         kodi_json = {}
         kodi_json["jsonrpc"] = "2.0"
         kodi_json["method"] = jsonmethod
@@ -178,6 +179,7 @@ class KodiDb(object):
     @staticmethod
     def get_json(jsonmethod, sort=None, filters=None, fields=None, limits=None,
                  returntype=None, optparam=None, filtertype=None):
+        '''method to get details from the kodi json api'''
         kodi_json = {}
         kodi_json["jsonrpc"] = "2.0"
         kodi_json["method"] = jsonmethod
@@ -225,7 +227,7 @@ class KodiDb(object):
 
     @staticmethod
     def get_favourites_from_file():
-        # json method for favourites doesn't return all items (such as android apps) so retrieve them from file
+        '''json method for favourites doesn't return all items (such as android apps) so retrieve them from file'''
         from xml.dom.minidom import parse
         allfavourites = []
         favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")

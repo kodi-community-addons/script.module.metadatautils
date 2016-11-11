@@ -44,8 +44,6 @@ class FanartTv(object):
         artwork = {}
         data = self.get_data("music/labels/%s" % album_id)
         if data and data.get("musiclabel"):
-            logos_white = []
-            logos_color = []
             for item in data["musiclabel"]:
                 # we just grab the first logo (as the result is sorted by likes)
                 if item["colour"] == "colour" and "logo_color" not in artwork:

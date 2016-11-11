@@ -69,8 +69,8 @@ class GoogleImages(object):
         results = []
         for div in soup.findAll('div'):
             if div.get("id") == "images":
-                for a in div.findAll("a"):
-                    page = a.get("href")
+                for a_link in div.findAll("a"):
+                    page = a_link.get("href")
                     try:
                         img = page.split("imgurl=")[-1]
                         img = img.split("&imgrefurl=")[0]

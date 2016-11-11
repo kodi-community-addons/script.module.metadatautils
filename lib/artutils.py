@@ -19,13 +19,12 @@ from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
 from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID
-from helpers.utils import extend_dict, get_clean_image, process_method_on_list, detect_plugin_content
+from helpers.utils import extend_dict, get_clean_image, detect_plugin_content
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmc
 import xbmcaddon
 import xbmcvfs
-import datetime
 import os
 
 
@@ -94,15 +93,8 @@ class ArtUtils(object):
         return result
 
     @use_cache(14, True)
-    def get_tmdb_details(
-            self,
-            imdb_id="",
-            tvdb_id="",
-            title="",
-            year="",
-            media_type="",
-            manual_select=False,
-            preftype=""):
+    def get_tmdb_details(self, imdb_id="", tvdb_id="", title="", year="", media_type="",
+                         manual_select=False, preftype=""):
         '''returns details from tmdb'''
         result = {}
         title = title.split(" (")[0]
@@ -192,6 +184,7 @@ class ArtUtils(object):
 
     @use_cache(14, True)
     def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):
+        '''Get (kodi compatible formatted) metadata from OMDB, including Rotten tomatoes details'''
         title = title.split(" (")[0]  # strip year appended to title
         result = {}
         if imdb_id:
@@ -261,3 +254,9 @@ class ArtUtils(object):
         elif "released" in _str:
             translation = self.addon.getLocalizedString(32040)
         return translation
+
+
+def process_method_on_list():
+    '''expose our process_method_on_list method to public'''
+    from helpers.utils import process_method_on_list as _process_method_on_list
+    return _process_method_on_list
