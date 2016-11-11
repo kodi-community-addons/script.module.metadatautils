@@ -12,7 +12,7 @@ import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
-from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID, extend_dict, get_clean_image
+from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID, extend_dict, get_clean_image, process_method_on_list, detect_plugin_content
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmc
@@ -72,7 +72,7 @@ class ArtUtils(object):
         '''options for music metadata for specific item'''
         return self.musicart.music_artwork_options(artist, album, track, disc)
 
-    @use_cache(14,True)
+    @use_cache(14, True)
     def get_extended_artwork(self, imdb_id="", tvdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
         result = {}
