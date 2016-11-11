@@ -109,13 +109,13 @@ def process_method_on_list(method_to_run, items):
     all_items = []
 
     try:
-        from multiprocessing.pool import ThreadPool as Pool
+        from multiprocessing.pool import ThreadPool
         supports_pool = True
     except Exception:
         supports_pool = False
 
     if supports_pool:
-        pool = Pool()
+        pool = ThreadPool()
         try:
             all_items = pool.map(method_to_run, items)
         except Exception:

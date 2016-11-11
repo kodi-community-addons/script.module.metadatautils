@@ -256,7 +256,7 @@ class ArtUtils(object):
         return translation
 
 
-def process_method_on_list():
+def process_method_on_list(method_to_run, items):
     '''expose our process_method_on_list method to public'''
     from helpers.utils import process_method_on_list as _process_method_on_list
-    return _process_method_on_list
+    return _process_method_on_list(method_to_run, items)
