@@ -27,11 +27,11 @@ import xbmcaddon
 import xbmcvfs
 import os
 
-
 class ArtUtils(object):
     '''
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
+    close_called = False
 
     def __init__(self):
         '''Initialize and load all our helpers'''
@@ -54,9 +54,28 @@ class ArtUtils(object):
 
     def close(self):
         '''Cleanup Kodi Cpython instances'''
+        self.close_called = True
         self.cache.close()
+        self.addon = None
         del self.addon
+        del self.kodidb
+        del self.omdb
+        del self.tmdb
+        del self.channellogos
+        del self.fanarttv
+        del self.imdb
+        del self.google
+        del self.studiologos
+        del self.animatedart
+        del self.thetvdb
+        del self.musicart
+        del self.pvrart
         log_msg("Exited")
+        
+    def __del__(self):
+        '''make sure close is called'''
+        if not self.close_called:
+            self.close()
 
     @use_cache(14, True)
     def get_extrafanart(self, file_path, media_type):

@@ -165,6 +165,18 @@ class KodiDb(object):
             items = self.get_json("Favourites.GetFavourites", fields=fields, optparam=optparams)
         return items
 
+    def castmedia(self, actorname):
+        '''helper to display all media (movies/shows) for a specific actor'''
+        # use db counts as simple checksum
+        all_items = []
+        filters = [{"operator": "contains", "field": "actor", "value": actorname}]
+        all_items = self.movies(filters=filters)
+        for item in self.tvshows(filters=filters):
+            item["file"] = "videodb://tvshows/titles/%s" % item["tvshowid"]
+            item["isFolder"] = True
+            all_items.append(item)
+        return all_items
+    
     @staticmethod
     def set_json(jsonmethod, params):
         '''method to set info in the kodi json api'''
@@ -309,6 +321,7 @@ class KodiDb(object):
                     "premiered": item.get("premiered"),
                     "status": item.get("status"),
                     "code": item.get("imdbnumber"),
+                    "imdbnumber": item.get("imdbnumber"),
                     "aired": item.get("aired"),
                     "credits": item.get("credits"),
                     "album": item.get("album"),
@@ -440,12 +453,14 @@ class KodiDb(object):
                 properties["imdbnumber"] = item.get("imdbnumber")
 
             properties["dbtype"] = item.get("type")
+            properties["DBTYPE"] = item.get("type")
             properties["type"] = item.get("type")
             properties["path"] = item.get("file")
 
             # cast
             list_cast = []
             list_castandrole = []
+            item["cast_org"] = item.get("cast",[])
             if item.get("cast") and isinstance(item["cast"], list):
                 for castmember in item["cast"]:
                     if isinstance(castmember, dict):

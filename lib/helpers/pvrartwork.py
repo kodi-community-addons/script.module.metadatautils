@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID
 import xbmc
@@ -34,7 +34,7 @@ class PvrArtwork(object):
             the more optional parameters are supplied, the better the search results
         '''
         # workaround for grouped recordings
-        if not channel and genre:
+        if not channel:
             channel, genre = self.get_pvr_channel_and_genre(title)
 
         # try cache first
@@ -51,6 +51,7 @@ class PvrArtwork(object):
         details["pvrchannel"] = channel
         details["pvrgenre"] = genre
         details["cachestr"] = cache_str
+        details["media_type"] = ""
 
         # filter genre unknown/other
         if genre in xbmc.getLocalizedString(19499) or xbmc.getLocalizedString(19499) in genre.lower():
@@ -303,7 +304,7 @@ class PvrArtwork(object):
     def pvr_proceed_lookup(self, title, channel, genre):
         '''perform some checks if we can proceed with the lookup'''
         if not title or not channel:
-            log_msg("PVR artwork - filter active for title: %s --> ")
+            log_msg("PVR artwork - filter active for title: %s --> Title or channel is empty!")
             return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item.lower() == title.lower():
