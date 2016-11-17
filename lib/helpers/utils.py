@@ -379,7 +379,7 @@ def detect_plugin_content(plugin_path):
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
     
-    self.list_control = None
+    list_control = None
 
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self)
