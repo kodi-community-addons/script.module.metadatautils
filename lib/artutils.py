@@ -22,7 +22,6 @@ from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID
 from helpers.utils import extend_dict, get_clean_image, detect_plugin_content
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
-import xbmc
 import xbmcaddon
 import xbmcvfs
 import os
@@ -115,10 +114,10 @@ class ArtUtils(object):
         result = {}
         title = title.split(" (")[0]
         if imdb_id:
-            result = self.tmdb.get_video_details_by_external_id(
+            result = self.tmdb.get_videodetails_by_externalid(
                 imdb_id, "imdb_id")
         elif tvdb_id:
-            result = self.tmdb.get_video_details_by_external_id(
+            result = self.tmdb.get_videodetails_by_externalid(
                 tvdb_id, "tvdb_id")
         elif title and media_type in ["movies", "setmovies", "movie"]:
             result = self.tmdb.search_movie(

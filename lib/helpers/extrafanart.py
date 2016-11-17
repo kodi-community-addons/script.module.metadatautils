@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, xbmcvfs
+import os
+import xbmcvfs
+
 
 def get_extrafanart(file_path, media_type):
     result = {}
     efa_path = ""
     folder_path = ""
     if "plugin.video.emby" in file_path:
-        #workaround for emby addon
+        # workaround for emby addon
         efa_path = u"plugin://plugin.video.emby/extrafanart?path=" + file_path
     elif "plugin://" in file_path:
         folder_path = ""
@@ -22,25 +24,25 @@ def get_extrafanart(file_path, media_type):
             folder_path = os.path.dirname(file_path)
         elif file_path and "episode" in media_type:
             folder_path = os.path.dirname(file_path)
-                
-        #lookup extrafanart folder
+
+        # lookup extrafanart folder
         if folder_path:
-            if "/" in folder_path: 
+            if "/" in folder_path:
                 sep = u"/"
-            else: 
+            else:
                 sep = u"\\"
             if not folder_path.endswith(sep):
                 folder_path += sep
-            efa_path = "%s%s%s" %(folder_path,"extrafanart",sep)
+            efa_path = "%s%s%s" % (folder_path, "extrafanart", sep)
             if not xbmcvfs.exists(efa_path):
                 efa_path = ""
-        
+
     if efa_path:
         result["art"] = {
-            "extrafanart": efa_path, 
-            "fanarts": [] }
+            "extrafanart": efa_path,
+            "fanarts": []}
         for count, file in enumerate(xbmcvfs.listdir(efa_path)[1]):
             if file.lower().endswith(".jpg"):
-                result["art"]["ExtraFanArt.%s"%count] = efa_path + file.decode("utf-8")
+                result["art"]["ExtraFanArt.%s" % count] = efa_path + file.decode("utf-8")
                 result["art"]["fanarts"].append(efa_path + file.decode("utf-8"))
     return result

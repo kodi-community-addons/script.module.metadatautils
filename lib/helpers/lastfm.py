@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''get metadata from the lastfm'''
+
 from utils import get_json, strip_newlines, get_compare_string
 from simplecache import use_cache
 import xbmcvfs

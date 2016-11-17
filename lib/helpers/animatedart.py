@@ -159,4 +159,4 @@ class AnimatedArt(object):
                 "movieid": kodi_movie["movieid"],
                 "art": {"animatedfanart": artwork["animatedfanart"], "animatedposter": artwork["animatedposter"]}
             }
-            result = self.kodidb.set_json('VideoLibrary.SetMovieDetails', params)
+            self.kodidb.set_json('VideoLibrary.SetMovieDetails', params)

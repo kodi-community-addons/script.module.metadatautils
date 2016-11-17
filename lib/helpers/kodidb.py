@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''get metadata from the kodi DB'''
+
 import xbmc
 import xbmcgui
 import xbmcvfs
@@ -86,11 +89,12 @@ class KodiDb(object):
     def moviesets(self, sort=None, filters=None, limits=None, filtertype=None, include_set_movies=False):
         '''get moviesetdetails from kodi db'''
         if include_set_movies:
-            optparams = ("movies", {"properties": FIELDS_MOVIES})
+            optparam = ("movies", {"properties": FIELDS_MOVIES})
         else:
-            optparams = None
+            optparam = None
         return self.get_json("VideoLibrary.GetMovieSets", sort=sort, filters=filters,
-                             fields=["title", "art", "playcount"], limits=limits, returntype="", filtertype=filtertype)
+                             fields=["title", "art", "playcount"],
+                             limits=limits, returntype="", filtertype=filtertype, optparam=optparam)
 
     def files(self, vfspath, sort=None, limits=None):
         '''gets all items in a kodi vfs path'''
@@ -176,7 +180,7 @@ class KodiDb(object):
             item["isFolder"] = True
             all_items.append(item)
         return all_items
-    
+
     @staticmethod
     def set_json(jsonmethod, params):
         '''method to set info in the kodi json api'''
@@ -460,7 +464,7 @@ class KodiDb(object):
             # cast
             list_cast = []
             list_castandrole = []
-            item["cast_org"] = item.get("cast",[])
+            item["cast_org"] = item.get("cast", [])
             if item.get("cast") and isinstance(item["cast"], list):
                 for castmember in item["cast"]:
                     if isinstance(castmember, dict):

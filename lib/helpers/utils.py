@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''Various generic helper methods'''
+
 import xbmcgui
 import xbmc
 import os
@@ -56,17 +58,17 @@ def get_json(url, params=None, retries=0):
             elif "result" in result:
                 result = result["result"]
             return result
-    except Exception as e:
-        if "Read timed out" in str(e) and not retries == 10:
+    except Exception as exc:
+        if "Read timed out" in str(exc) and not retries == 10:
             # auto retry...
             xbmc.sleep(500)
             log_msg("get_json time-out for url: %s -- auto retrying..." % (url))
             return get_json(url, params, retries + 1)
-        elif "getaddrinfo failed" in str(e):
+        elif "getaddrinfo failed" in str(exc):
             log_msg("No internet or server not reachable - request failed for url: %s" % url, xbmc.LOGWARNING)
             return None
         else:
-            log_exception(__name__, e)
+            log_exception(__name__, exc)
     return result
 
 
@@ -351,7 +353,7 @@ def detect_plugin_content(plugin_path):
                     break
             else:
                 # VIDEO ITEMS
-                if (item["showtitle"] and not item["artist"]):
+                if item["showtitle"] and not item["artist"]:
                     # this is a tvshow, episode or season...
                     if item["type"] == "season" or (item["season"] > -1 and item["episode"] == -1):
                         content_type = "seasons"
@@ -362,7 +364,7 @@ def detect_plugin_content(plugin_path):
                     else:
                         content_type = "tvshows"
                         break
-                elif (item["artist"]):
+                elif item["artist"]:
                     # this is a musicvideo!
                     content_type = "musicvideos"
                     break
@@ -376,6 +378,8 @@ def detect_plugin_content(plugin_path):
 
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
+    
+    self.list_control = None
 
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self)

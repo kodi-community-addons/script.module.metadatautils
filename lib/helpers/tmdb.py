@@ -144,7 +144,7 @@ class Tmdb(object):
         }
         return self.map_details(self.get_data("tv/%s" % tvshow_id, params), "tvshow")
 
-    def get_video_details_by_external_id(self, extid, extid_type):
+    def get_videodetails_by_externalid(self, extid, extid_type):
         params = {"external_source": extid_type, "language": KODI_LANGUAGE}
         results = self.get_data("find/%s" % extid, params)
         if results and results["movie_results"]:

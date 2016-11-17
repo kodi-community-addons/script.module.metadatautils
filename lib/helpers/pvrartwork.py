@@ -99,7 +99,7 @@ class PvrArtwork(object):
                     # get full tvdb results and extend with tmdb
                     details["media_type"] = "tvshow"
                     details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
-                    details = extend_dict(details, self.artutils.tmdb.get_video_details_by_external_id(
+                    details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
                         tvdb_match, "tvdb_id"), ["poster", "fanart"])
                 else:
                     # tmdb scraping for movies
@@ -350,7 +350,8 @@ class PvrArtwork(object):
                 return False
         return True
 
-    def get_mediatype_from_genre(self, genre):
+    @staticmethod
+    def get_mediatype_from_genre(genre):
         '''guess media type from genre for better matching'''
         media_type = ""
         if "movie" in genre.lower():
