@@ -3,7 +3,7 @@
 
 '''get images from google images'''
 
-from utils import DialogSelect, log_msg, requests, log_exception
+from utils import DialogSelect, requests, log_exception
 import BeautifulSoup
 import xbmc
 import xbmcvfs
