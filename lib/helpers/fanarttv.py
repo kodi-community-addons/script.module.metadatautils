@@ -42,7 +42,7 @@ class FanartTv(object):
     def musiclabel(self, label_id):
         '''get musiclabel logo'''
         artwork = {}
-        data = self.get_data("music/labels/%s" % album_id)
+        data = self.get_data("music/labels/%s" % label_id)
         if data and data.get("musiclabel"):
             for item in data["musiclabel"]:
                 # we just grab the first logo (as the result is sorted by likes)

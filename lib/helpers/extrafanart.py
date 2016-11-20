@@ -1,10 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    extrafanart.py
+    Get extrafanart location for kodi media
+'''
+
 import os
 import xbmcvfs
 
 
 def get_extrafanart(file_path, media_type):
+    '''get extrafanart path on disk based on media path'''
     result = {}
     efa_path = ""
     folder_path = ""

@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+    script.module.skin.helper.artutils
+    streamdetails.py
+    Get all streamdetails for a kodi media item in database
+'''
 
 def get_streamdetails(kodidb, db_id, media_type):
     '''helper to get all streamdetails from a video item in kodi db'''

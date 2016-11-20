@@ -1,6 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import ADDON_ID, urlencode, get_compare_string, log_msg
+
+'''
+    script.module.skin.helper.artutils
+    mbrainz.py
+    Get metadata from musicbrainz
+'''
+
+from utils import ADDON_ID, get_compare_string, log_msg
 from simplecache import use_cache
 import xbmcvfs
 import xbmcaddon
@@ -17,17 +24,17 @@ class MusicBrainz(object):
             self.cache = SimpleCache()
         else:
             self.cache = simplecache
-        import musicbrainzngs as mb
-        mb.set_useragent(
+        import musicbrainzngs as mbrainz
+        mbrainz.set_useragent(
             "script.skin.helper.service",
             "1.0.0",
             "https://github.com/marcelveldt/script.skin.helper.service")
-        mb.set_rate_limit(limit_or_interval=2.0, new_requests=1)
+        mbrainz.set_rate_limit(limit_or_interval=2.0, new_requests=1)
         addon = xbmcaddon.Addon(ADDON_ID)
         if addon.getSetting("music_art_mb_mirror"):
-            mb.set_hostname(addon.getSetting("music_art_mb_mirror"))
+            mbrainz.set_hostname(addon.getSetting("music_art_mb_mirror"))
         del addon
-        self.mb = mb
+        self.mbrainz = mbrainz
 
     @use_cache(30)
     def search(self, artist, album, track):
@@ -36,16 +43,16 @@ class MusicBrainz(object):
         albumid = ""
         artistid = ""
         if artist and album:
-            mb_albums = self.mb.search_release_groups(query=album,
-                                                      limit=3, offset=None, strict=False, artist=artist)
+            mb_albums = self.mbrainz.search_release_groups(query=album,
+                                                           limit=3, offset=None, strict=False, artist=artist)
         elif not mb_albums and artist and track:
-            mb_albums = self.mb.search_recordings(query=track,
-                                                  limit=3, offset=None, strict=False, artist=artist)
+            mb_albums = self.mbrainz.search_recordings(query=track,
+                                                       limit=3, offset=None, strict=False, artist=artist)
         elif not mb_albums and artist and album:
             # use albumname as track
             track = album
-            mb_albums = self.mb.search_recordings(query=track,
-                                                  limit=3, offset=None, strict=False, artist=artist)
+            mb_albums = self.mbrainz.search_recordings(query=track,
+                                                       limit=3, offset=None, strict=False, artist=artist)
 
         if mb_albums and mb_albums.get("release-group-list"):
             mb_albums = mb_albums.get("release-group-list")

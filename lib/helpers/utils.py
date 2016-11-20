@@ -5,7 +5,6 @@
 
 import xbmcgui
 import xbmc
-import os
 import sys
 from traceback import format_exc
 import requests
@@ -34,12 +33,14 @@ SESSION.mount('https://', HTTPAdapter(max_retries=RETRIES))
 
 
 def log_msg(msg, loglevel=xbmc.LOGDEBUG):
+    '''log message to kodi logfile'''
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')
     xbmc.log("Skin Helper ArtUtils --> %s" % msg, level=loglevel)
 
 
 def log_exception(modulename, exceptiondetails):
+    '''helper to properly log an exception'''
     log_msg(format_exc(sys.exc_info()), xbmc.LOGWARNING)
     log_msg("ERROR in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
 
@@ -228,7 +229,7 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
                     # value may be overwritten
                     org_dict[key] = value
                 else:
-                    # conflicht, leave alone
+                    # conflict, leave alone
                     pass
     return org_dict
 
@@ -378,7 +379,7 @@ def detect_plugin_content(plugin_path):
 
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
-    
+
     list_control = None
 
     def __init__(self, *args, **kwargs):

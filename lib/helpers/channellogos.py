@@ -1,7 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    channellogos.py
+    Get channellogos from kodidb or logosdb
+'''
+
+
 from utils import get_json, get_clean_image
-import xbmc, xbmcvfs
+import xbmc
+import xbmcvfs
+
 
 class ChannelLogos(object):
     '''get channellogo'''
@@ -14,10 +24,10 @@ class ChannelLogos(object):
         else:
             self.kodidb = kodidb
 
-    def get_channellogo(self,channelname):
+    def get_channellogo(self, channelname):
         '''get channellogo for the supplied channelname'''
         result = {}
-        for searchmethod in [self.search_kodi,self.search_logosdb]:
+        for searchmethod in [self.search_kodi, self.search_logosdb]:
             if result:
                 break
             result = searchmethod(channelname)
@@ -25,7 +35,7 @@ class ChannelLogos(object):
 
     def search_logosdb(self, searchphrase):
         result = ""
-        for searchphrase in [searchphrase, searchphrase.lower().replace(" hd","")]:
+        for searchphrase in [searchphrase, searchphrase.lower().replace(" hd", "")]:
             if result:
                 break
             for item in self.get_data_from_logosdb(searchphrase):
@@ -40,7 +50,13 @@ class ChannelLogos(object):
         '''search kodi json api for channel logo'''
         result = ""
         if xbmc.getCondVisibility("PVR.HasTVChannels"):
-            results = self.kodidb.get_json('PVR.GetChannels',fields=[ "thumbnail" ],returntype="tvchannels", optparam=("channelgroupid", "alltv") )
+            results = self.kodidb.get_json(
+                'PVR.GetChannels',
+                fields=["thumbnail"],
+                returntype="tvchannels",
+                optparam=(
+                    "channelgroupid",
+                    "alltv"))
             for item in results:
                 if item["label"] == searchphrase:
                     channelicon = get_clean_image(item['thumbnail'])
@@ -53,9 +69,8 @@ class ChannelLogos(object):
     def get_data_from_logosdb(searchphrase):
         '''helper method to get data from thelogodb json API'''
         params = {"s": searchphrase}
-        data = get_json('http://www.thelogodb.com/api/json/v1/3241/tvchannel.php',params)
+        data = get_json('http://www.thelogodb.com/api/json/v1/3241/tvchannel.php', params)
         if data and data.get('channels'):
             return data["channels"]
         else:
             return []
-

@@ -23,6 +23,7 @@ class StudioLogos():
 
     @use_cache(14)
     def get_studio_logo(self, studios, lookup_path):
+        '''get the studio logo for the given studio string(s)'''
         if not studios:
             return {}
         result = {}
@@ -34,6 +35,7 @@ class StudioLogos():
         return result
 
     def get_studio_logos(self, lookup_path):
+        '''get all studio logos'''
         cache_str = u"SkinHelper.StudioLogos"
         cache = self.cache.get(cache_str, checksum=lookup_path)
         if cache:
@@ -52,7 +54,7 @@ class StudioLogos():
 
     @staticmethod
     def match_studio_logo(studios, studiologos):
-        # try to find a matching studio logo
+        '''try to find a matching studio logo'''
         studiologo = ""
         for studio in studios:
             if studiologo:
@@ -79,13 +81,13 @@ class StudioLogos():
 
     @use_cache(90)
     def get_resource_addon_files(self, resourcePath):
-        # get listing of all files (eg studio logos) inside a resource image addonName
-        # read data from our permanent cache file to prevent that we have to query the resource addon
+        '''get listing of all files (eg studio logos) inside a resource image addonName
+        read data from our permanent cache file to prevent that we have to query the resource addon'''
         return self.list_files_in_path(resourcePath)
 
     @staticmethod
     def list_files_in_path(filespath):
-        # used for easy matching of studio logos
+        '''used for easy matching of studio logos'''
         all_files = {}
         dirs, files = xbmcvfs.listdir(filespath)
         for file in files:

@@ -1,10 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''get metadata and artwork for music'''
+'''
+    script.module.skin.helper.artutils
+    musicartwork.py
+    Get metadata for music
+'''
 
 from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines
-from simplecache import SimpleCache, use_cache
+from simplecache import use_cache
 from mbrainz import MusicBrainz
 from lastfm import LastFM
 from theaudiodb import TheAudioDb
@@ -29,7 +33,7 @@ class MusicArtwork(object):
             self.artutils = artutils
         self.cache = self.artutils.cache
         self.lastfm = LastFM()
-        self.mb = MusicBrainz()
+        self.mbrainz = MusicBrainz()
         self.audiodb = TheAudioDb()
 
     def get_music_artwork(self, artist, album, track, disc, ignore_cache=False):
@@ -135,7 +139,7 @@ class MusicArtwork(object):
             # Refresh item (auto lookup)
             self.artutils.fanarttv.ignore_cache = True
             self.audiodb.ignore_cache = True
-            self.mb.ignore_cache = True
+            self.mbrainz.ignore_cache = True
             self.lastfm.ignore_cache = True
             self.get_music_artwork(artist, album, track, disc, ignore_cache=True)
         elif ret == 1:
@@ -246,7 +250,7 @@ class MusicArtwork(object):
                 extend_dict(details, self.lastfm.album_info(mb_albumid))
                 # musicbrainz thumb as last resort
                 if not details["art"].get("thumb"):
-                    details["art"]["thumb"] = self.mb.get_albumthumb(mb_albumid)
+                    details["art"]["thumb"] = self.mbrainz.get_albumthumb(mb_albumid)
 
                 # download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
@@ -335,7 +339,7 @@ class MusicArtwork(object):
 
     def get_mb_artist_id(self, artist, album, track):
         '''lookup musicbrainz artist id with query of artist and album/track'''
-        artistid = self.mb.get_artist_id(artist, album, track)
+        artistid = self.mbrainz.get_artist_id(artist, album, track)
         if not artistid:
             artistid = self.audiodb.get_artist_id(artist, album, track)
         if not artistid:
@@ -344,7 +348,7 @@ class MusicArtwork(object):
 
     def get_mb_album_id(self, artist, album, track):
         '''lookup musicbrainz album id with query of artist and album/track'''
-        albumid = self.mb.get_album_id(artist, album, track)
+        albumid = self.mbrainz.get_album_id(artist, album, track)
         if not albumid:
             albumid = self.audiodb.get_album_id(artist, album, track)
         if not albumid:

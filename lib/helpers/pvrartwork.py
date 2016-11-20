@@ -1,5 +1,12 @@
  #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    pvrartwork.py
+    Get metadata for Kodi PVR programs
+'''
+
 from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID
 import xbmc
 import xbmcgui
@@ -113,7 +120,6 @@ class PvrArtwork(object):
                     details["art"] = {}
 
                 # fanart.tv scraping - append result to existing art
-                fanarttv_art = {}
                 if details.get("imdbnumber") and details["media_type"] == "movie":
                     details["art"] = extend_dict(
                         details["art"], self.artutils.fanarttv.movie(
@@ -446,15 +452,15 @@ class PvrArtwork(object):
                 thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
                 listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb)
                 listitems.append(listitem)
-            w = DialogSelect(
+            dialog = DialogSelect(
                 "DialogSelect.xml",
                 "",
                 listing=listitems,
                 window_title="%s - TVDB" %
                 xbmc.getLocalizedString(283))
-            w.doModal()
-            selected_item = w.result
-            del w
+            dialog.doModal()
+            selected_item = dialog.result
+            del dialog
             if selected_item != -1:
                 tvdb_match = match_results[selected_item]["id"]
             else:
