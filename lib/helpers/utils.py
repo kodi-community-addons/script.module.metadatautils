@@ -282,7 +282,7 @@ def strip_newlines(text):
 
 
 def detect_plugin_content(plugin_path):
-    '''based on the properties a pluginpath we try to detect the content type'''
+    '''based on the properties of a vfspath we try to detect the content type'''
     content_type = ""
     if not plugin_path:
         return ""
