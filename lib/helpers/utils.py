@@ -12,7 +12,6 @@ import arrow
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib
-import urlparse
 import unicodedata
 import re
 

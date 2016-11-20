@@ -1,5 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    theaudiodb.py
+    Get metadata from theaudiodb
+'''
+
 from utils import get_json, strip_newlines, KODI_LANGUAGE, get_compare_string
 from simplecache import use_cache
 import xbmcvfs

@@ -70,7 +70,7 @@ class MusicArtwork(object):
                 listitem.setProperty("icon", artwork["art"].get(arttype, ""))
                 listitems.append(listitem)
             dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
-                             window_title=xbmc.getLocalizedString(13511), multiselect=False)
+                                  window_title=xbmc.getLocalizedString(13511), multiselect=False)
             dialog.doModal()
             selected_item = dialog.result
             del dialog
@@ -105,10 +105,10 @@ class MusicArtwork(object):
                         listitem.setProperty("icon", item)
                         artoptions.append(listitem)
 
-                w2 = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=heading)
-                w2.doModal()
-                selected_item = w2.result
-                del w2
+                dialog = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=heading)
+                dialog.doModal()
+                selected_item = dialog.result
+                del dialog
                 if image and selected_item == 1:
                     artwork["art"][label] = ""
                 elif image and selected_item > 2:
@@ -164,7 +164,7 @@ class MusicArtwork(object):
         local_path = ""
         local_path_custom = ""
         # get metadata from kodi db
-        extend_dict(details, self.get_artist_kodi_metadata(artist, album, track))
+        extend_dict(details, self.get_artist_kodi_metadata(artist, album))
         # get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
             extend_dict(details["art"], self.lookup_artistart_in_folder(details["diskpath"]))
@@ -263,7 +263,7 @@ class MusicArtwork(object):
         self.artutils.cache.set(cache_str, details)
         return details
 
-    def get_artist_kodi_metadata(self, artist, album, track):
+    def get_artist_kodi_metadata(self, artist, album):
         '''get artist details from the kodi database'''
         details = {}
         filters = [{"operator": "is", "field": "artist", "value": artist}]
@@ -355,7 +355,8 @@ class MusicArtwork(object):
             albumid = self.lastfm.get_album_id(artist, album, track)
         return albumid
 
-    def get_artistpath_by_songpath(self, songpath, artist):
+    @staticmethod
+    def get_artistpath_by_songpath(songpath, artist):
         '''get the artist path on disk by listing the song's path'''
         result = ""
         if "\\" in songpath:
@@ -373,7 +374,6 @@ class MusicArtwork(object):
     @staticmethod
     def get_albumpath_by_songpath(songpath):
         '''get the album path on disk by listing the song's path'''
-        result = ""
         if "\\" in songpath:
             delim = "\\"
         else:

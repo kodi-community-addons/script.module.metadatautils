@@ -406,7 +406,8 @@ class KodiDb(object):
             log_msg(item)
             return None
 
-    def prepare_listitem(self, item):
+    @staticmethod
+    def prepare_listitem(item):
         '''helper to convert kodi output from json api to compatible format for listitems'''
         try:
             # fix values returned from json to be used as listitem values

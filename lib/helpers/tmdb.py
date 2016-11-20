@@ -1,5 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    tmdb.py
+    Get metadata from The Movie Database
+'''
+
 from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
@@ -145,6 +152,7 @@ class Tmdb(object):
         return self.map_details(self.get_data("tv/%s" % tvshow_id, params), "tvshow")
 
     def get_videodetails_by_externalid(self, extid, extid_type):
+        '''get metadata by external ID (like imdbid)'''
         params = {"external_source": extid_type, "language": KODI_LANGUAGE}
         results = self.get_data("find/%s" % extid, params)
         if results and results["movie_results"]:
@@ -360,11 +368,11 @@ class Tmdb(object):
                 listitem = xbmcgui.ListItem(label=label, iconImage=thumb)
                 results_list.append(listitem)
             if manual_select and results_list:
-                w = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title="%s - TMDB"
+                dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title="%s - TMDB"
                                  % xbmc.getLocalizedString(283))
-                w.doModal()
-                selected_item = w.result
-                del w
+                dialog.doModal()
+                selected_item = dialog.result
+                del dialog
                 if selected_item != -1:
                     details = results[selected_item]
                 else:

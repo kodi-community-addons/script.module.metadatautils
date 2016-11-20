@@ -93,7 +93,8 @@ class MusicBrainz(object):
         '''get musicbrainz id by query of artist, album and/or track'''
         return self.search(artist, album, track)[1]
 
-    def get_albumthumb(self, albumid):
+    @staticmethod
+    def get_albumthumb(albumid):
         '''get album thumb'''
         thumb = ""
         url = "http://coverartarchive.org/release-group/%s/front" % albumid

@@ -221,10 +221,10 @@ class PvrArtwork(object):
                         listitem.setProperty("icon", item)
                         artoptions.append(listitem)
 
-                w2 = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=heading)
-                w2.doModal()
-                selected_item = w2.result
-                del w2
+                dialog = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=heading)
+                dialog.doModal()
+                selected_item = dialog.result
+                del dialog
                 if image and selected_item == 1:
                     artwork["art"][label] = ""
                 elif image and selected_item > 2:
@@ -482,13 +482,13 @@ class PvrArtwork(object):
             for strictness in [1, 0.95, 0.9, 0.8]:
                 if title_path:
                     break
-                for dir in dirs:
+                for directory in dirs:
                     if title_path:
                         break
-                    dir = dir.decode("utf-8")
-                    curpath = os.path.join(custom_path, dir) + delim
+                    directory = directory.decode("utf-8")
+                    curpath = os.path.join(custom_path, directory) + delim
                     for item in [title, searchtitle]:
-                        match = SM(None, item, dir).ratio()
+                        match = SM(None, item, directory).ratio()
                         if match >= strictness:
                             title_path = curpath
                             break

@@ -18,13 +18,13 @@ import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
-from helpers.utils import log_msg, get_duration, log_exception, ADDON_ID
+from helpers.utils import log_msg, get_duration, ADDON_ID
 from helpers.utils import extend_dict, get_clean_image, detect_plugin_content
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmcaddon
 import xbmcvfs
-import os
+
 
 class ArtUtils(object):
     '''
@@ -70,7 +70,7 @@ class ArtUtils(object):
         del self.musicart
         del self.pvrart
         log_msg("Exited")
-        
+
     def __del__(self):
         '''make sure close is called'''
         if not self.close_called:

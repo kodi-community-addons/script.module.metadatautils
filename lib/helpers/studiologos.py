@@ -80,10 +80,10 @@ class StudioLogos():
         return studiologo
 
     @use_cache(90)
-    def get_resource_addon_files(self, resourcePath):
+    def get_resource_addon_files(self, resourcepath):
         '''get listing of all files (eg studio logos) inside a resource image addonName
         read data from our permanent cache file to prevent that we have to query the resource addon'''
-        return self.list_files_in_path(resourcePath)
+        return self.list_files_in_path(resourcepath)
 
     @staticmethod
     def list_files_in_path(filespath):
