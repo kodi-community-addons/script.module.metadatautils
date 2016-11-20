@@ -19,7 +19,6 @@ from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
 from helpers.utils import log_msg, get_duration, ADDON_ID
-from helpers.utils import extend_dict, get_clean_image
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
 import xbmcaddon
@@ -277,7 +276,19 @@ def process_method_on_list(*args, **kwargs):
     return _process_method_on_list(*args, **kwargs)
 
 
-def detect_plugin_content(method_to_run, items):
+def detect_plugin_content(*args, **kwargs):
     '''expose our detect_plugin_content method to public'''
     from helpers.utils import detect_plugin_content as _detect_plugin_content
-    return _detect_plugin_content(method_to_run, items)
+    return _detect_plugin_content(*args, **kwargs)
+
+
+def extend_dict(*args, **kwargs):
+    '''expose our extend_dict method to public'''
+    from helpers.utils import extend_dict as _extend_dict
+    return _extend_dict(*args, **kwargs)
+
+
+def get_clean_image(*args, **kwargs):
+    '''expose our get_clean_image method to public'''
+    from helpers.utils import get_clean_image as _get_clean_image
+    return _get_clean_image(*args, **kwargs)

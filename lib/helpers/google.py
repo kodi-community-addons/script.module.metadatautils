@@ -3,7 +3,7 @@
 
 '''get images from google images'''
 
-from utils import DialogSelect, log_msg, requests
+from utils import DialogSelect, log_msg, requests, log_exception
 import BeautifulSoup
 import xbmc
 import xbmcvfs
@@ -63,8 +63,8 @@ class GoogleImages(object):
         html = ''
         try:
             html = requests.get('https://www.google.com/search', headers=headers, params=params, timeout=5).text
-        except Exception as e:
-            log_msg("Error in GoogleImages.get_data: %s" % e, xbmc.LOGWARNING)
+        except Exception as exc:
+            log_exception(__name__, exc)
         soup = BeautifulSoup.BeautifulSoup(html)
         results = []
         for div in soup.findAll('div'):
