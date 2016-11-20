@@ -13,7 +13,6 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib
 import unicodedata
-import re
 
 try:
     import simplejson as json
@@ -96,6 +95,7 @@ def urlencode(text):
 
 
 def formatted_number(number):
+    '''try to format a number to formatted string with thousands'''
     try:
         number = int(number)
         if number < 0:

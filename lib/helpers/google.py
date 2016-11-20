@@ -44,11 +44,11 @@ class GoogleImages(object):
                     listitem = xbmcgui.ListItem(label=img, iconImage=img)
                     images_list.append(listitem)
         if manual_select and images_list:
-            w = DialogSelect("DialogSelect.xml", "", listing=images_list, window_title="%s - Google"
-                             % xbmc.getLocalizedString(283))
-            w.doModal()
-            selected_item = w.result
-            del w
+            dialog = DialogSelect("DialogSelect.xml", "", listing=images_list, window_title="%s - Google"
+                                  % xbmc.getLocalizedString(283))
+            dialog.doModal()
+            selected_item = dialog.result
+            del dialog
             if selected_item != -1:
                 selected_item = images_list[selected_item]
                 image = selected_item.getLabel()

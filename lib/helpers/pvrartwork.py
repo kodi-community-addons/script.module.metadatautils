@@ -185,11 +185,11 @@ class PvrArtwork(object):
                 listitem = xbmcgui.ListItem(label=arttype, iconImage=artwork["art"].get(arttype, ""))
                 listitem.setProperty("icon", artwork["art"].get(arttype, ""))
                 listitems.append(listitem)
-            w = DialogSelect("DialogSelect.xml", "", listing=listitems,
+            dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
                              windowtitle=xbmc.getLocalizedString(13511), multiselect=False)
-            w.doModal()
-            selected_item = w.result
-            del w
+            dialog.doModal()
+            selected_item = dialog.result
+            del dialog
             if selected_item == -1:
                 abort = True
             else:

@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+    script.module.skin.helper.artutils
+    kodi_constants.py
+    Several common constants for use with Kodi json api
+'''
+
 FIELDS_BASE = ["dateadded", "file", "lastplayed","plot", "title", "art", "playcount"]
 FIELDS_FILE = FIELDS_BASE + ["streamdetails", "director", "resume", "runtime"]
 FIELDS_MOVIES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "showlink", "top250", "trailer", "year",

@@ -1,5 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    script.module.skin.helper.artutils
+    imdb.py
+    Get metadata from imdb
+'''
+
 from utils import requests, try_parse_int
 import BeautifulSoup
 from simplecache import use_cache

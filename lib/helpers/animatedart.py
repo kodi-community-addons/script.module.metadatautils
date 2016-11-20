@@ -4,11 +4,10 @@
 '''Retrieve animated artwork for kodi movies'''
 
 from utils import get_json, DialogSelect
-from kodidb import KodiDb
 import xbmc
 import xbmcvfs
 import xbmcgui
-from simplecache import SimpleCache, use_cache
+from simplecache import use_cache
 
 
 class AnimatedArt(object):
@@ -112,10 +111,10 @@ class AnimatedArt(object):
                 listitem = xbmcgui.ListItem(label=label, iconImage=item["thumb"])
                 results_list.append(listitem)
             if manual_select and results_list:
-                w = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title=art_type)
-                w.doModal()
-                selected_item = w.result
-                del w
+                dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title=art_type)
+                dialog.doModal()
+                selected_item = dialog.result
+                del dialog
                 if selected_item == 1:
                     # browse for image
                     dialog = xbmcgui.Dialog()

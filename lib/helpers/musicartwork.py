@@ -8,7 +8,6 @@
 '''
 
 from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines
-from simplecache import use_cache
 from mbrainz import MusicBrainz
 from lastfm import LastFM
 from theaudiodb import TheAudioDb
@@ -164,7 +163,7 @@ class MusicArtwork(object):
         local_path = ""
         local_path_custom = ""
         # get metadata from kodi db
-        extend_dict(details, self.get_artist_kodi_metadata(artist, album))
+        extend_dict(details, self.get_artist_kodi_metadata(artist))
         # get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
             extend_dict(details["art"], self.lookup_artistart_in_folder(details["diskpath"]))
@@ -263,7 +262,7 @@ class MusicArtwork(object):
         self.artutils.cache.set(cache_str, details)
         return details
 
-    def get_artist_kodi_metadata(self, artist, album):
+    def get_artist_kodi_metadata(self, artist):
         '''get artist details from the kodi database'''
         details = {}
         filters = [{"operator": "is", "field": "artist", "value": artist}]

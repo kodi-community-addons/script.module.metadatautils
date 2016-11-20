@@ -34,6 +34,7 @@ class ChannelLogos(object):
         return result
 
     def search_logosdb(self, searchphrase):
+        '''search logo on thelogosdb'''
         result = ""
         for searchphrase in [searchphrase, searchphrase.lower().replace(" hd", "")]:
             if result:

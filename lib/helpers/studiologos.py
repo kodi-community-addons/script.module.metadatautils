@@ -3,7 +3,6 @@
 
 '''Helper for studio logo images'''
 
-import xbmc
 import xbmcvfs
 import os
 from datetime import timedelta
