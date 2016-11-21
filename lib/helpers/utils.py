@@ -136,6 +136,8 @@ def process_method_on_list(method_to_run, items):
 
 def get_clean_image(image):
     '''helper to strip all kodi tags/formatting of an image path/url'''
+    if not image:
+        return ""
     if image and "image://" in image:
         image = image.replace("image://", "")
         image = urllib.unquote(image.encode("utf-8"))
