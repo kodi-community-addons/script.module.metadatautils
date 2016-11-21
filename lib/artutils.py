@@ -198,7 +198,7 @@ class ArtUtils(object):
         if refresh_needed:
             artwork = self.animatedart.get_animated_artwork(
                 imdb_id, manual_select, ignore_cache=True)
-        return artwork
+        return {"art": artwork}
 
     @use_cache(14, True)
     def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):

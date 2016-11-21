@@ -96,6 +96,7 @@ class Omdb(object):
                 result["art"]["thumb"] = value
             elif key == "Metascore":
                 result["metacritic.rating"] = value
+                result["rating.mc"] = value
             elif key == "imdbRating":
                 result["rating.imdb"] = value
                 result["rating"] = float(value)
@@ -140,15 +141,11 @@ class Omdb(object):
                 result["rottentomatoesconsensus"] = value  # legacy
             elif key == "tomatoUserMeter":
                 result["rottentomatoes.usermeter"] = value
-                result["rottentomatoesaudiencemeter"] = value  # legacy
             elif key == "tomatoUserRating":
                 result["rottentomatoes.userrating"] = value
                 result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
-                result["rottentomatoesaudiencerating"] = value  # legacy
-                result["rottentomatoesaudiencerating.percent"] = "%s" % (try_parse_int(float(value) * 10))  # legacy
             elif key == "tomatoUserReviews":
-                result["userreviews"] = int_with_commas(value)
-                result["rottentomatoesaudiencereviews"] = int_with_commas(value)  # legacy
+                result["rottentomatoes.userreviews"] = int_with_commas(value)
             elif key == "tomatoURL":
                 result["rottentomatoes.url"] = value
         return result

@@ -7,7 +7,7 @@
     Get metadata from The Movie Database
 '''
 
-from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string
+from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
 from operator import itemgetter
@@ -241,7 +241,9 @@ class Tmdb(object):
                 details["runtime"] = data["runtime"] * 60
             details["imdbnumber"] = data["imdb_id"]
             details["budget"] = data["budget"]
+            details["budget.formatted"] = int_with_commas(data["budget"])
             details["revenue"] = data["revenue"]
+            details["revenue.formatted"] = int_with_commas(data["revenue"])
             if data.get("production_companies"):
                 details["studio"] = [item["name"] for item in data["production_companies"]]
             if data.get("production_countries"):

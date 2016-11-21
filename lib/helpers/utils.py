@@ -18,6 +18,12 @@ try:
     import simplejson as json
 except Exception:
     import json
+    
+try:
+    from multiprocessing.pool import ThreadPool
+    SUPPORTS_POOL = True
+except Exception:
+    SUPPORTS_POOL = False
 
 ADDON_ID = "script.module.skin.helper.artutils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
@@ -112,14 +118,7 @@ def formatted_number(number):
 def process_method_on_list(method_to_run, items):
     '''helper method that processes a method on each listitem with pooling if the system supports it'''
     all_items = []
-
-    try:
-        from multiprocessing.pool import ThreadPool
-        supports_pool = True
-    except Exception:
-        supports_pool = False
-
-    if supports_pool:
+    if SUPPORTS_POOL:
         pool = ThreadPool()
         try:
             all_items = pool.map(method_to_run, items)
@@ -218,7 +217,7 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
                                 org_dict[key].append(item)
                     # previous value was str, combine both in list
                     elif isinstance(org_dict[key], (str, unicode)):
-                        org_dict[key] = [org_dict[key]]
+                        org_dict[key] = org_dict[key].split(" / ")
                         for item in value:
                             if item not in org_dict[key]:
                                 org_dict[key].append(item)
