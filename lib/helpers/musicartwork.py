@@ -296,6 +296,7 @@ class MusicArtwork(object):
             thumbnail = get_clean_image(details["thumbnail"])
             if xbmcvfs.exists(thumbnail):
                 details["art"]["thumb"] = thumbnail
+                etails["art"]["artistthumb"] = thumbnail
             del details["thumbnail"]
         return details
 
@@ -333,6 +334,7 @@ class MusicArtwork(object):
                 thumbnail = get_clean_image(details["thumbnail"])
                 if xbmcvfs.exists(thumbnail):
                     details["art"]["thumb"] = thumbnail
+                    details["art"]["albumthumb"] = thumbnail
                 del details["thumbnail"]
         return details
 
