@@ -27,6 +27,8 @@ except Exception:
 
 ADDON_ID = "script.module.skin.helper.artutils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
+if not KODI_LANGUAGE:
+    KODI_LANGUAGE = "en"
 
 # setup requests with some additional options
 requests.packages.urllib3.disable_warnings()

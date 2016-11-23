@@ -374,7 +374,7 @@ class PvrArtwork(object):
                        19550, 19551, 19552, 19553, 19554, 19555, 19556, 19557, 19558, 19559]
         for kodi_genre in kodi_genres:
             if genre == xbmc.getLocalizedString(kodi_genre):
-                media_type = "movie"
+                media_type = "tvshow"
         return media_type
 
     def get_searchtitle(self, title, channel):

@@ -53,13 +53,13 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
             for label in ["label", "plot", "year", "rating"]:
                 details['%s.%s' % (count, label)] = item[label]
             details["%s.DBID" % count] = item["movieid"]
-            details["%s.Duration" % count] = item['runtime'] / 60
+            details["%s.duration" % count] = item['runtime'] / 60
 
             # art labels
             art = item['art']
             for label in ["poster", "fanart", "landscape", "clearlogo", "clearart", "banner", "discart"]:
                 if art.get(label):
-                    details['%s.Art.%s' % (count, label)] = get_clean_image(art[label])
+                    details['%s.art.%s' % (count, label)] = get_clean_image(art[label])
                     if not movieset["art"].get(label):
                         movieset["art"][label] = get_clean_image(art[label])
             all_fanarts.append(get_clean_image(art.get("fanart")))
@@ -88,16 +88,16 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
                             resolution = "1080"
                         elif width * height >= 6000000:
                             resolution = "4K"
-                        details["%s.Resolution" % count] = resolution
+                        details["%s.resolution" % count] = resolution
                     details["%s.Codec" % count] = stream.get("codec", "")
                     if stream.get("aspect", ""):
-                        details["%s.AspectRatio" % count] = round(stream["aspect"], 2)
+                        details["%s.aspectratio" % count] = round(stream["aspect"], 2)
                 if len(audiostreams) > 0:
                     # grab details of first audio stream
                     stream = audiostreams[0]
-                    details["%s.AudioCodec" % count] = stream.get('codec', '')
-                    details["%s.AudioChannels" % count] = stream.get('channels', '')
-                    details["%s.AudioLanguage" % count] = stream.get('language', '')
+                    details["%s.audiocodec" % count] = stream.get('codec', '')
+                    details["%s.audiochannels" % count] = stream.get('channels', '')
+                    details["%s.audiolanguage" % count] = stream.get('language', '')
                 if len(subtitles) > 0:
                     # grab details of first subtitle
                     details["%s.SubTitle" % count] = subtitles[0].get('language', '')
@@ -119,25 +119,26 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
             if item.get("studio"):
                 studio += [s for s in item["studio"] if s and s not in studio]
             years.append(str(item['year']))
-        details["Plot"] = plot
+        details["plot"] = plot
         if total_movies > 1:
-            details["ExtendedPlot"] = title_header + title_list + "[CR]" + plot
+            details["extendedplot"] = title_header + title_list + "[CR]" + plot
         else:
-            details["ExtendedPlot"] = plot
-        details["Title"] = title_list
-        details["Runtime"] = runtime / 60
+            details["extendedplot"] = plot
+        details["title"] = title_list
+        details["runtime"] = runtime / 60
         details.update(get_duration(runtime / 60))
-        details["Writer"] = writer
-        details["Director"] = director
-        details["Genre"] = genre
-        details["Studio"] = studio
-        details["Years"] = years
-        details["WatchedCount"] = watchedcount
-        details["UnwatchedCount"] = unwatchedcount
+        details["writer"] = writer
+        details["director"] = director
+        details["genre"] = genre
+        details["studio"] = studio
+        details["years"] = years
+        details["country"] = years
+        details["watchedCount"] = watchedcount
+        details["unwatchedCount"] = unwatchedcount
         details["art"]["fanarts"] = all_fanarts
         details.update(studiologos.get_studio_logo(studio, studiologos_path))
-        details["Count"] = total_movies
-        details["art"]["ExtraFanart"] = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s"\
+        details["count"] = total_movies
+        details["art"]["extrafanart"] = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s"\
             % quote_plus(repr(all_fanarts))
     simplecache.set(cache_str, details, checksum=cache_checksum)
     return details

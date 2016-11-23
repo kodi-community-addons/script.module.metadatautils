@@ -86,15 +86,15 @@ class KodiDb(object):
         return self.get_json("VideoLibrary.GetMovieSetDetails", returntype="",
                              fields=["title", "art", "playcount"], optparam=optparams)
 
-    def moviesets(self, sort=None, filters=None, limits=None, filtertype=None, include_set_movies=False):
+    def moviesets(self, sort=None, limits=None, include_set_movies=False):
         '''get moviesetdetails from kodi db'''
         if include_set_movies:
             optparam = ("movies", {"properties": FIELDS_MOVIES})
         else:
             optparam = None
-        return self.get_json("VideoLibrary.GetMovieSets", sort=sort, filters=filters,
+        return self.get_json("VideoLibrary.GetMovieSets", sort=sort,
                              fields=["title", "art", "playcount"],
-                             limits=limits, returntype="", filtertype=filtertype, optparam=optparam)
+                             limits=limits, returntype="", optparam=optparam)
 
     def files(self, vfspath, sort=None, limits=None):
         '''gets all items in a kodi vfs path'''

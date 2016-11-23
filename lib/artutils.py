@@ -35,10 +35,13 @@ class ArtUtils(object):
     '''
     close_called = False
 
-    def __init__(self):
+    def __init__(self, cache=None):
         '''Initialize and load all our helpers'''
         self._studiologos_path = ""
-        self.cache = SimpleCache()
+        if cache:
+            self.cache = cache
+        else:
+            self.cache = SimpleCache()
         self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodidb = KodiDb()
         self.omdb = Omdb(self.cache)
@@ -79,7 +82,7 @@ class ArtUtils(object):
         if not self.close_called:
             self.close()
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_extrafanart(self, file_path, media_type):
         '''helper to retrieve the extrafanart path for a kodi media item'''
         from helpers.extrafanart import get_extrafanart
@@ -94,7 +97,7 @@ class ArtUtils(object):
         '''options for music metadata for specific item'''
         return self.musicart.music_artwork_options(artist, album, track, disc)
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_extended_artwork(self, imdb_id="", tvdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
         result = {}
@@ -110,7 +113,7 @@ class ArtUtils(object):
                 result["art"] = self.fanarttv.tvshow(tvdb_id)
         return result
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_tmdb_details(self, imdb_id="", tvdb_id="", title="", year="", media_type="",
                          manual_select=False, preftype=""):
         '''returns details from tmdb'''
@@ -148,7 +151,7 @@ class ArtUtils(object):
             self.studiologos,
             self.studiologos_path)
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_streamdetails(self, db_id, media_type, ignore_cache=False):
         '''get a nicely formatted dict of the streamdetails '''
         from helpers.streamdetails import get_streamdetails
@@ -163,7 +166,7 @@ class ArtUtils(object):
         '''options for pvr metadata for specific item'''
         return self.pvrart.pvr_artwork_options(title, channel, genre)
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_channellogo(self, channelname):
         '''get channellogo from the given channel name'''
         return self.channellogos.get_channellogo(channelname)
@@ -183,7 +186,7 @@ class ArtUtils(object):
         '''path to use to lookup studio logos, must be set by the calling addon'''
         self._studiologos_path = value
 
-    @use_cache(1, False)
+    @use_cache(1)
     def get_animated_artwork(self, imdb_id, manual_select=False, ignore_cache=False):
         '''get animated artwork, perform extra check if local version still exists'''
         artwork = self.animatedart.get_animated_artwork(
@@ -200,7 +203,7 @@ class ArtUtils(object):
                 imdb_id, manual_select, ignore_cache=True)
         return {"art": artwork}
 
-    @use_cache(14, True)
+    @use_cache(14)
     def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):
         '''Get (kodi compatible formatted) metadata from OMDB, including Rotten tomatoes details'''
         title = title.split(" (")[0]  # strip year appended to title
@@ -218,7 +221,7 @@ class ArtUtils(object):
             result.update(get_duration(result["runtime"]))
         return result
 
-    @use_cache(7, True)
+    @use_cache(7)
     def get_top250_rating(self, imdb_id):
         '''get the position in the IMDB top250 for the given IMDB ID'''
         return self.imdb.get_top250_rating(imdb_id)
@@ -237,7 +240,7 @@ class ArtUtils(object):
         else:
             return get_duration(duration)
 
-    @use_cache(1, True)
+    @use_cache(1)
     def get_tvdb_details(self, imdbid="", tvdbid=""):
         '''get metadata from tvdb by providing a tvdbid or tmdbid'''
         result = {}
