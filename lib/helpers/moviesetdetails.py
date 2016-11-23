@@ -34,7 +34,7 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         writer = []
         director = []
         genre = []
-        country = []
+        countries = []
         studio = []
         years = []
         plot = ""
@@ -115,7 +115,7 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
             if item.get("genre"):
                 genre += [g for g in item["genre"] if g and g not in genre]
             if item.get("country"):
-                country += [c for c in item["country"] if c and c not in country]
+                countries += [c for c in item["country"] if c and c not in countries]
             if item.get("studio"):
                 studio += [s for s in item["studio"] if s and s not in studio]
             years.append(str(item['year']))
@@ -132,9 +132,9 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         details["genre"] = genre
         details["studio"] = studio
         details["years"] = years
-        details["country"] = years
-        details["watchedCount"] = watchedcount
-        details["unwatchedCount"] = unwatchedcount
+        details["country"] = countries
+        details["watchedcount"] = watchedcount
+        details["unwatchedcount"] = unwatchedcount
         details["art"]["fanarts"] = all_fanarts
         details.update(studiologos.get_studio_logo(studio, studiologos_path))
         details["count"] = total_movies

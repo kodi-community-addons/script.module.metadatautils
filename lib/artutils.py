@@ -18,9 +18,10 @@ import helpers.kodi_constants as kodi_constants
 from helpers.pvrartwork import PvrArtwork
 from helpers.studiologos import StudioLogos
 from helpers.musicartwork import MusicArtwork
-from helpers.utils import log_msg, get_duration, ADDON_ID
+from helpers.utils import log_msg, ADDON_ID
 from helpers.utils import get_clean_image as _get_clean_image
 from helpers.utils import extend_dict as _extend_dict
+from helpers.utils import get_duration as _get_duration
 from helpers.utils import detect_plugin_content as _detect_plugin_content
 from helpers.utils import process_method_on_list as _process_method_on_list
 from simplecache import use_cache, SimpleCache
@@ -138,7 +139,7 @@ class ArtUtils(object):
             result["status"] = self.translate_string(result["status"])
         if result.get("runtime"):
             result["runtime"] = result["runtime"] / 60
-            result.update(get_duration(result["runtime"]))
+            result.update(self.get_duration(result["runtime"]))
         return result
 
     def get_moviesetdetails(self, set_id):
@@ -218,7 +219,7 @@ class ArtUtils(object):
             result["status"] = self.translate_string(result["status"])
         if result.get("runtime"):
             result["runtime"] = result["runtime"] / 60
-            result.update(get_duration(result["runtime"]))
+            result.update(self.get_duration(result["runtime"]))
         return result
 
     @use_cache(7)
@@ -226,10 +227,10 @@ class ArtUtils(object):
         '''get the position in the IMDB top250 for the given IMDB ID'''
         return self.imdb.get_top250_rating(imdb_id)
 
-    @staticmethod
-    def get_duration(duration):
+    @use_cache(14)
+    def get_duration(self, duration):
         '''helper to get a formatted duration'''
-        if ":" in duration:
+        if isinstance(duration, (str, unicode)) and ":" in duration:
             dur_lst = duration.split(":")
             return {
                 "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
@@ -238,9 +239,9 @@ class ArtUtils(object):
                 "Runtime": str((int(dur_lst[0]) * 60) + dur_lst[1]),
             }
         else:
-            return get_duration(duration)
+            return _get_duration(duration)
 
-    @use_cache(1)
+    @use_cache(2)
     def get_tvdb_details(self, imdbid="", tvdbid=""):
         '''get metadata from tvdb by providing a tvdbid or tmdbid'''
         result = {}
@@ -261,7 +262,7 @@ class ArtUtils(object):
             result["status"] = self.translate_string(result["status"])
             if result.get("runtime"):
                 result["runtime"] = result["runtime"] / 60
-                result.update(get_duration(result["runtime"]))
+                result.update(_get_duration(result["runtime"]))
         return result
 
     def translate_string(self, _str):

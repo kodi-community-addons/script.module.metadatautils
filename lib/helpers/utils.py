@@ -5,6 +5,7 @@
 
 import xbmcgui
 import xbmc
+import xbmcvfs
 import sys
 from traceback import format_exc
 import requests
@@ -13,6 +14,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import urllib
 import unicodedata
+import os
 
 try:
     import simplejson as json
@@ -226,7 +228,7 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
                             if item not in org_dict[key]:
                                 org_dict[key].append(item)
                 elif isinstance(value, dict):
-                    org_dict[key] = extend_dict(org_dict[key], value)
+                    org_dict[key] = extend_dict(org_dict[key], value, allow_overwrite)
                 elif allow_overwrite and key in allow_overwrite:
                     # value may be overwritten
                     org_dict[key] = value
@@ -377,6 +379,60 @@ def detect_plugin_content(plugin_path):
                     break
         log_msg("detect_plugin_path_content for: %s  - result: %s" % (plugin_path, content_type))
     return content_type
+    
+    
+def download_artwork(folderpath, artwork):
+    '''download artwork to local folder'''
+    efa_path = ""
+    new_dict = {}
+    if not xbmcvfs.exists(folderpath):
+        xbmcvfs.mkdir(folderpath)
+    for key, value in artwork.iteritems():
+        if key == "fanart":
+            new_dict[key] = download_image(os.path.join(folderpath, "fanart.jpg"), value)
+        elif key == "thumb":
+            new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
+        elif key == "discart":
+            new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
+        elif key == "banner":
+            new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
+        elif key == "clearlogo":
+            new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
+        elif key == "clearart":
+            new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
+        elif key == "characterart":
+            new_dict[key] = download_image(os.path.join(folderpath, "characterart.png"), value)
+        elif key == "poster":
+            new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
+        elif key == "landscape":
+            new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
+        elif key == "fanarts" and value:
+            delim = "\\" if "\\" in folderpath else "/"
+            efa_path = "%sextrafanart" % folderpath + delim
+            if not xbmcvfs.exists(efa_path):
+                xbmcvfs.mkdir(efa_path)
+            images = []
+            for count, image in enumerate(value):
+                image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
+                images.append(image)
+            new_dict[key] = images
+        else:
+            new_dict[key] = value
+    if efa_path:
+        new_dict["extrafanart"] = efa_path
+    return new_dict
+
+def download_image(filename, url):
+    '''download specific image to local folder'''
+    if not url:
+        return url
+    elif xbmcvfs.exists(filename):
+        # we do not overwrite existing images!
+        return filename
+    else:
+        if xbmcvfs.copy(url, filename):
+            return filename
+    return url
 
 
 class DialogSelect(xbmcgui.WindowXMLDialog):

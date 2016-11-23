@@ -419,6 +419,7 @@ class KodiDb(object):
                 ('tvshow', 'DefaultTVShows.png'),
                 ('movie', 'DefaultMovies.png'),
                 ('song', 'DefaultAudio.png'),
+                ('artist', 'DefaultArtist.png'),
                 ('musicvideo', 'DefaultMusicVideos.png'),
                 ('recording', 'DefaultTVShows.png'),
                 ('channel', 'DefaultAddonPVRClient.png'),

@@ -1,4 +1,4 @@
- #!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 '''
@@ -7,7 +7,7 @@
     Get metadata for Kodi PVR programs
 '''
 
-from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID
+from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID, download_artwork, normalize_string
 import xbmc
 import xbmcgui
 import xbmcvfs
@@ -17,6 +17,7 @@ import re
 from datetime import timedelta
 from simplecache import use_cache
 from urllib import quote_plus
+import os
 
 
 class PvrArtwork(object):
@@ -166,6 +167,10 @@ class PvrArtwork(object):
                         details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
                             "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
 
+                # download artwork to custom folder
+                if self.artutils.addon.getSetting("pvr_art_download") == "true":
+                    details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
+
         # store result in cache and return details
         self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
         return details
@@ -186,7 +191,7 @@ class PvrArtwork(object):
                 listitem.setProperty("icon", artwork["art"].get(arttype, ""))
                 listitems.append(listitem)
             dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
-                             windowtitle=xbmc.getLocalizedString(13511), multiselect=False)
+                                  windowtitle=xbmc.getLocalizedString(13511), multiselect=False)
             dialog.doModal()
             selected_item = dialog.result
             del dialog
@@ -470,15 +475,13 @@ class PvrArtwork(object):
             tvdb_match = match_results[0]["id"]
         return tvdb_match
 
-    def lookup_custom_path(self, searchtitle, title):
-        '''looks up a custom directory if it contains a subdir for our title'''
-        details = {}
-        details["art"] = {}
+    def get_custom_path(self, searchtitle, title):
+        '''locate custom folder on disk as pvrart location'''
+        title_path = ""
         custom_path = self.artutils.addon.getSetting("pvr_art_custom_path")
         if custom_path and self.artutils.addon.getSetting("pvr_art_custom") == "true":
             delim = "\\" if "\\" in custom_path else "/"
             dirs, files = xbmcvfs.listdir(custom_path)
-            title_path = ""
             for strictness in [1, 0.95, 0.9, 0.8]:
                 if title_path:
                     break
@@ -492,28 +495,37 @@ class PvrArtwork(object):
                         if match >= strictness:
                             title_path = curpath
                             break
-            if title_path:
-                # we have found a folder for the title, look for artwork
-                files = xbmcvfs.listdir(title_path)[1]
-                for item in files:
-                    item = item.decode("utf-8")
-                    if item in ["banner.jpg", "clearart.png", "poster.png", "fanart.jpg", "landscape.jpg"]:
-                        key = item.split(".")[0]
-                        details["art"][key] = title_path + item
-                    elif item == "logo.png":
-                        details["art"]["clearlogo"] = title_path + item
-                    elif item == "thumb.jpg":
-                        details["art"]["thumb"] = title_path + item
-                # extrafanarts
-                efa_path = title_path + "extrafanart" + delim
-                if xbmcvfs.exists(title_path + "extrafanart"):
-                    files = xbmcvfs.listdir(efa_path)[1]
-                    details["art"]["fanarts"] = []
-                    if files:
-                        details["art"]["extrafanart"] = efa_path
-                        for item in files:
-                            item = efa_path + item.decode("utf-8")
-                            details["art"]["fanarts"].append(item)
+            if not title_path and self.artutils.addon.getSetting("pvr_art_download") == "true":
+                title_path = os.path.join(custom_path, normalize_string(title)) + delim
+        return title_path
+
+    def lookup_custom_path(self, searchtitle, title):
+        '''looks up a custom directory if it contains a subdir for our title'''
+        details = {}
+        details["art"] = {}
+        title_path = self.get_custom_path(searchtitle, title)
+        if title_path and xbmcvfs.exists(title_path):
+            # we have found a folder for the title, look for artwork
+            files = xbmcvfs.listdir(title_path)[1]
+            for item in files:
+                item = item.decode("utf-8")
+                if item in ["banner.jpg", "clearart.png", "poster.png", "fanart.jpg", "landscape.jpg"]:
+                    key = item.split(".")[0]
+                    details["art"][key] = title_path + item
+                elif item == "logo.png":
+                    details["art"]["clearlogo"] = title_path + item
+                elif item == "thumb.jpg":
+                    details["art"]["thumb"] = title_path + item
+            # extrafanarts
+            efa_path = title_path + "extrafanart/"
+            if xbmcvfs.exists(title_path + "extrafanart"):
+                files = xbmcvfs.listdir(efa_path)[1]
+                details["art"]["fanarts"] = []
+                if files:
+                    details["art"]["extrafanart"] = efa_path
+                    for item in files:
+                        item = efa_path + item.decode("utf-8")
+                        details["art"]["fanarts"].append(item)
         return details
 
     def lookup_local_library(self, title, media_type):

@@ -7,7 +7,7 @@
     Get metadata for music
 '''
 
-from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines
+from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines, download_artwork
 from mbrainz import MusicBrainz
 from lastfm import LastFM
 from theaudiodb import TheAudioDb
@@ -195,7 +195,7 @@ class MusicArtwork(object):
                     details["art"] = self.download_artwork(local_path, details["art"])
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
-                    details["art"] = self.download_artwork(local_path_custom, details["art"])
+                    details["art"] = download_artwork(local_path_custom, details["art"])
 
                 # fix extrafanart
                 if details["art"].get("fanarts"):
@@ -253,7 +253,7 @@ class MusicArtwork(object):
 
                 # download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
-                    details["art"] = self.download_artwork(local_path, details["art"])
+                    details["art"] = download_artwork(local_path, details["art"])
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
                     details["art"] = self.download_artwork(local_path_custom, details["art"])
@@ -296,7 +296,7 @@ class MusicArtwork(object):
             thumbnail = get_clean_image(details["thumbnail"])
             if xbmcvfs.exists(thumbnail):
                 details["art"]["thumb"] = thumbnail
-                etails["art"]["artistthumb"] = thumbnail
+                details["art"]["artistthumb"] = thumbnail
             del details["thumbnail"]
         return details
 
@@ -455,44 +455,3 @@ class MusicArtwork(object):
                 else:
                     return self.get_customfolder_path(curpath, foldername)
         return ""
-
-    def download_artwork(self, folderpath, artwork):
-        '''download artwork to local folder'''
-        efa_path = ""
-        new_dict = {}
-        for key, value in artwork.iteritems():
-            if key == "fanart":
-                new_dict[key] = self.download_image(os.path.join(folderpath, "fanart.jpg"), value)
-            elif key == "thumb":
-                new_dict[key] = self.download_image(os.path.join(folderpath, "folder.jpg"), value)
-            elif key == "discart":
-                new_dict[key] = self.download_image(os.path.join(folderpath, "disc.png"), value)
-            elif key == "banner":
-                new_dict[key] = self.download_image(os.path.join(folderpath, "banner.jpg"), value)
-            elif key == "clearlogo":
-                new_dict[key] = self.download_image(os.path.join(folderpath, "logo.png"), value)
-            elif key == "fanarts":
-                efa_path = "%sextrafanart/" % folderpath
-                if value and not xbmcvfs.exists(efa_path):
-                    xbmcvfs.mkdir(efa_path)
-                images = []
-                for count, image in enumerate(value):
-                    image = self.download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
-                    images.append(image)
-                new_dict[key] = images
-            else:
-                new_dict[key] = value
-        if efa_path:
-            new_dict["extrafanart"] = efa_path
-        return new_dict
-
-    @staticmethod
-    def download_image(filename, url):
-        '''download specific image to local folder'''
-        if xbmcvfs.exists(filename):
-            # we do not overwrite existing images!
-            return filename
-        else:
-            if xbmcvfs.copy(url, filename):
-                return filename
-        return url
