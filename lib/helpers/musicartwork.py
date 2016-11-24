@@ -192,7 +192,7 @@ class MusicArtwork(object):
 
                 # download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
-                    details["art"] = self.download_artwork(local_path, details["art"])
+                    details["art"] = download_artwork(local_path, details["art"])
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
                     details["art"] = download_artwork(local_path_custom, details["art"])
@@ -427,7 +427,7 @@ class MusicArtwork(object):
         if artist_path:
             album_path = self.get_customfolder_path(artist_path, album)
             if album_path and disc:
-                if "\\" in customfolder:
+                if "\\" in album_path:
                     delim = "\\"
                 else:
                     delim = "/"
@@ -435,7 +435,7 @@ class MusicArtwork(object):
                 for directory in dirs:
                     directory = directory.decode("utf-8")
                     if disc in directory:
-                        return os.path.join(customfolder, directory) + delim
+                        return os.path.join(album_path, directory) + delim
         return album_path
 
     def get_customfolder_path(self, customfolder, foldername):
