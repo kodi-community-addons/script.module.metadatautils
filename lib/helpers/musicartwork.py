@@ -309,7 +309,7 @@ class MusicArtwork(object):
             # get album by track
             result = self.artutils.kodidb.songs(filters=filters)
             for item in result:
-                album = result["album"]
+                album = item["album"]
                 break
         if artist and album:
             result = self.artutils.kodidb.albums(filters=filters)

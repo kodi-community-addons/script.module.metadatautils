@@ -145,6 +145,7 @@ class ArtUtils(object):
     def get_moviesetdetails(self, set_id):
         '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
         from helpers.moviesetdetails import get_moviesetdetails
+        log_msg("get_moviesetdetails",xbmc.LOGNOTICE)
         return get_moviesetdetails(
             self.cache,
             self.kodidb,
