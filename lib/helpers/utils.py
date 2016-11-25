@@ -358,7 +358,7 @@ def detect_plugin_content(plugin_path):
                     break
             else:
                 # VIDEO ITEMS
-                if item["showtitle"] and not item["artist"]:
+                if item["showtitle"] and not item.get("artist"):
                     # this is a tvshow, episode or season...
                     if item["type"] == "season" or (item["season"] > -1 and item["episode"] == -1):
                         content_type = "seasons"

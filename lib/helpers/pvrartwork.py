@@ -154,7 +154,7 @@ class PvrArtwork(object):
                     if manual_select:
                         google_title = searchtitle
                     else:
-                        google_title = "%s + %s" % (searchtitle, channel.lower().split(" hd")[0])
+                        google_title = '"%s" + "%s"' % (searchtitle, channel.lower().split(" hd")[0])
                     thumb = self.artutils.google.search_image(google_title, manual_select)
                 if thumb:
                     details["thumbnail"] = thumb
@@ -318,21 +318,21 @@ class PvrArtwork(object):
             log_msg("PVR artwork - filter active for title: %s --> Title or channel is empty!")
             return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
-            if item.lower() == title.lower():
+            if item and item.lower() == title.lower():
                 log_msg(
                     "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
                     "Title is in list of titles to ignore" %
                     (title, channel, genre))
                 return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_channels").split("|"):
-            if item.lower() == channel.lower():
+            if item and item.lower() == channel.lower():
                 log_msg(
                     "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
                     "Channel is in list of channels to ignore" %
                     (title, channel, genre))
                 return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_genres").split("|"):
-            if genre and item.lower() in genre.lower():
+            if genre and item and item.lower() in genre.lower():
                 log_msg(
                     "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
                     "Genre is in list of Genres to ignore" %
