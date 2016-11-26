@@ -448,7 +448,10 @@ class KodiDb(object):
             if item.get('type') == "album" and not item.get('album'):
                 item['album'] = item.get('label')
             if not item.get("duration") and item.get("runtime"):
-                item["duration"] = item.get("runtime") / 60
+                if (item["runtime"] / 60) > 300:
+                    item["duration"] = item.get("runtime") / 60
+                else:
+                    item["duration"] = item.get("runtime")
             if not item.get("plot") and item.get("comment"):
                 item["plot"] = item.get("comment")
             if not item.get("tvshowtitle") and item.get("showtitle"):
