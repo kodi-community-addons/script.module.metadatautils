@@ -46,7 +46,7 @@ class MusicArtwork(object):
             album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
             if details.get("plot") and album_details.get("plot"):
                 details["plot"] = "%s  --  %s" % (album_details["plot"], details["plot"])
-                extend_dict(details, album_details)
+            details = extend_dict(details, album_details)
         return details
 
     def manual_set_music_artwork(self, artist, album, track, disc):
@@ -163,10 +163,10 @@ class MusicArtwork(object):
         local_path = ""
         local_path_custom = ""
         # get metadata from kodi db
-        extend_dict(details, self.get_artist_kodi_metadata(artist))
+        details = extend_dict(details, self.get_artist_kodi_metadata(artist))
         # get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
-            extend_dict(details["art"], self.lookup_artistart_in_folder(details["diskpath"]))
+            details["art"] = extend_dict(details["art"], self.lookup_artistart_in_folder(details["diskpath"]))
             local_path = details["diskpath"]
         # get artwork from custom folder
         if self.artutils.addon.getSetting("music_art_custom") == "true":
@@ -174,7 +174,7 @@ class MusicArtwork(object):
             if custom_path:
                 diskpath = self.get_customfolder_path(custom_path, artist)
                 if diskpath:
-                    extend_dict(details["art"], self.lookup_artistart_in_folder(diskpath))
+                    details["art"] = extend_dict(details["art"], self.lookup_artistart_in_folder(diskpath))
                     local_path_custom = diskpath
         # lookup online metadata
         if self.artutils.addon.getSetting("music_art_scraper") == "true":
@@ -184,11 +184,11 @@ class MusicArtwork(object):
             mb_artistid = self.get_mb_artist_id(artist, album, track)
             if mb_artistid:
                 # get artwork from fanarttv
-                extend_dict(details["art"], self.artutils.fanarttv.artist(mb_artistid))
+                details["art"] = extend_dict(details["art"], self.artutils.fanarttv.artist(mb_artistid))
                 # get metadata from theaudiodb
-                extend_dict(details, self.audiodb.artist_info(mb_artistid))
+                details = extend_dict(details, self.audiodb.artist_info(mb_artistid))
                 # get metadata from lastfm
-                extend_dict(details, self.lastfm.artist_info(mb_artistid))
+                details = extend_dict(details, self.lastfm.artist_info(mb_artistid))
 
                 # download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
@@ -224,10 +224,10 @@ class MusicArtwork(object):
         local_path = ""
         local_path_custom = ""
         # get metadata from kodi db
-        extend_dict(details, self.get_album_kodi_metadata(artist, album, track, disc))
+        details = extend_dict(details, self.get_album_kodi_metadata(artist, album, track, disc))
         # get artwork from songlevel path
         if details.get("diskpath") and self.artutils.addon.getSetting("music_art_musicfolders") == "true":
-            extend_dict(details["art"], self.lookup_albumart_in_folder(details["diskpath"]))
+            details["art"] = extend_dict(details["art"], self.lookup_albumart_in_folder(details["diskpath"]))
             local_path = details["diskpath"]
         # get artwork from custom folder
         if self.artutils.addon.getSetting("music_art_custom") == "true":
@@ -235,18 +235,18 @@ class MusicArtwork(object):
             if custom_path:
                 diskpath = self.get_custom_album_path(custom_path, artist, album, disc)
                 if diskpath:
-                    extend_dict(details["art"], self.lookup_albumart_in_folder(diskpath))
+                    details["art"] = extend_dict(details["art"], self.lookup_albumart_in_folder(diskpath))
                     local_path_custom = diskpath
         # lookup online metadata
         if self.artutils.addon.getSetting("music_art_scraper") == "true":
             mb_albumid = self.get_mb_album_id(artist, album, track)
             if mb_albumid:
                 # get artwork from fanarttv
-                extend_dict(details["art"], self.artutils.fanarttv.album(mb_albumid))
+                details["art"] = extend_dict(details["art"], self.artutils.fanarttv.album(mb_albumid))
                 # get metadata from theaudiodb
-                extend_dict(details, self.audiodb.album_info(mb_albumid))
+                details = extend_dict(details, self.audiodb.album_info(mb_albumid))
                 # get metadata from lastfm
-                extend_dict(details, self.lastfm.album_info(mb_albumid))
+                details = extend_dict(details, self.lastfm.album_info(mb_albumid))
                 # musicbrainz thumb as last resort
                 if not details["art"].get("thumb"):
                     details["art"]["thumb"] = self.mbrainz.get_albumthumb(mb_albumid)
@@ -319,14 +319,23 @@ class MusicArtwork(object):
                 filters = [{"albumid": details["albumid"]}]
                 album_tracks = self.artutils.kodidb.songs(filters=filters)
                 details["tracks"] = []
+                bullet = "•".decode("utf-8")
+                details["tracks.formatted"] = u""
+                details["tracks.formatted2"] = ""
                 for item in album_tracks:
                     details["tracks"].append(item["title"])
+                    details["tracks.formatted"] += u"%s %s [CR]" % (bullet, item["title"])
+                    duration = item["duration"]
+                    total_seconds = int(duration)
+                    minutes = total_seconds / 60
+                    seconds = total_seconds - (minutes * 60)
+                    duration = "%s:%s" % (minutes, str(seconds).zfill(2))
+                    details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, item["title"], duration)
                     if not details.get("diskpath"):
                         if not disc or item["disc"] == int(disc):
                             details["diskpath"] = self.get_albumpath_by_songpath(item["file"])
-                joinchar = "[CR]• ".decode("utf-8")
-                details["tracks.formatted"] = joinchar.join(details["tracks"])
                 details["art"] = {}
+                details["songcount"] = len(album_tracks)
                 fanart = get_clean_image(details["fanart"])
                 if xbmcvfs.exists(fanart):
                     details["art"]["fanart"] = fanart

@@ -36,13 +36,10 @@ class ArtUtils(object):
     '''
     close_called = False
 
-    def __init__(self, cache=None):
+    def __init__(self):
         '''Initialize and load all our helpers'''
         self._studiologos_path = ""
-        if cache:
-            self.cache = cache
-        else:
-            self.cache = SimpleCache()
+        self.cache = SimpleCache()
         self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodidb = KodiDb()
         self.omdb = Omdb(self.cache)
@@ -101,6 +98,7 @@ class ArtUtils(object):
     @use_cache(14)
     def get_extended_artwork(self, imdb_id="", tvdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
+        from urllib import quote_plus
         result = {}
         if "movie" in media_type and imdb_id:
             result["art"] = self.fanarttv.movie(imdb_id)
@@ -112,6 +110,9 @@ class ArtUtils(object):
                     tvdb_id = self.thetvdb.get_series_by_imdb_id(imdb_id).get("tvdb_id")
             if tvdb_id:
                 result["art"] = self.fanarttv.tvshow(tvdb_id)
+        if result["art"].get("fanarts") and len(result["art"]["fanarts"]) > 1:
+            result["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
+                "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"]["fanarts"]))
         return result
 
     @use_cache(14)
