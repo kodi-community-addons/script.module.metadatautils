@@ -146,6 +146,8 @@ class TheAudioDb(object):
                 details["year"] = adbdetails["intYearReleased"]
             if adbdetails.get("intScore"):
                 details["rating"] = adbdetails["intScore"]
+            if adbdetails.get("strAlbum"):
+                details["title"] = adbdetails["strAlbum"]
         return details
 
     @use_cache(60)

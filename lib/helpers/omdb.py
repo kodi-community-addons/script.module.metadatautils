@@ -6,6 +6,7 @@
 from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE
 from simplecache import use_cache
 import arrow
+import xbmc
 
 
 class Omdb(object):
@@ -75,8 +76,11 @@ class Omdb(object):
                 result["title"] = value
             elif key == "Released" and value:
                 date_time = arrow.get(value, "DD MMM YYYY")
-                result["premiered"] = date_time.format('YYYY-MM-DD')
-                result["premiered.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
+                result["premiered"] = date_time.strftime(xbmc.getRegion("dateshort"))
+                try:
+                    result["premiered.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
+                except Exception:
+                    result["premiered.formatted"] = value
             elif key == "Runtime" and value:
                 result["runtime"] = try_parse_int(value.replace(" min", "")) * 60
             elif key == "Genre":
@@ -97,7 +101,7 @@ class Omdb(object):
             elif key == "Metascore":
                 result["metacritic.rating"] = value
                 result["rating.mc"] = value
-            elif key == "imdbRating":
+            elif key == "imdbRating" and value:
                 result["rating.imdb"] = value
                 result["rating"] = float(value)
                 result["rating.percent.imdb"] = "%s" % (try_parse_int(float(value) * 10))
@@ -120,7 +124,7 @@ class Omdb(object):
             elif key == "tomatoMeter":
                 result["rottentomatoes.meter"] = value
                 result["rottentomatoesmeter"] = value
-            if key == "tomatoRating":
+            if key == "tomatoRating" and value:
                 result["rottentomatoes.rating"] = value
                 result["rottentomatoes.rating.percent"] = "%s" % (try_parse_int(float(value) * 10))
                 result["rating.rt"] = value
@@ -141,7 +145,7 @@ class Omdb(object):
                 result["rottentomatoesconsensus"] = value  # legacy
             elif key == "tomatoUserMeter":
                 result["rottentomatoes.usermeter"] = value
-            elif key == "tomatoUserRating":
+            elif key == "tomatoUserRating" and value:
                 result["rottentomatoes.userrating"] = value
                 result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
             elif key == "tomatoUserReviews":

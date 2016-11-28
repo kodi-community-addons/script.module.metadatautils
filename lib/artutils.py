@@ -56,7 +56,7 @@ class ArtUtils(object):
         log_msg("Initialized")
 
     def close(self):
-        '''Cleanup Kodi Cpython instances'''
+        '''Cleanup instances'''
         self.close_called = True
         self.cache.close()
         self.addon = None
@@ -265,6 +265,26 @@ class ArtUtils(object):
                 result["runtime"] = result["runtime"] / 60
                 result.update(_get_duration(result["runtime"]))
         return result
+
+    @use_cache(14)
+    def get_imdbtvdb_id(self, title, content_type, year="", imdbid="", tvshowtitle=""):
+        '''try to figure out the imdbnumber and/or tvdbid'''
+        tvdbid = ""
+        if content_type in ["seasons", "episodes"]:
+            title = tvshowtitle
+            content_type = "tvshows"
+        if imdbid and not imdbid.startswith("tt"):
+            if content_type in ["tvshows", "seasons", "episodes"]:
+                tvdbid = imdbid
+                imdbid = ""
+        if not imdbid and year:
+            imdbid = self.get_omdb_info(
+                "", title, year, content_type).get("imdbnumber", "")
+        if not imdbid:
+            # repeat without year
+            imdbid = self.get_omdb_info("", title, "", content_type).get("imdbnumber", "")
+        # return results
+        return (imdbid, tvdbid)
 
     def translate_string(self, _str):
         '''translate the received english string from the various sources like tvdb, tmbd etc'''

@@ -46,7 +46,9 @@ class MusicArtwork(object):
             album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
             if details.get("plot") and album_details.get("plot"):
                 details["plot"] = "%s  --  %s" % (album_details["plot"], details["plot"])
-            details = extend_dict(details, album_details)
+            details = extend_dict(details, album_details, ["thumb", "style", "mood"])
+            if track:
+                details["title"] = track
         return details
 
     def manual_set_music_artwork(self, artist, album, track, disc):
@@ -205,6 +207,12 @@ class MusicArtwork(object):
                         details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
                             "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
 
+        # set default details
+        if not details.get("artist"):
+            details["artist"] = artist
+        if not details["art"].get("albumthumb") and details["art"].get("thumb"):
+            details["art"]["albumthumb"] = details["art"]["thumb"]
+        
         # store results in cache and return results
         self.artutils.cache.set(cache_str, details)
         return details
@@ -257,6 +265,12 @@ class MusicArtwork(object):
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
                     details["art"] = self.download_artwork(local_path_custom, details["art"])
+                    
+        # set default details
+        if not details.get("album") and details.get("title"):
+            details["album"] = details["title"]
+        if not details["art"].get("albumthumb") and details["art"].get("thumb"):
+            details["art"]["albumthumb"] = details["art"]["thumb"]
 
         # store results in cache and return results
         self.artutils.cache.set(cache_str, details)

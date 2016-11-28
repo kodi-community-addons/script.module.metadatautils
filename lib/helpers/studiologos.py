@@ -7,7 +7,7 @@ import xbmcvfs
 import os
 from datetime import timedelta
 from simplecache import use_cache
-
+from utils import try_decode
 
 class StudioLogos():
     '''Helper class for studio logo images'''
@@ -89,20 +89,20 @@ class StudioLogos():
         '''used for easy matching of studio logos'''
         all_files = {}
         dirs, files = xbmcvfs.listdir(filespath)
+        if "/" in filespath:
+            sep = "/"
+        else:
+            sep = "\\"
         for file in files:
-            file = file.decode("utf-8")
+            file = try_decode(file)
             name = file.split(".png")[0].lower()
             all_files[name] = filespath + file
         for directory in dirs:
-            files = xbmcvfs.listdir(os.path.join(filespath, directory) + os.sep)[1]
+            directory = try_decode(directory)
+            files = xbmcvfs.listdir(os.path.join(filespath, directory) + sep)[1]
             for file in files:
-                file = file.decode("utf-8")
-                directory = directory.decode("utf-8")
+                file = try_decode(file)
                 name = directory + "/" + file.split(".png")[0].lower()
-                if "/" in filespath:
-                    sep = "/"
-                else:
-                    sep = "\\"
                 all_files[name] = filespath + directory + sep + file
         # return the list
         return all_files
