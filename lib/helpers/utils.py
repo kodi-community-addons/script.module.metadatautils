@@ -426,10 +426,12 @@ def download_image(filename, url):
     '''download specific image to local folder'''
     if not url:
         return url
-    elif xbmcvfs.exists(filename):
-        # we do not overwrite existing images!
+    if xbmcvfs.exists(filename) and filename == url:
+        # only overwrite if new image is different
         return filename
     else:
+        if xbmcvfs.exists(filename):
+            xbmcvfs.delete(filename)
         if xbmcvfs.copy(url, filename):
             return filename
     return url

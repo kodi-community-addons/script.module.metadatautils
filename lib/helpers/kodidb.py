@@ -9,6 +9,7 @@ import xbmcvfs
 from utils import json, try_encode, log_msg, log_exception, get_clean_image
 from utils import try_parse_int, localdate_from_utc_string, localized_date_time
 from kodi_constants import *
+from operator import itemgetter
 import arrow
 
 
@@ -180,6 +181,22 @@ class KodiDb(object):
             item["isFolder"] = True
             all_items.append(item)
         return all_items
+        
+    def actors(self):
+        '''return all actors'''
+        all_items = []
+        all_actors = []
+        result = self.files("videodb://movies/actors")
+        result += self.files("videodb://tvshows/actors")
+        for item in result:
+            if not item["label"] in all_actors:
+                all_actors.append(item["label"])
+                item["type"] = "actor"
+                item["isFolder"] = True
+                if not item["art"].get("thumb"):
+                    item["art"]["thumb"] = "DefaultActor.png"
+                all_items.append(item)
+        return sorted(all_items, key=itemgetter("label"))
 
     @staticmethod
     def set_json(jsonmethod, params):

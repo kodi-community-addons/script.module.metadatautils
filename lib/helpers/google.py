@@ -51,7 +51,7 @@ class GoogleImages(object):
             del dialog
             if selected_item != -1:
                 selected_item = images_list[selected_item]
-                image = selected_item.getLabel()
+                image = selected_item.getLabel().decode("utf-8")
         return image
 
     @use_cache(30)

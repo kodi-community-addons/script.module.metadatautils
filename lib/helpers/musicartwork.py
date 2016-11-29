@@ -35,7 +35,7 @@ class MusicArtwork(object):
         self.mbrainz = MusicBrainz()
         self.audiodb = TheAudioDb()
 
-    def get_music_artwork(self, artist, album, track, disc, ignore_cache=False):
+    def get_music_artwork(self, artist, album, track, disc, ignore_cache=False, appendplot=False):
         '''get music metadata by providing artist and/or track'''
         if artist == track or album == track:
             track = ""
@@ -44,7 +44,7 @@ class MusicArtwork(object):
         details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
         if album or track:
             album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
-            if details.get("plot") and album_details.get("plot"):
+            if appendplot and details.get("plot") and album_details.get("plot"):
                 details["plot"] = "%s  --  %s" % (album_details["plot"], details["plot"])
             details = extend_dict(details, album_details, ["thumb", "style", "mood"])
             if track:
@@ -81,8 +81,8 @@ class MusicArtwork(object):
                 # show results for selected art type
                 artoptions = []
                 selected_item = listitems[selected_item]
-                image = selected_item.getProperty("icon")
-                label = selected_item.getLabel()
+                image = selected_item.getProperty("icon").decode("utf-8")
+                label = selected_item.getLabel().decode("utf-8")
                 heading = "%s: %s" % (xbmc.getLocalizedString(13511), label)
                 if image:
                     # current image
@@ -210,9 +210,9 @@ class MusicArtwork(object):
         # set default details
         if not details.get("artist"):
             details["artist"] = artist
-        if not details["art"].get("albumthumb") and details["art"].get("thumb"):
-            details["art"]["albumthumb"] = details["art"]["thumb"]
-        
+        if not details["art"].get("artistthumb") and details["art"].get("thumb"):
+            details["art"]["artistthumb"] = details["art"]["thumb"]
+
         # store results in cache and return results
         self.artutils.cache.set(cache_str, details)
         return details
@@ -255,17 +255,19 @@ class MusicArtwork(object):
                 details = extend_dict(details, self.audiodb.album_info(mb_albumid))
                 # get metadata from lastfm
                 details = extend_dict(details, self.lastfm.album_info(mb_albumid))
+                # metadata from musicbrainz
+                if not details.get("year") or not details.get("genre"):
+                    details = extend_dict(details, self.mbrainz.get_albuminfo(mb_albumid))
                 # musicbrainz thumb as last resort
                 if not details["art"].get("thumb"):
                     details["art"]["thumb"] = self.mbrainz.get_albumthumb(mb_albumid)
-
                 # download artwork to music folder
                 if local_path and self.artutils.addon.getSetting("music_art_download") == "true":
                     details["art"] = download_artwork(local_path, details["art"])
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
                     details["art"] = self.download_artwork(local_path_custom, details["art"])
-                    
+
         # set default details
         if not details.get("album") and details.get("title"):
             details["album"] = details["title"]

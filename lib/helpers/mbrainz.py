@@ -36,7 +36,7 @@ class MusicBrainz(object):
         del addon
         self.mbrainz = mbrainz
 
-    @use_cache(30)
+    @use_cache(60)
     def search(self, artist, album, track):
         '''get musicbrainz id by query of artist, album and/or track'''
         mb_albums = []
@@ -92,6 +92,44 @@ class MusicBrainz(object):
     def get_album_id(self, artist, album, track):
         '''get musicbrainz id by query of artist, album and/or track'''
         return self.search(artist, album, track)[1]
+
+    @use_cache(60)
+    def get_albuminfo(self, mbalbumid):
+        '''get album info from musicbrainz'''
+        result = {}
+        try:
+            data = self.mbrainz.get_release_group_by_id(mbalbumid, includes=["tags", "ratings"])
+            if data and data.get("release-group"):
+                data = data["release-group"]
+                result["year"] = data.get("first-release-date", "").split("-")[0]
+                result["title"] = data.get("title", "")
+                if data.get("rating") and data["rating"].get("rating"):
+                    result["rating"] = data["rating"].get("rating")
+                    result["votes"] = data["rating"].get("votes", 0)
+                if data.get("tag-list"):
+                    result["tags"] = []
+                    result["genre"] = []
+                    for tag in data["tag-list"]:
+                        if tag["count"] and int(tag["count"]) > 1:
+                            taglst = []
+                            if " / " in tag["name"]:
+                                taglst = tag["name"].split(" / ")
+                            elif "/" in tag["name"]:
+                                taglst = tag["name"].split("/")
+                            elif " - " in tag["name"]:
+                                taglst = tag["name"].split(" - ")
+                            elif "-" in tag["name"]:
+                                taglst = tag["name"].split("-")
+                            else:
+                                taglst = [tag["name"]]
+                            for item in taglst:
+                                if not item in result["tags"]:
+                                    result["tags"].append(item)
+                                if not item in result["genre"] and int(tag["count"]) > 4:
+                                    result["genre"].append(item)
+        except Exception as exc:
+            log_msg("Error in musicbrainz - get album details: %s" % str(exc))
+        return result
 
     @staticmethod
     def get_albumthumb(albumid):

@@ -154,7 +154,7 @@ class PvrArtwork(object):
                     if manual_select:
                         google_title = searchtitle
                     else:
-                        google_title = '"%s" + "%s"' % (searchtitle, channel.lower().split(" hd")[0])
+                        google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
                     thumb = self.artutils.google.search_image(google_title, manual_select)
                 if thumb:
                     details["thumbnail"] = thumb
@@ -201,8 +201,8 @@ class PvrArtwork(object):
                 # show results for selected art type
                 artoptions = []
                 selected_item = listitems[selected_item]
-                image = selected_item.getProperty("icon")
-                label = selected_item.getLabel()
+                image = selected_item.getProperty("icon").decode("utf-8")
+                label = selected_item.getLabel().decode("utf-8")
                 heading = "%s: %s" % (xbmc.getLocalizedString(13511), label)
                 if image:
                     # current image
@@ -233,7 +233,7 @@ class PvrArtwork(object):
                 if image and selected_item == 1:
                     artwork["art"][label] = ""
                 elif image and selected_item > 2:
-                    artwork["art"][label] = artoptions[selected_item].getProperty("icon")
+                    artwork["art"][label] = artoptions[selected_item].getProperty("icon").decode("utf-8")
                 elif (image and selected_item == 2) or not image and selected_item == 0:
                     # manual browse...
                     dialog = xbmcgui.Dialog()
