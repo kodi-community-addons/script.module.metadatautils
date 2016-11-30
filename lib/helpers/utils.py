@@ -406,11 +406,11 @@ def download_artwork(folderpath, artwork):
             new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
         elif key == "landscape":
             new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
-        elif key == "fanarts" and value:
+        elif key == "fanarts" and value and not xbmcvfs.exists(efa_path):
+            # copy extrafanarts only if the directory doesn't exist at all
             delim = "\\" if "\\" in folderpath else "/"
             efa_path = "%sextrafanart" % folderpath + delim
-            if not xbmcvfs.exists(efa_path):
-                xbmcvfs.mkdir(efa_path)
+            xbmcvfs.mkdir(efa_path)
             images = []
             for count, image in enumerate(value):
                 image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
@@ -426,16 +426,35 @@ def download_image(filename, url):
     '''download specific image to local folder'''
     if not url:
         return url
+    refresh_needed = False
     if xbmcvfs.exists(filename) and filename == url:
         # only overwrite if new image is different
         return filename
     else:
         if xbmcvfs.exists(filename):
             xbmcvfs.delete(filename)
+            refresh_needed = True
         if xbmcvfs.copy(url, filename):
+            if refresh_needed:
+                refresh_image(filename)
             return filename
+            
     return url
 
+def refresh_image(imagepath):
+    '''tell kodi texture cache to refresh a particular image'''
+    import sqlite3
+    dbpath = xbmc.translatePath("special://database/Textures13.db").decode('utf-8')
+    connection = sqlite3.connect(dbpath, timeout=30, isolation_level=None)
+    try:
+        cache_image = connection.execute('SELECT cachedurl FROM texture WHERE url = ?', (imagepath,)).fetchone()
+        if cache_image:
+            xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
+            connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
+    finally:
+        connection.close()
+        del connection
+    
 
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
