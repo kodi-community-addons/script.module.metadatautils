@@ -133,12 +133,14 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         details["studio"] = studio
         details["years"] = years
         details["country"] = countries
-        details["watchedcount"] = watchedcount
-        details["unwatchedcount"] = unwatchedcount
-        details["art"]["fanarts"] = all_fanarts
+        details["watchedcount"] = str(watchedcount)
+        details["unwatchedcount"] = str(unwatchedcount)
         details.update(studiologos.get_studio_logo(studio, studiologos_path))
         details["count"] = total_movies
-        details["art"]["extrafanart"] = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s"\
-            % quote_plus(repr(all_fanarts))
+        efa_path = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s" % quote_plus(repr(all_fanarts))
+        result["art"]["extrafanart"] =  efa_path
+        for count, fanart in enumerate(all_fanarts):
+            result["art"]["ExtraFanArt.%s" % count] = fanart
+            
     simplecache.set(cache_str, details, checksum=cache_checksum)
     return details

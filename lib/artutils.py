@@ -188,7 +188,6 @@ class ArtUtils(object):
         '''path to use to lookup studio logos, must be set by the calling addon'''
         self._studiologos_path = value
 
-    @use_cache(1)
     def get_animated_artwork(self, imdb_id, manual_select=False, ignore_cache=False):
         '''get animated artwork, perform extra check if local version still exists'''
         artwork = self.animatedart.get_animated_artwork(
@@ -237,7 +236,7 @@ class ArtUtils(object):
                 "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
                 "Duration.Hours": dur_lst[0],
                 "Duration.Minutes": dur_lst[1],
-                "Runtime": str((int(dur_lst[0]) * 60) + dur_lst[1]),
+                "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
             }
         else:
             return _get_duration(duration)

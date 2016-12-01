@@ -42,14 +42,16 @@ class MusicArtwork(object):
         artist = self.get_clean_title(artist)
         album = self.get_clean_title(album)
         track = self.get_clean_title(track)
-        details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
+        artist_details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
         if album or track:
             album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
-            if appendplot and details.get("plot") and album_details.get("plot"):
-                album_details["plot"] = "%s  --  %s" % (album_details["plot"], details["plot"])
-            details = extend_dict(details, album_details, ["thumb", "style", "mood", "plot"])
+            details = extend_dict(album_details, artist_details)
             if track:
                 details["title"] = track
+            if appendplot and artist_details.get("plot") and album_details.get("plot"):
+                details["plot"] = "%s  --  %s" % (album_details["plot"], artist_details["plot"])
+        else:
+            details = artist_details
         return details
 
     def manual_set_music_artwork(self, artist, album, track, disc):
@@ -307,7 +309,6 @@ class MusicArtwork(object):
         result = self.artutils.kodidb.artists(filters=filters, limits=(0, 1))
         if result:
             details = result[0]
-            song_path = ""
             details["title"] = details["artist"]
             details["plot"] = strip_newlines(details["description"])
             filters = [{"artistid": details["artistid"]}]
@@ -317,13 +318,15 @@ class MusicArtwork(object):
             bullet = "•".decode("utf-8")
             details["tracks.formatted"] = u""
             details["tracks.formatted2"] = ""
+            # enumerate albums for this artist
             for item in artist_albums:
                 details["albums"].append(item["label"])
-                if not song_path:
+                # enumerate songs for this album
+                filters = [{"albumid": item["albumid"]}]
+                album_tracks = self.artutils.kodidb.songs(filters=filters)
+                if album_tracks:
                     # retrieve path on disk by selecting one song for this artist
-                    filters = [{"albumid": item["albumid"]}]
-                    album_tracks = self.artutils.kodidb.songs(filters=filters, limits=(0, 1))
-                    if album_tracks:
+                    if not details.get("ref_track"):
                         song_path = album_tracks[0]["file"]
                         details["diskpath"] = self.get_artistpath_by_songpath(song_path, artist)
                         details["ref_album"] = item["title"]
