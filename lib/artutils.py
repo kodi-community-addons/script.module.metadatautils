@@ -81,10 +81,10 @@ class ArtUtils(object):
             self.close()
 
     @use_cache(14)
-    def get_extrafanart(self, file_path, media_type):
+    def get_extrafanart(self, file_path):
         '''helper to retrieve the extrafanart path for a kodi media item'''
         from helpers.extrafanart import get_extrafanart
-        return get_extrafanart(file_path, media_type)
+        return get_extrafanart(file_path)
 
     def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False, appendplot=False):
         '''method to get music artwork for the goven artist/album/song'''
@@ -117,7 +117,7 @@ class ArtUtils(object):
 
     @use_cache(14)
     def get_tmdb_details(self, imdb_id="", tvdb_id="", title="", year="", media_type="",
-                         manual_select=False, preftype=""):
+                         preftype="", manual_select=False, ignore_cache=False):
         '''returns details from tmdb'''
         result = {}
         title = title.split(" (")[0]

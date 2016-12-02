@@ -62,7 +62,7 @@ class PvrArtwork(object):
         details["media_type"] = ""
 
         # filter genre unknown/other
-        if genre in xbmc.getLocalizedString(19499) or xbmc.getLocalizedString(19499) in genre.lower():
+        if not genre or genre in xbmc.getLocalizedString(19499) or xbmc.getLocalizedString(19499) in genre.lower():
             details["genre"] = []
             genre = ""
             log_msg("genre is unknown so ignore....")
@@ -87,7 +87,17 @@ class PvrArtwork(object):
                                                      type=xbmcgui.INPUT_ALPHANUM).decode("utf-8")
                 if not searchtitle:
                     return
-
+                    
+            # if manual lookup and no mediatype, ask the user
+            if manual_select and not details["media_type"]:
+                yesbtn = self.artutils.addon.getLocalizedString(32042)
+                nobtn = self.artutils.addon.getLocalizedString(32043)
+                header = self.artutils.addon.getLocalizedString(32041)
+                if xbmcgui.Dialog().yesno(header, header, yeslabel=yesbtn, nolabel=nobtn):
+                    details["media_type"] = "movie"
+                else:
+                    details["media_type"] = "tvshow"
+            
             # lookup recordings database
             details = extend_dict(details, self.lookup_local_recordings(title))
             # lookup custom path
@@ -110,9 +120,10 @@ class PvrArtwork(object):
                     details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
                         tvdb_match, "tvdb_id"), ["poster", "fanart"])
                 else:
-                    # tmdb scraping for movies
+                    # tmdb scraping for movies or unknown
                     tmdb_result = self.artutils.get_tmdb_details(
-                        "", "", searchtitle, "", manual_select=manual_select, preftype=details["media_type"])
+                        "", "", searchtitle, "", "", details["media_type"], 
+                            manual_select=manual_select, ignore_cache=manual_select)
                     if tmdb_result:
                         details["media_type"] = tmdb_result["media_type"]
                         details = extend_dict(details, tmdb_result)
@@ -369,17 +380,19 @@ class PvrArtwork(object):
             media_type = "movie"
         elif "film" in genre.lower():
             media_type = "movie"
-        # Kodi defined movie genres
-        kodi_genres = [19500, 19507, 19508, 19602, 19603, ]
-        for kodi_genre in kodi_genres:
-            if genre == xbmc.getLocalizedString(kodi_genre):
-                media_type = "movie"
-        # Kodi defined tvshow genres
-        kodi_genres = [19505, 19516, 19517, 19518, 19520, 19532, 19533, 19534, 19535, 19548, 19549,
-                       19550, 19551, 19552, 19553, 19554, 19555, 19556, 19557, 19558, 19559]
-        for kodi_genre in kodi_genres:
-            if genre == xbmc.getLocalizedString(kodi_genre):
-                media_type = "tvshow"
+        if not media_type:
+            # Kodi defined movie genres
+            kodi_genres = [19500, 19507, 19508, 19602, 19603, ]
+            for kodi_genre in kodi_genres:
+                if genre == xbmc.getLocalizedString(kodi_genre):
+                    media_type = "movie"
+        if not media_type:
+            # Kodi defined tvshow genres
+            kodi_genres = [19505, 19516, 19517, 19518, 19520, 19532, 19533, 19534, 19535, 19548, 19549,
+                           19550, 19551, 19552, 19553, 19554, 19555, 19556, 19557, 19558, 19559]
+            for kodi_genre in kodi_genres:
+                if genre == xbmc.getLocalizedString(kodi_genre):
+                    media_type = "tvshow"
         return media_type
 
     def get_searchtitle(self, title, channel):

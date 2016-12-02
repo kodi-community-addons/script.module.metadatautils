@@ -406,16 +406,17 @@ def download_artwork(folderpath, artwork):
             new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
         elif key == "landscape":
             new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
-        elif key == "fanarts" and value and not xbmcvfs.exists(efa_path):
+        elif key == "fanarts" and value:
             # copy extrafanarts only if the directory doesn't exist at all
             delim = "\\" if "\\" in folderpath else "/"
             efa_path = "%sextrafanart" % folderpath + delim
-            xbmcvfs.mkdir(efa_path)
-            images = []
-            for count, image in enumerate(value):
-                image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
-                images.append(image)
-            new_dict[key] = images
+            if not xbmcvfs.exists(efa_path):
+                xbmcvfs.mkdir(efa_path)
+                images = []
+                for count, image in enumerate(value):
+                    image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
+                    images.append(image)
+                new_dict[key] = images
         else:
             new_dict[key] = value
     if efa_path:

@@ -18,9 +18,10 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
     # use checksum compare based on playcounts because moviesets do not get refreshed automatically
     movieset = kodidb.movieset(set_id, ["playcount"])
     cache_str = "MovieSetDetails.%s" % (set_id)
-    cache_checksum = []
     if movieset:
-        cache_checksum = "%s.%s.%s" % (set_id, [movie["playcount"] for movie in movieset["movies"]], studiologos_path)
+        cache_checksum = "%s.%s" % (set_id, studiologos_path)
+        for movie in movieset["movies"]:
+            cache_checksum += "%s" % movie["playcount"]
         cache = simplecache.get(cache_str, checksum=cache_checksum)
         if cache:
             return cache
@@ -138,9 +139,9 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         details.update(studiologos.get_studio_logo(studio, studiologos_path))
         details["count"] = total_movies
         efa_path = "plugin://script.skin.helper.service/?action=extrafanart&fanarts=%s" % quote_plus(repr(all_fanarts))
-        result["art"]["extrafanart"] =  efa_path
+        details["art"]["extrafanart"] = efa_path
         for count, fanart in enumerate(all_fanarts):
-            result["art"]["ExtraFanArt.%s" % count] = fanart
-            
+            details["art"]["ExtraFanArt.%s" % count] = fanart
+
     simplecache.set(cache_str, details, checksum=cache_checksum)
     return details
