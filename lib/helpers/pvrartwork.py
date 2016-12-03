@@ -60,9 +60,10 @@ class PvrArtwork(object):
         details["pvrgenre"] = genre
         details["cachestr"] = cache_str
         details["media_type"] = ""
+        details["art"] = {}
 
         # filter genre unknown/other
-        if not genre or genre in xbmc.getLocalizedString(19499) or xbmc.getLocalizedString(19499) in genre.lower():
+        if not genre or genre.split(" / ")[0] in xbmc.getLocalizedString(19499).split(" / "):
             details["genre"] = []
             genre = ""
             log_msg("genre is unknown so ignore....")
@@ -87,7 +88,7 @@ class PvrArtwork(object):
                                                      type=xbmcgui.INPUT_ALPHANUM).decode("utf-8")
                 if not searchtitle:
                     return
-                    
+
             # if manual lookup and no mediatype, ask the user
             if manual_select and not details["media_type"]:
                 yesbtn = self.artutils.addon.getLocalizedString(32042)
@@ -97,9 +98,10 @@ class PvrArtwork(object):
                     details["media_type"] = "movie"
                 else:
                     details["media_type"] = "tvshow"
-            
+
             # lookup recordings database
-            details = extend_dict(details, self.lookup_local_recordings(title))
+            if "movie" not in details["media_type"]:
+                details = extend_dict(details, self.lookup_local_recording(title))
             # lookup custom path
             details = extend_dict(details, self.lookup_custom_path(searchtitle, title))
             # lookup movie/tv library
@@ -108,28 +110,31 @@ class PvrArtwork(object):
             # do internet scraping if results were not found in local db and scraping is enabled
             if self.artutils.addon.getSetting("pvr_art_scraper") == "true" and not details.get("art"):
 
-                # prefer tvdb scraping
-                tvdb_match = None
-                if "movie" not in details["media_type"]:
+                log_msg(
+                    "pvrart start scraping metadata for title: %s - media_type: %s" %
+                    (searchtitle, details["media_type"]))
+
+                # prefer tmdb scraper
+                tmdb_result = self.artutils.get_tmdb_details(
+                    "", "", searchtitle, "", "", details["media_type"],
+                        manual_select=manual_select, ignore_cache=manual_select)
+                log_msg("pvrart lookup for title: %s - TMDB result: %s" % (searchtitle, tmdb_result))
+                if tmdb_result:
+                    details["media_type"] = tmdb_result["media_type"]
+                    details = extend_dict(details, tmdb_result)
+
+                # fallback to tvdb scraper
+                if (not tmdb_result or (tmdb_result and not tmdb_result.get("art")) or
+                        details["media_type"] == "tvshow"):
                     tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select)
-
-                if tvdb_match:
-                    # get full tvdb results and extend with tmdb
-                    details["media_type"] = "tvshow"
-                    details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
-                    details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
-                        tvdb_match, "tvdb_id"), ["poster", "fanart"])
-                else:
-                    # tmdb scraping for movies or unknown
-                    tmdb_result = self.artutils.get_tmdb_details(
-                        "", "", searchtitle, "", "", details["media_type"], 
-                            manual_select=manual_select, ignore_cache=manual_select)
-                    if tmdb_result:
-                        details["media_type"] = tmdb_result["media_type"]
-                        details = extend_dict(details, tmdb_result)
-
-                if not details.get("art"):
-                    details["art"] = {}
+                    log_msg("pvrart lookup for title: %s - TVDB result: %s" % (searchtitle, tvdb_match))
+                    if tvdb_match:
+                        # get full tvdb results and extend with tmdb
+                        if not details["media_type"]:
+                            details["media_type"] = "tvshow"
+                        details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
+                        details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
+                            tvdb_match, "tvdb_id"), ["poster", "fanart"])
 
                 # fanart.tv scraping - append result to existing art
                 if details.get("imdbnumber") and details["media_type"] == "movie":
@@ -363,7 +368,7 @@ class PvrArtwork(object):
                         (title, channel, genre))
                     return False
         if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true":
-            recordings = self.lookup_local_recordings(title)
+            recordings = self.lookup_local_recording(title)
             if not recordings:
                 log_msg(
                     "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
@@ -411,21 +416,21 @@ class PvrArtwork(object):
         return title
 
     @use_cache(2)
-    def lookup_local_recordings(self, title):
+    def lookup_local_recording(self, title):
         '''lookup actual recordings to get details for grouped recordings
            also grab a thumb provided by the pvr
         '''
         details = {}
         recordings = self.artutils.kodidb.recordings()
         for item in recordings:
-            if title.lower() in item["title"].lower():
+            if title.lower() == item["title"].lower():
                 if item.get("art"):
                     details["thumbnail"] = get_clean_image(item["art"].get("thumb"))
                 # ignore tvheadend thumb as it returns the channellogo
                 elif item.get("icon") and "imagecache" not in item["icon"]:
                     details["thumbnail"] = get_clean_image(item["icon"])
                 details["channelname"] = item["channel"]
-        if len(recordings) > 1:
+        if details:
             details["media_type"] = "tvshow"
         return details
 
@@ -436,56 +441,57 @@ class PvrArtwork(object):
         tvdb_result = self.artutils.thetvdb.search_series(searchtitle, True)
         searchchannel = channel.lower().split("hd")[0].replace(" ", "")
         match_results = []
-        for item in tvdb_result:
-            item["score"] = 0
-            itemtitle = item["seriesName"].lower()
-            network = item["network"].lower().replace(" ", "")
-            # high score if channel name matches
-            if network in searchchannel or searchchannel in network:
-                item["score"] += 800
-            # exact match on title - very high score
-            if searchtitle == itemtitle:
-                item["score"] += 1000
-            # match title by replacing some characters
-            if re.sub('\*|,|.\"|\'| |:|;', '', searchtitle) == re.sub('\*|,|.\"|\'| |:|;', '', itemtitle):
-                item["score"] += 750
-            # add SequenceMatcher score to the results
-            stringmatchscore = SM(None, searchtitle, itemtitle).ratio()
-            if stringmatchscore > 0.7:
-                item["score"] += stringmatchscore * 500
-            # prefer items with native language as we've searched with localized info enabled
-            if item["overview"]:
-                item["score"] += 250
-            # prefer items with artwork
-            if item["banner"]:
-                item["score"] += 1
-            if item["score"] > 500 or manual_select:
-                match_results.append(item)
-        # sort our new list by score
-        match_results = sorted(match_results, key=itemgetter("score"), reverse=True)
-        if match_results and manual_select:
-            # show selectdialog to manually select the item
-            listitems = []
-            for item in match_results:
-                thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
-                listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb)
-                listitems.append(listitem)
-            dialog = DialogSelect(
-                "DialogSelect.xml",
-                "",
-                listing=listitems,
-                window_title="%s - TVDB" %
-                xbmc.getLocalizedString(283))
-            dialog.doModal()
-            selected_item = dialog.result
-            del dialog
-            if selected_item != -1:
-                tvdb_match = match_results[selected_item]["id"]
-            else:
-                match_results = []
-        if not tvdb_match and match_results:
-            # just grab the first item as best match
-            tvdb_match = match_results[0]["id"]
+        if tvdb_result:
+            for item in tvdb_result:
+                item["score"] = 0
+                itemtitle = item["seriesName"].lower()
+                network = item["network"].lower().replace(" ", "")
+                # high score if channel name matches
+                if network in searchchannel or searchchannel in network:
+                    item["score"] += 800
+                # exact match on title - very high score
+                if searchtitle == itemtitle:
+                    item["score"] += 1000
+                # match title by replacing some characters
+                if re.sub('\*|,|.\"|\'| |:|;', '', searchtitle) == re.sub('\*|,|.\"|\'| |:|;', '', itemtitle):
+                    item["score"] += 750
+                # add SequenceMatcher score to the results
+                stringmatchscore = SM(None, searchtitle, itemtitle).ratio()
+                if stringmatchscore > 0.7:
+                    item["score"] += stringmatchscore * 500
+                # prefer items with native language as we've searched with localized info enabled
+                if item["overview"]:
+                    item["score"] += 250
+                # prefer items with artwork
+                if item["banner"]:
+                    item["score"] += 1
+                if item["score"] > 500 or manual_select:
+                    match_results.append(item)
+            # sort our new list by score
+            match_results = sorted(match_results, key=itemgetter("score"), reverse=True)
+            if match_results and manual_select:
+                # show selectdialog to manually select the item
+                listitems = []
+                for item in match_results:
+                    thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
+                    listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb)
+                    listitems.append(listitem)
+                dialog = DialogSelect(
+                    "DialogSelect.xml",
+                    "",
+                    listing=listitems,
+                    window_title="%s - TVDB" %
+                    xbmc.getLocalizedString(283))
+                dialog.doModal()
+                selected_item = dialog.result
+                del dialog
+                if selected_item != -1:
+                    tvdb_match = match_results[selected_item]["id"]
+                else:
+                    match_results = []
+            if not tvdb_match and match_results:
+                # just grab the first item as best match
+                tvdb_match = match_results[0]["id"]
         return tvdb_match
 
     def get_custom_path(self, searchtitle, title):

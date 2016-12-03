@@ -599,6 +599,8 @@ class KodiDb(object):
                     art["poster"] = art.get("tvshow.poster")
                 if not art.get("clearlogo") and art.get("tvshow.clearlogo"):
                     art["clearlogo"] = art.get("tvshow.clearlogo")
+                if not art.get("banner") and art.get("tvshow.banner"):
+                    art["banner"] = art.get("tvshow.banner")
                 if not art.get("landscape") and art.get("tvshow.landscape"):
                     art["landscape"] = art.get("tvshow.landscape")
             if not art.get("fanart") and item.get('fanart'):
