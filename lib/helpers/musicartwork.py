@@ -56,7 +56,6 @@ class MusicArtwork(object):
 
     def manual_set_music_artwork(self, artist, album, track, disc):
         '''manual override artwork options'''
-
         if album:
             details = self.get_album_metadata(artist, album, track, disc)
             art_types = ["thumb", "discart"]
@@ -66,7 +65,6 @@ class MusicArtwork(object):
         cache_str = details["cachestr"]
 
         changemade = False
-
         # show dialogselect with all artwork options
         abort = False
         while not abort:
@@ -197,6 +195,7 @@ class MusicArtwork(object):
             custom_path = self.artutils.addon.getSetting("music_art_custom_path").decode("utf-8")
             if custom_path:
                 diskpath = self.get_customfolder_path(custom_path, artist)
+                log_msg("custom path on disk for artist: %s --> %s" % (artist, diskpath))
                 if diskpath:
                     details["art"] = extend_dict(details["art"], self.lookup_artistart_in_folder(diskpath))
                     local_path_custom = diskpath
@@ -342,7 +341,7 @@ class MusicArtwork(object):
                         details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, item["title"], duration)
             joinchar = "[CR]• ".decode("utf-8")
             details["albums.formatted"] = joinchar.join(details["albums"])
-            # do not retrieve artwork from item as there's no way to write it back 
+            # do not retrieve artwork from item as there's no way to write it back
             # and it will already be retrieved if user enables to get the artwork from the song path
         return details
 
@@ -382,7 +381,7 @@ class MusicArtwork(object):
                             details["diskpath"] = self.get_albumpath_by_songpath(item["file"])
                 details["art"] = {}
                 details["songcount"] = len(album_tracks)
-                # do not retrieve artwork from item as there's no way to write it back 
+                # do not retrieve artwork from item as there's no way to write it back
                 # and it will already be retrieved if user enables to get the artwork from the song path
         return details
 
@@ -486,23 +485,33 @@ class MusicArtwork(object):
                         return os.path.join(album_path, directory) + delim
         return album_path
 
-    def get_customfolder_path(self, customfolder, foldername):
-        '''search recursively for a specific folder'''
-        if "\\" in customfolder:
-            delim = "\\"
-        else:
-            delim = "/"
-        dirs = xbmcvfs.listdir(customfolder)[0]
-        for strictness in [1, 0.95, 0.9, 0.8]:
-            for directory in dirs:
-                directory = directory.decode("utf-8")
-                curpath = os.path.join(customfolder, directory) + delim
-                match = SM(None, foldername.lower(), directory.lower()).ratio()
-                if match >= strictness:
-                    return curpath
-                else:
-                    return self.get_customfolder_path(curpath, foldername)
-        return ""
+    def get_customfolder_path(self, customfolder, foldername, sublevel=False):
+        '''search recursively (max 2 levels) for a specific folder'''
+        cachestr = "customfolder_path.%s.%s" % (customfolder, foldername)
+        folder_path = self.cache.get(cachestr)
+        if not folder_path:
+            if "\\" in customfolder:
+                delim = "\\"
+            else:
+                delim = "/"
+            dirs = xbmcvfs.listdir(customfolder)[0]
+            for strictness in [1, 0.95, 0.9, 0.8]:
+                for directory in dirs:
+                    directory = directory.decode("utf-8")
+                    curpath = os.path.join(customfolder, directory) + delim
+                    match = SM(None, foldername.lower(), directory.lower()).ratio()
+                    if match >= strictness:
+                        folder_path = curpath
+                    elif not sublevel:
+                        # check if our requested path is in a sublevel of the current path
+                        # restrict the number of sublevels to just one for now for performance reasons
+                        folder_path = self.get_customfolder_path(curpath, foldername, True)
+                    if folder_path:
+                        break
+                if folder_path:
+                    break
+            self.cache.set(cachestr, folder_path)
+        return folder_path
 
     @staticmethod
     def get_clean_title(title):
