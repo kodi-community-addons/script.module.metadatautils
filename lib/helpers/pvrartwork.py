@@ -107,8 +107,8 @@ class PvrArtwork(object):
             # lookup movie/tv library
             details = extend_dict(details, self.lookup_local_library(searchtitle, details["media_type"]))
 
-            # do internet scraping if results were not found in local db and scraping is enabled
-            if self.artutils.addon.getSetting("pvr_art_scraper") == "true" and not details.get("art"):
+            # do internet scraping if enabled
+            if self.artutils.addon.getSetting("pvr_art_scraper") == "true":
 
                 log_msg(
                     "pvrart start scraping metadata for title: %s - media_type: %s" %
@@ -188,6 +188,7 @@ class PvrArtwork(object):
                     details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
 
         # store result in cache and return details
+        log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
         self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
         return details
 
@@ -322,7 +323,7 @@ class PvrArtwork(object):
         genre = ""
         recordings = self.artutils.kodidb.recordings()
         for item in recordings:
-            if item["title"].lower() in title.lower() or title.lower() in item["label"].lower():
+            if item["title"] in title or title in item["label"] or title in item["file"]:
                 channel = item["channel"]
                 genre = " / ".join(item["genre"])
                 break
@@ -331,7 +332,7 @@ class PvrArtwork(object):
     def pvr_proceed_lookup(self, title, channel, genre):
         '''perform some checks if we can proceed with the lookup'''
         if not title or not channel:
-            log_msg("PVR artwork - filter active for title: %s --> Title or channel is empty!")
+            log_msg("PVR artwork - filter active --> Title or channel is empty!")
             return False
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item and item.lower() == title.lower():
@@ -368,12 +369,11 @@ class PvrArtwork(object):
                         (title, channel, genre))
                     return False
         if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true":
-            recordings = self.lookup_local_recording(title)
-            if not recordings:
-                log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
-                    "PVR artwork is only enabled for recordings" %
-                    (title, channel, genre))
+            match_found = False
+            for item in self.artutils.kodidb.recordings():
+                if title.lower() == item["title"].lower() or title.lower() in item["file"].lower():
+                    match_found = True
+            if not match_found:
                 return False
         return True
 
@@ -381,23 +381,25 @@ class PvrArtwork(object):
     def get_mediatype_from_genre(genre):
         '''guess media type from genre for better matching'''
         media_type = ""
-        if "movie" in genre.lower():
+        if "movie" in genre.lower() or "film" in genre.lower():
             media_type = "movie"
-        elif "film" in genre.lower():
-            media_type = "movie"
+        if "show" in genre.lower():
+            media_type = "tvshow"
         if not media_type:
             # Kodi defined movie genres
-            kodi_genres = [19500, 19507, 19508, 19602, 19603, ]
+            kodi_genres = [19500, 19507, 19508, 19602, 19603, 19502, 19503, 19501]
             for kodi_genre in kodi_genres:
-                if genre == xbmc.getLocalizedString(kodi_genre):
+                if genre in xbmc.getLocalizedString(kodi_genre):
                     media_type = "movie"
+                    break
         if not media_type:
             # Kodi defined tvshow genres
             kodi_genres = [19505, 19516, 19517, 19518, 19520, 19532, 19533, 19534, 19535, 19548, 19549,
                            19550, 19551, 19552, 19553, 19554, 19555, 19556, 19557, 19558, 19559]
             for kodi_genre in kodi_genres:
-                if genre == xbmc.getLocalizedString(kodi_genre):
+                if genre in xbmc.getLocalizedString(kodi_genre):
                     media_type = "tvshow"
+                    break
         return media_type
 
     def get_searchtitle(self, title, channel):
@@ -406,16 +408,17 @@ class PvrArtwork(object):
             title = title.decode("utf-8")
         title = title.lower()
         # split characters - split on common splitters
-        splitters = self.artutils.addon.getSetting("pvr_art_splittitlechar").split("|")
-        splitters.append(" %s" % channel.lower())
+        splitters = self.artutils.addon.getSetting("pvr_art_splittitlechar").decode("utf-8").split("|")
+        if channel:
+            splitters.append(" %s" % channel.lower())
         for splitchar in splitters:
             title = title.split(splitchar)[0]
         # replace common chars and words
-        re.sub(self.artutils.addon.getSetting("pvr_art_replace_by_space"), ' ', title)
-        re.sub(self.artutils.addon.getSetting("pvr_art_stripchars"), '', title)
+        title = re.sub(self.artutils.addon.getSetting("pvr_art_replace_by_space").decode("utf-8"), ' ', title)
+        title = re.sub(self.artutils.addon.getSetting("pvr_art_stripchars").decode("utf-8"), '', title)
+        title = title.strip()
         return title
 
-    @use_cache(2)
     def lookup_local_recording(self, title):
         '''lookup actual recordings to get details for grouped recordings
            also grab a thumb provided by the pvr
@@ -430,8 +433,6 @@ class PvrArtwork(object):
                 elif item.get("icon") and "imagecache" not in item["icon"]:
                     details["thumbnail"] = get_clean_image(item["icon"])
                 details["channelname"] = item["channel"]
-        if details:
-            details["media_type"] = "tvshow"
         return details
 
     def lookup_tvdb(self, searchtitle, channel, manual_select=False):

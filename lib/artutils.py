@@ -99,7 +99,7 @@ class ArtUtils(object):
     def get_extended_artwork(self, imdb_id="", tvdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
         from urllib import quote_plus
-        result = {"art": {} }
+        result = {"art": {}}
         if "movie" in media_type and imdb_id:
             result["art"] = self.fanarttv.movie(imdb_id)
         elif media_type in ["tvshow", "tvshows", "seasons", "episodes"]:
@@ -120,7 +120,6 @@ class ArtUtils(object):
                          preftype="", manual_select=False, ignore_cache=False):
         '''returns details from tmdb'''
         result = {}
-        title = title.split(" (")[0]
         if imdb_id:
             result = self.tmdb.get_videodetails_by_externalid(
                 imdb_id, "imdb_id")

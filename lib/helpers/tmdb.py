@@ -318,10 +318,6 @@ class Tmdb(object):
                     if item.get("release_date") and prefyear in item["release_date"]:
                         item["score"] += 800  # matches preferred year
 
-                # higher score if result matches our preferred type
-                if preftype and (item["media_type"] in preftype) or (preftype in item["media_type"]):
-                    item["score"] += 250  # matches preferred type
-
                 # find exact match on title
                 if preftitle and preftitle == itemtitle:
                     item["score"] += 1000  # exact match!
@@ -339,15 +335,19 @@ class Tmdb(object):
                     stringmatchscore = SM(None, preftitle, itemtitle).ratio(
                     ) + SM(None, preftitle, itemorgtitle).ratio()
                     if stringmatchscore > 1.6:
-                        item["score"] += stringmatchscore * 500
-
-                # prefer items in same language
-                if item["original_language"] == KODI_LANGUAGE:
-                    item["score"] += 500  # native language!
-                if KODI_LANGUAGE.upper() in item.get("origin_country", []):
-                    item["score"] += 500  # native language!
-                if KODI_LANGUAGE in item.get("languages", []):
-                    item["score"] += 500  # native language!
+                        item["score"] += stringmatchscore * 250
+                        
+                # higher score if result ALSO matches our preferred type or native language 
+                # (only when we already have a score)
+                if item["score"]:
+                    if preftype and (item["media_type"] in preftype) or (preftype in item["media_type"]):
+                        item["score"] += 250  # matches preferred type
+                    if item["original_language"] == KODI_LANGUAGE:
+                        item["score"] += 500  # native language!
+                    if KODI_LANGUAGE.upper() in item.get("origin_country", []):
+                        item["score"] += 500  # native language!
+                    if KODI_LANGUAGE in item.get("languages", []):
+                        item["score"] += 500  # native language!
 
                 if item["score"] > 500 or manual_select:
                     newdata.append(item)
