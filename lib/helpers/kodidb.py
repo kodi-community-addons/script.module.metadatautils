@@ -6,7 +6,7 @@
 import xbmc
 import xbmcgui
 import xbmcvfs
-from utils import json, try_encode, log_msg, log_exception, get_clean_image
+from utils import json, try_encode, log_msg, log_exception, get_clean_image, KODI_VERSION
 from utils import try_parse_int, localdate_from_utc_string, localized_date_time
 from kodi_constants import *
 from operator import itemgetter
@@ -181,7 +181,7 @@ class KodiDb(object):
             item["isFolder"] = True
             all_items.append(item)
         return all_items
-        
+
     def actors(self):
         '''return all actors'''
         all_items = []
@@ -351,29 +351,23 @@ class KodiDb(object):
                     "trailer": item.get("trailer"),
                     "progress": item.get('progresspercentage')
                 }
-                if "DBID" in item["extraproperties"] and item["type"] not in ["tvrecording", "tvchannel", "favourite"]:
-                    infolabels["mediatype"] = item["type"]
-                    infolabels["dbid"] = item["extraproperties"]["DBID"]
-                if "date" in item:
-                    infolabels["date"] = item["date"]
-                if "lastplayed" in item:
-                    infolabels["lastplayed"] = item["lastplayed"]
-                if "dateadded" in item:
-                    infolabels["dateadded"] = item["dateadded"]
                 if item["type"] == "episode":
                     infolabels["season"] = item["season"]
                     infolabels["episode"] = item["episode"]
-
-                liz.setInfo(type="Video", infoLabels=infolabels)
 
                 # streamdetails
                 if item.get("streamdetails"):
                     liz.addStreamInfo("video", item["streamdetails"].get("video", {}))
                     liz.addStreamInfo("audio", item["streamdetails"].get("audio", {}))
                     liz.addStreamInfo("subtitle", item["streamdetails"].get("subtitle", {}))
+                    
+                if "dateadded" in item:
+                    infolabels["dateadded"] = item["dateadded"]
+                if "date" in item:
+                    infolabels["date"] = item["date"]
 
             # music infolabels
-            if nodetype == "Music":
+            else:
                 infolabels = {
                     "title": item.get("title"),
                     "size": item.get("size"),
@@ -392,7 +386,18 @@ class KodiDb(object):
                     infolabels["duration"] = item["duration"]
                 if "lastplayed" in item:
                     infolabels["lastplayed"] = item["lastplayed"]
-                liz.setInfo(type="Music", infoLabels=infolabels)
+            
+            # setting the dbtype and dbid is supported from kodi krypton and up
+            if KODI_VERSION > 16 or nodetype == "Video":
+                if "DBID" in item["extraproperties"] and item["type"] not in ["recording", "channel", "favourite"]:
+                    infolabels["mediatype"] = item["type"]
+                    infolabels["dbid"] = item["extraproperties"]["DBID"]
+            
+            if "lastplayed" in item:
+                infolabels["lastplayed"] = item["lastplayed"]
+            
+            # assign the infolabels
+            liz.setInfo(type=nodetype, infoLabels=infolabels)
 
             # artwork
             liz.setArt(item.get("art", {}))
@@ -436,13 +441,14 @@ class KodiDb(object):
                 ('tvshow', 'DefaultTVShows.png'),
                 ('movie', 'DefaultMovies.png'),
                 ('song', 'DefaultAudio.png'),
+                ('album', 'DefaultAudio.png'),
                 ('artist', 'DefaultArtist.png'),
                 ('musicvideo', 'DefaultMusicVideos.png'),
                 ('recording', 'DefaultTVShows.png'),
-                ('channel', 'DefaultAddonPVRClient.png'),
-                    ('album', 'DefaultAudio.png')]:
-                if item.get(idvar[0] + "id"):
-                    properties["DBID"] = str(item.get(idvar[0] + "id"))
+                    ('channel', 'DefaultAddonPVRClient.png')]:
+                dbid = item.get(idvar[0] + "id")
+                if dbid:
+                    properties["DBID"] = str(dbid)
                     if not item.get("type"):
                         item["type"] = idvar[0]
                     if not item.get("icon"):

@@ -289,7 +289,7 @@ class MusicArtwork(object):
                     details["art"] = download_artwork(local_path, details["art"])
                 # download artwork to custom folder
                 if local_path_custom and self.artutils.addon.getSetting("music_art_download_custom") == "true":
-                    details["art"] = self.download_artwork(local_path_custom, details["art"])
+                    details["art"] = download_artwork(local_path_custom, details["art"])
 
         # set default details
         if not details.get("album") and details.get("title"):
@@ -510,7 +510,8 @@ class MusicArtwork(object):
                         break
                 if folder_path:
                     break
-            self.cache.set(cachestr, folder_path)
+            if not sublevel:
+                self.cache.set(cachestr, folder_path)
         return folder_path
 
     @staticmethod

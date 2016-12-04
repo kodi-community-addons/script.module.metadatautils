@@ -41,9 +41,13 @@ class PvrArtwork(object):
             genre: (optional)
             the more optional parameters are supplied, the better the search results
         '''
-        # workaround for grouped recordings
-        if not channel:
-            channel, genre = self.get_pvr_channel_and_genre(title)
+
+        # workaround for recordings
+        recordingdetails = self.lookup_local_recording(title, channel)
+        if recordingdetails:
+            title = recordingdetails["title"]
+            genre = recordingdetails["genre"]
+            channel = recordingdetails["channel"]
 
         # try cache first
         cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
@@ -54,7 +58,7 @@ class PvrArtwork(object):
 
         # no cache - start our lookup adventure
         log_msg("get_pvr_artwork - no data in cache - start lookup - %s" % cache_str)
-        details = {}
+        details = {"art": {}}
         details["pvrtitle"] = title
         details["pvrchannel"] = channel
         details["pvrgenre"] = genre
@@ -73,7 +77,7 @@ class PvrArtwork(object):
         searchtitle = self.get_searchtitle(title, channel)
 
         # only continue if we pass our basic checks
-        proceed_lookup = self.pvr_proceed_lookup(title, channel, genre)
+        proceed_lookup = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
         if not proceed_lookup and manual_select:
             # warn user about active skip filter
             proceed_lookup = xbmcgui.Dialog().yesno(
@@ -99,9 +103,9 @@ class PvrArtwork(object):
                 else:
                     details["media_type"] = "tvshow"
 
-            # lookup recordings database
-            if "movie" not in details["media_type"]:
-                details = extend_dict(details, self.lookup_local_recording(title))
+            # append thumb from recordingdetails
+            if recordingdetails and recordingdetails.get("thumbnail"):
+                details["art"]["thumb"] = recordingdetails["thumbnail"]
             # lookup custom path
             details = extend_dict(details, self.lookup_custom_path(searchtitle, title))
             # lookup movie/tv library
@@ -317,19 +321,7 @@ class PvrArtwork(object):
             # Open addon settings
             xbmc.executebuiltin("Addon.OpenSettings(%s)" % ADDON_ID)
 
-    def get_pvr_channel_and_genre(self, title):
-        '''workaround for grouped recordings, lookup recordinginfo in local db'''
-        channel = ""
-        genre = ""
-        recordings = self.artutils.kodidb.recordings()
-        for item in recordings:
-            if item["title"] in title or title in item["label"] or title in item["file"]:
-                channel = item["channel"]
-                genre = " / ".join(item["genre"])
-                break
-        return (channel, genre)
-
-    def pvr_proceed_lookup(self, title, channel, genre):
+    def pvr_proceed_lookup(self, title, channel, genre, recordingdetails):
         '''perform some checks if we can proceed with the lookup'''
         if not title or not channel:
             log_msg("PVR artwork - filter active --> Title or channel is empty!")
@@ -368,13 +360,9 @@ class PvrArtwork(object):
                         "Common genres like weather/sports are set to be ignored" %
                         (title, channel, genre))
                     return False
-        if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true":
-            match_found = False
-            for item in self.artutils.kodidb.recordings():
-                if title.lower() == item["title"].lower() or title.lower() in item["file"].lower():
-                    match_found = True
-            if not match_found:
-                return False
+        if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true" and not recordingdetails:
+            log_msg("PVR artwork - filter active for title: %s --> Artwork is enabled for recordings only!" % title)
+            return False
         return True
 
     @staticmethod
@@ -419,20 +407,31 @@ class PvrArtwork(object):
         title = title.strip()
         return title
 
-    def lookup_local_recording(self, title):
+    def lookup_local_recording(self, title, channel):
         '''lookup actual recordings to get details for grouped recordings
            also grab a thumb provided by the pvr
         '''
+        cache = self.artutils.cache.get("recordingdetails.%s%s" % (title, channel))
+        if cache:
+            return cache
         details = {}
         recordings = self.artutils.kodidb.recordings()
         for item in recordings:
-            if title.lower() == item["title"].lower():
+            if (title == item["title"] or title in item["file"]) and (channel == item["channel"] or not channel):
+                # extract title from path
+                filepath = item["file"].replace("pvr://recordings/", "")
+                filepath = filepath.replace("active//", "").replace("active/", "")
+                details["title"] = filepath.split("/")[0].replace("_", " ")
+                # grab thumb from pvr
                 if item.get("art"):
                     details["thumbnail"] = get_clean_image(item["art"].get("thumb"))
                 # ignore tvheadend thumb as it returns the channellogo
                 elif item.get("icon") and "imagecache" not in item["icon"]:
                     details["thumbnail"] = get_clean_image(item["icon"])
-                details["channelname"] = item["channel"]
+                details["channel"] = item["channel"]
+                details["genre"] = " / ".join(item["genre"])
+                break
+        self.artutils.cache.set("recordingdetails.%s%s" % (title, channel), details)
         return details
 
     def lookup_tvdb(self, searchtitle, channel, manual_select=False):
