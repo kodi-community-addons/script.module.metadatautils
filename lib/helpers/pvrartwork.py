@@ -77,11 +77,12 @@ class PvrArtwork(object):
         searchtitle = self.get_searchtitle(title, channel)
 
         # only continue if we pass our basic checks
-        proceed_lookup = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
+        filterstr = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
+        proceed_lookup = False if filterstr else True
         if not proceed_lookup and manual_select:
             # warn user about active skip filter
             proceed_lookup = xbmcgui.Dialog().yesno(
-                line1=self.artutils.addon.getLocalizedString(32027),
+                line1=self.artutils.addon.getLocalizedString(32027), line2=filterstr,
                 heading=xbmc.getLocalizedString(750))
 
         if proceed_lookup:
@@ -191,9 +192,9 @@ class PvrArtwork(object):
                 if self.artutils.addon.getSetting("pvr_art_download") == "true":
                     details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
 
-        # store result in cache and return details
-        log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
-        self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
+            # store result in cache and return details
+            log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
+            self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
         return details
 
     def manual_set_pvr_artwork(self, title, channel, genre):
@@ -323,30 +324,18 @@ class PvrArtwork(object):
 
     def pvr_proceed_lookup(self, title, channel, genre, recordingdetails):
         '''perform some checks if we can proceed with the lookup'''
+        filters = []
         if not title or not channel:
-            log_msg("PVR artwork - filter active --> Title or channel is empty!")
-            return False
+            filters.append("Title or channel is empty")
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item and item.lower() == title.lower():
-                log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
-                    "Title is in list of titles to ignore" %
-                    (title, channel, genre))
-                return False
+                filters.append("Title is in list of titles to ignore")
         for item in self.artutils.addon.getSetting("pvr_art_ignore_channels").split("|"):
             if item and item.lower() == channel.lower():
-                log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
-                    "Channel is in list of channels to ignore" %
-                    (title, channel, genre))
-                return False
+                filters.append("Channel is in list of channels to ignore")
         for item in self.artutils.addon.getSetting("pvr_art_ignore_genres").split("|"):
             if genre and item and item.lower() in genre.lower():
-                log_msg(
-                    "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
-                    "Genre is in list of Genres to ignore" %
-                    (title, channel, genre))
-                return False
+                filters.append("Genre is in list of genres to ignore")
         if self.artutils.addon.getSetting("pvr_art_ignore_commongenre") == "true":
             # skip common genres like sports, weather, news etc.
             genre = genre.lower()
@@ -355,15 +344,15 @@ class PvrArtwork(object):
             for kodi_string in kodi_strings:
                 kodi_string = xbmc.getLocalizedString(kodi_string).lower()
                 if (genre and (genre in kodi_string or kodi_string in genre)) or kodi_string in title:
-                    log_msg(
-                        "PVR artwork - filter active for title: %s channel: %s genre: %s --> "
-                        "Common genres like weather/sports are set to be ignored" %
-                        (title, channel, genre))
-                    return False
+                    filters.append("Common genres like weather/sports are set to be ignored")
         if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true" and not recordingdetails:
-            log_msg("PVR artwork - filter active for title: %s --> Artwork is enabled for recordings only!" % title)
-            return False
-        return True
+            filters.append("PVR Artwork is enabled for recordings only")
+        if filters:
+            filterstr = " - ".join(filters)
+            log_msg("PVR artwork - filter active for title: %s - channel %s --> %s" % (title, channel, filterstr) )
+            return filterstr
+        else:
+            return ""
 
     @staticmethod
     def get_mediatype_from_genre(genre):
@@ -474,7 +463,7 @@ class PvrArtwork(object):
                 listitems = []
                 for item in match_results:
                     thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
-                    listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb)
+                    listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb, label2=item["overview"])
                     listitems.append(listitem)
                 dialog = DialogSelect(
                     "DialogSelect.xml",

@@ -313,34 +313,43 @@ class MusicArtwork(object):
             filters = [{"artistid": details["artistid"]}]
             artist_albums = self.artutils.kodidb.albums(filters=filters)
             details["albums"] = []
+            details["albumsartist"] = []
+            details["albumscompilations"] = []
             details["tracks"] = []
             bullet = "•".decode("utf-8")
             details["tracks.formatted"] = u""
             details["tracks.formatted2"] = ""
             # enumerate albums for this artist
-            for item in artist_albums:
-                details["albums"].append(item["label"])
+            for artist_album in artist_albums:
+                details["albums"].append(artist_album["label"])
+                if artist in artist_album["displayartist"]:
+                    details["albumsartist"].append(artist_album["label"])
+                else:
+                    details["albumscompilations"].append(artist_album["label"])
                 # enumerate songs for this album
-                filters = [{"albumid": item["albumid"]}]
+                filters = [{"albumid": artist_album["albumid"]}]
                 album_tracks = self.artutils.kodidb.songs(filters=filters)
                 if album_tracks:
                     # retrieve path on disk by selecting one song for this artist
-                    if not details.get("ref_track"):
+                    if not details.get("ref_track") and not len(artist_album["artistid"]) > 1:
                         song_path = album_tracks[0]["file"]
                         details["diskpath"] = self.get_artistpath_by_songpath(song_path, artist)
-                        details["ref_album"] = item["title"]
+                        details["ref_album"] = artist_album["title"]
                         details["ref_track"] = album_tracks[0]["title"]
-                    for item in album_tracks:
-                        details["tracks"].append(item["title"])
-                        details["tracks.formatted"] += u"%s %s [CR]" % (bullet, item["title"])
-                        duration = item["duration"]
+                    for album_track in album_tracks:
+                        details["tracks"].append(album_track["title"])
+                        details["tracks.formatted"] += u"%s %s [CR]" % (bullet, album_track["title"])
+                        duration = album_track["duration"]
                         total_seconds = int(duration)
                         minutes = total_seconds / 60
                         seconds = total_seconds - (minutes * 60)
                         duration = "%s:%s" % (minutes, str(seconds).zfill(2))
-                        details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, item["title"], duration)
+                        details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, album_track["title"], duration)
             joinchar = "[CR]• ".decode("utf-8")
             details["albums.formatted"] = joinchar.join(details["albums"])
+            details["albumcount"] = len(details["albums"])
+            details["albumsartistcount"] = len(details["albumsartist"])
+            details["albumscompilationscount"] = len(details["albumscompilations"])
             # do not retrieve artwork from item as there's no way to write it back
             # and it will already be retrieved if user enables to get the artwork from the song path
         return details
