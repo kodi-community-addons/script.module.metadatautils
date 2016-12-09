@@ -86,10 +86,10 @@ class ArtUtils(object):
         from helpers.extrafanart import get_extrafanart
         return get_extrafanart(file_path)
 
-    def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False, appendplot=False):
+    def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False):
         '''method to get music artwork for the goven artist/album/song'''
         return self.musicart.get_music_artwork(
-            artist, album, track, disc, ignore_cache=ignore_cache, appendplot=appendplot)
+            artist, album, track, disc, ignore_cache=ignore_cache)
 
     def music_artwork_options(self, artist, album="", track="", disc=""):
         '''options for music metadata for specific item'''

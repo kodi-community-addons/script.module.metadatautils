@@ -42,13 +42,6 @@ class PvrArtwork(object):
             the more optional parameters are supplied, the better the search results
         '''
 
-        # workaround for recordings
-        recordingdetails = self.lookup_local_recording(title, channel)
-        if recordingdetails:
-            title = recordingdetails["title"]
-            genre = recordingdetails["genre"]
-            channel = recordingdetails["channel"]
-
         # try cache first
         cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
         cache = self.artutils.cache.get(cache_str)
@@ -58,6 +51,13 @@ class PvrArtwork(object):
 
         # no cache - start our lookup adventure
         log_msg("get_pvr_artwork - no data in cache - start lookup - %s" % cache_str)
+        
+        # workaround for recordings
+        recordingdetails = self.lookup_local_recording(title, channel)
+        if recordingdetails and not (channel and genre):
+            genre = recordingdetails["genre"]
+            channel = recordingdetails["channel"]
+        
         details = {"art": {}}
         details["pvrtitle"] = title
         details["pvrchannel"] = channel
@@ -325,8 +325,8 @@ class PvrArtwork(object):
     def pvr_proceed_lookup(self, title, channel, genre, recordingdetails):
         '''perform some checks if we can proceed with the lookup'''
         filters = []
-        if not title or not channel:
-            filters.append("Title or channel is empty")
+        if not title:
+            filters.append("Title is empty")
         for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item and item.lower() == title.lower():
                 filters.append("Title is in list of titles to ignore")
@@ -407,10 +407,6 @@ class PvrArtwork(object):
         recordings = self.artutils.kodidb.recordings()
         for item in recordings:
             if (title == item["title"] or title in item["file"]) and (channel == item["channel"] or not channel):
-                # extract title from path
-                filepath = item["file"].replace("pvr://recordings/", "")
-                filepath = filepath.replace("active//", "").replace("active/", "")
-                details["title"] = filepath.split("/")[0].replace("_", " ")
                 # grab thumb from pvr
                 if item.get("art"):
                     details["thumbnail"] = get_clean_image(item["art"].get("thumb"))
