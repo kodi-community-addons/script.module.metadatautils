@@ -105,7 +105,7 @@ class MusicArtwork(object):
             clean_track = self.get_clean_title(track)
         details = {"artist": self.get_artist_metadata(clean_artist, clean_album, clean_track)}
         art_types = {"artist": ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]}
-        if album_details:
+        if album:
             details["album"] = self.get_album_metadata(clean_artist, clean_album, clean_track, disc)
             art_types["album"] = ["thumb", "discart"]
 
