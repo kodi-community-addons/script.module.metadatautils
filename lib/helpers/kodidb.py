@@ -388,9 +388,10 @@ class KodiDb(object):
                     infolabels["lastplayed"] = item["lastplayed"]
             
             # setting the dbtype and dbid is supported from kodi krypton and up
-            if KODI_VERSION > 16 or nodetype == "Video":
-                if "DBID" in item["extraproperties"] and item["type"] not in ["recording", "channel", "favourite"]:
-                    infolabels["mediatype"] = item["type"]
+            if "DBID" in item["extraproperties"] and item["type"] not in ["recording", "channel", "favourite"]:
+                infolabels["mediatype"] = item["type"]
+                # setting the dbid on music items is not supported
+                if nodetype == "Video":
                     infolabels["dbid"] = item["extraproperties"]["DBID"]
             
             if "lastplayed" in item:
@@ -456,19 +457,19 @@ class KodiDb(object):
                     break
 
             # general properties
-            if item.get('genre') and isinstance(item.get('genre'), list):
+            if "genre" in item and isinstance(item['genre'], list):
                 item["genre"] = " / ".join(item.get('genre'))
-            if item.get('studio') and isinstance(item.get('studio'), list):
+            if "studio" in item and isinstance(item['studio'], list):
                 item["studio"] = " / ".join(item.get('studio'))
-            if item.get('writer') and isinstance(item.get('writer'), list):
+            if "writer" in item and isinstance(item['writer'], list):
                 item["writer"] = " / ".join(item.get('writer'))
-            if item.get('director') and isinstance(item.get('director'), list):
+            if 'director' in item and isinstance(item['director'], list):
                 item["director"] = " / ".join(item.get('director'))
-            if not isinstance(item.get('artist'), list) and item.get('artist'):
+            if 'artist' in item and not isinstance(item['artist'], list):
                 item["artist"] = [item.get('artist')]
-            if not item.get('artist'):
+            if not 'artist' in item:
                 item["artist"] = []
-            if item.get('type') == "album" and not item.get('album'):
+            if item['type'] == "album" and not item.get('album'):
                 item['album'] = item.get('label')
             if not item.get("duration") and item.get("runtime"):
                 if (item["runtime"] / 60) > 300:
@@ -484,9 +485,9 @@ class KodiDb(object):
             if not properties.get("imdbnumber") and item.get("imdbnumber"):
                 properties["imdbnumber"] = item.get("imdbnumber")
 
-            properties["dbtype"] = item.get("type")
-            properties["DBTYPE"] = item.get("type")
-            properties["type"] = item.get("type")
+            properties["dbtype"] = item["type"]
+            properties["DBTYPE"] = item["type"]
+            properties["type"] = item["type"]
             properties["path"] = item.get("file")
 
             # cast

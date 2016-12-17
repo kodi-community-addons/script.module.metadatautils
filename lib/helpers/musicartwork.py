@@ -41,45 +41,56 @@ class MusicArtwork(object):
         '''get music metadata by providing artist and/or track'''
         if flush_cache:
             ignore_cache = False
-        artist_details = {}
+        artist_details = {"art": {}}
+        feat_artist_details = {"art": {}}
         album_details = {}
         if artist == track or album == track:
             track = ""
         artists = self.get_all_artists(artist, track)
         album = self.get_clean_title(album)
         track = self.get_clean_title(track)
-        # for now we just use all artists for the query and merge all results into one
-        # TODO: maybe split multiple artists in some additional properties ?
+        # The first artist with details is considered the main artist
+        # all others are assumed as featuring artists
         for artist in artists:
-            artist_details = extend_dict(artist_details,
-                                         self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache))
+            if not (artist_details.get("plot") or artist_details.get("art")):
+                # get main artist details
+                artist_details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
+            else:
+                # assume featuring artist
+                feat_artist_details = extend_dict(
+                    feat_artist_details, self.get_artist_metadata(
+                        artist, album, track, ignore_cache=ignore_cache))
             if album or track and not (album_details.get("plot") or album_details.get("art")):
                 album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
 
         # combine artist details and album details
         details = extend_dict(album_details, artist_details)
-        
+
         # combine artist plot and album plot as extended plot
         if artist_details.get("plot") and album_details.get("plot"):
             details["extendedplot"] = "%s  --  %s" % (album_details["plot"], artist_details["plot"])
         else:
-            details["extendedplot"] = details.get("plot","")
+            details["extendedplot"] = details.get("plot", "")
 
         # append track title to results
         if track:
             details["title"] = track
 
-        # combined images to use as multiimage
-        if details.get("art"):
-            for arttype, artvalue in details["art"].iteritems():
-                if arttype.endswith("s") and artvalue:
-                    if arttype == "fanarts":
-                        if len(artists) > 1:
-                            arttype = "extrafanart"
-                        else:
-                            continue
-                    details["art"][arttype] = "plugin://script.skin.helper.service/"\
-                        "?action=extrafanart&fanarts=%s" % quote_plus(repr(artvalue))
+        # combined images to use as multiimage (for all artists)
+        # append featuring artist details
+        for arttype in ["banners", "fanarts", "clearlogos", "thumbs"]:
+            art = artist_details["art"].get(arttype, [])
+            art += feat_artist_details["art"].get(arttype, [])
+            if art:
+                # use the extrafanart plugin entry to display multi images
+                details["art"][arttype] = "plugin://script.skin.helper.service/"\
+                    "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
+        # set special extrafanart path if multiple artists
+        # so we can have rotating fanart slidehsow for all artists of the track
+        if len(artists) > 1 and details["art"].get("fanarts"):
+            details["art"]["extrafanart"] = details["art"]["fanarts"]
+
+        # return the endresult
         return details
 
     def manual_set_music_artwork(self, artist, album, track, disc):
@@ -229,7 +240,7 @@ class MusicArtwork(object):
             xbmc.executebuiltin("Addon.OpenSettings(%s)" % ADDON_ID)
 
     def get_artist_metadata(self, artist, album, track, ignore_cache=False):
-        '''collect all artist metadata'''
+        '''collect artist metadata'''
         artists = self.get_all_artists(artist, track)
         album = self.get_clean_title(album)
         track = self.get_clean_title(track)
@@ -332,7 +343,7 @@ class MusicArtwork(object):
                     details["customartpath"] = diskpath
         # lookup online metadata
         if self.artutils.addon.getSetting("music_art_scraper") == "true":
-            mb_albumid = details.get("musicbrainzalbumid", self.get_mb_album_id(artist, album, track) )
+            mb_albumid = details.get("musicbrainzalbumid", self.get_mb_album_id(artist, album, track))
             if mb_albumid:
                 # get artwork from fanarttv
                 details["art"] = extend_dict(details["art"], self.artutils.fanarttv.album(mb_albumid))
@@ -372,7 +383,8 @@ class MusicArtwork(object):
             details = result[0]
             details["title"] = details["artist"]
             details["plot"] = strip_newlines(details["description"])
-            details["musicbrainzartistid"] = details["musicbrainzartistid"]
+            if details["musicbrainzartistid"] and isinstance(details["musicbrainzartistid"], list):
+                details["musicbrainzartistid"] = details["musicbrainzartistid"][0]
             filters = [{"artistid": details["artistid"]}]
             artist_albums = self.artutils.kodidb.albums(filters=filters)
             details["albums"] = []
@@ -380,15 +392,21 @@ class MusicArtwork(object):
             details["albumscompilations"] = []
             details["tracks"] = []
             bullet = "•".decode("utf-8")
+            details["albums.formatted"] = u""
             details["tracks.formatted"] = u""
-            details["tracks.formatted2"] = ""
+            details["tracks.formatted2"] = u""
+            details["albumsartist.formatted"] = u""
+            details["albumscompilations.formatted"] = u""
             # enumerate albums for this artist
             for artist_album in artist_albums:
                 details["albums"].append(artist_album["label"])
+                details["albums.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
                 if artist in artist_album["displayartist"]:
                     details["albumsartist"].append(artist_album["label"])
+                    details["albumsartist.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
                 else:
                     details["albumscompilations"].append(artist_album["label"])
+                    details["albumscompilations.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
                 # enumerate songs for this album
                 filters = [{"albumid": artist_album["albumid"]}]
                 album_tracks = self.artutils.kodidb.songs(filters=filters)
@@ -401,15 +419,16 @@ class MusicArtwork(object):
                         details["ref_track"] = album_tracks[0]["title"]
                     for album_track in album_tracks:
                         details["tracks"].append(album_track["title"])
-                        details["tracks.formatted"] += u"%s %s [CR]" % (bullet, album_track["title"])
+                        tr_title = album_track["title"]
+                        if album_track["track"]:
+                            tr_title = "%s. %s" % (album_track["track"], album_track["title"])
+                        details["tracks.formatted"] += u"%s %s [CR]" % (bullet, tr_title)
                         duration = album_track["duration"]
                         total_seconds = int(duration)
                         minutes = total_seconds / 60
                         seconds = total_seconds - (minutes * 60)
                         duration = "%s:%s" % (minutes, str(seconds).zfill(2))
-                        details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, album_track["title"], duration)
-            joinchar = "[CR]• ".decode("utf-8")
-            details["albums.formatted"] = joinchar.join(details["albums"])
+                        details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, tr_title, duration)
             details["albumcount"] = len(details["albums"])
             details["albumsartistcount"] = len(details["albumsartist"])
             details["albumscompilationscount"] = len(details["albumscompilations"])
@@ -609,7 +628,7 @@ class MusicArtwork(object):
         specials = ["AC/DC"]  # to be completed with more artists
         for special in specials:
             if special in artist:
-                artist.replace(special, special.replace("/", ""))
+                artist = artist.replace(special, special.replace("/", ""))
 
         for splitter in ["ft.", "feat.", "featuring", "Ft.", "Feat.", "Featuring"]:
             # replace splitter by kodi default splitter for easier split all later
@@ -622,9 +641,15 @@ class MusicArtwork(object):
                     feat_artist = track_parts[1].replace(")", "").replace("(", "").strip()
                     feat_artists.append(feat_artist)
 
-        # break all artists in string into list
-        for item in artist.split(u"/") + feat_artists:
+        # break all artists string into list
+        all_artists = artist.split("/") + feat_artists
+        for item in all_artists:
             item = item.strip()
             if not item in artists:
                 artists.append(item)
+            # & can be a both a splitter or part of artist name
+            for item2 in item.split("&"):
+                item2 = item2.strip()
+                if not item2 in artists:
+                    artists.append(item2)
         return artists
