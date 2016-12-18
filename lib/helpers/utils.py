@@ -370,12 +370,12 @@ def detect_plugin_content(plugin_path):
                     else:
                         content_type = "tvshows"
                         break
-                elif item["artist"]:
+                elif item.get("artist"):
                     # this is a musicvideo!
                     content_type = "musicvideos"
                     break
-                elif (item["type"] == "movie" or item["imdbnumber"] or item["mpaa"] or
-                      item["trailer"] or item["studio"]):
+                elif (item["type"] == "movie" or item.get("imdbnumber") or item.get("mpaa") or
+                      item.get("trailer") or item.get("studio")):
                     content_type = "movies"
                     break
         log_msg("detect_plugin_path_content for: %s  - result: %s" % (plugin_path, content_type))
