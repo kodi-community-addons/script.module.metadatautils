@@ -97,6 +97,7 @@ class MusicArtwork(object):
         '''manual override artwork options'''
         artist_details = {}
         album_details = {}
+        details = {}
         artists = self.get_all_artists(artist, track)
         if len(artists) > 1:
             # multiple artists - user must select an artist
@@ -114,7 +115,7 @@ class MusicArtwork(object):
             clean_track = ""
         else:
             clean_track = self.get_clean_title(track)
-        details = {"artist": self.get_artist_metadata(clean_artist, clean_album, clean_track)}
+        details["artist"] = self.get_artist_metadata(clean_artist, clean_album, clean_track)
         art_types = {"artist": ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]}
         if album:
             details["album"] = self.get_album_metadata(clean_artist, clean_album, clean_track, disc)
@@ -195,19 +196,23 @@ class MusicArtwork(object):
             download_art = self.artutils.addon.getSetting("music_art_download") == "true"
             download_art_custom = self.artutils.addon.getSetting("music_art_download_custom") == "true"
             for mediatype in art_types.iterkeys():
-                details = details[mediatype]
                 # download artwork to music folder if needed
-                if details.get("diskpath") and download_art:
-                    details["art"] = download_artwork(details["diskpath"], details["art"])
+                if details[mediatype].get("diskpath") and download_art:
+                    details[mediatype]["art"] = download_artwork(
+                        details[mediatype]["diskpath"], details[mediatype]["art"])
                     refresh_needed = True
                 # download artwork to custom folder if needed
-                if details.get("customartpath") and download_art_custom:
-                    details["art"] = download_artwork(details["customartpath"], details["art"])
+                if details[mediatype].get("customartpath") and download_art_custom:
+                    details[mediatype]["art"] = download_artwork(
+                        details[mediatype]["customartpath"], details[mediatype]["art"])
                     refresh_needed = True
                 # correct artistthumb/albumthumb
-                details["art"]["%s" % mediatype] = details["art"].get("thumb", "")
+                details[mediatype]["art"]["%s" % mediatype] = details[mediatype]["art"].get("thumb", "")
                 # save new values to cache
-                self.artutils.cache.set(details["cachestr"], details, expiration=timedelta(days=120))
+                self.artutils.cache.set(
+                    details[mediatype]["cachestr"],
+                    details[mediatype],
+                    expiration=timedelta(days=120))
             # flush musicart cache
             self.get_music_artwork(artist, album, track, disc, ignore_cache=True, flush_cache=True)
             # reload skin to make sure new artwork is visible
