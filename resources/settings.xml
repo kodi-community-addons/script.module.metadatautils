@@ -29,4 +29,8 @@
         <setting id="music_art_download_custom" type="bool" label="32023" default="false" visible="eq(-5,true) + eq(-3,true)"/>
         <setting id="music_art_mb_mirror" label="32024" type="text" visible="eq(-6,true)"/>
     </category>
+    <category label="32044">
+        <setting id="fanarttv_apikey" label="32045" type="text"/>
+        <setting label="32046" type="lsep" />
+    </category>
 </settings>

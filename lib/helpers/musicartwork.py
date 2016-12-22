@@ -86,7 +86,7 @@ class MusicArtwork(object):
                 details["art"][arttype] = "plugin://script.skin.helper.service/"\
                     "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
         # set special extrafanart path if multiple artists
-        # so we can have rotating fanart slidehsow for all artists of the track
+        # so we can have rotating fanart slideshow for all artists of the track
         if len(artists) > 1 and details["art"].get("fanarts"):
             details["art"]["extrafanart"] = details["art"]["fanarts"]
 

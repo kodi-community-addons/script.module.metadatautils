@@ -96,11 +96,13 @@ class ArtUtils(object):
         return self.musicart.music_artwork_options(artist, album, track, disc)
 
     @use_cache(14)
-    def get_extended_artwork(self, imdb_id="", tvdb_id="", media_type=""):
+    def get_extended_artwork(self, imdb_id="", tvdb_id="", tmdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
         from urllib import quote_plus
         result = {"art": {}}
-        if "movie" in media_type and imdb_id:
+        if "movie" in media_type and tmdb_id:
+            result["art"] = self.fanarttv.movie(tmdb_id)
+        elif "movie" in media_type and imdb_id:
             result["art"] = self.fanarttv.movie(imdb_id)
         elif media_type in ["tvshow", "tvshows", "seasons", "episodes"]:
             if not tvdb_id:

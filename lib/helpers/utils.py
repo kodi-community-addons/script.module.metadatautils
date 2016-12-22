@@ -72,7 +72,6 @@ def get_json(url, params=None, retries=0):
         if "Read timed out" in str(exc) and not retries == 10:
             # auto retry...
             xbmc.sleep(500)
-            log_msg("get_json time-out for url: %s -- auto retrying..." % (url))
             return get_json(url, params, retries + 1)
         elif "getaddrinfo failed" in str(exc):
             log_msg("No internet or server not reachable - request failed for url: %s" % url, xbmc.LOGWARNING)

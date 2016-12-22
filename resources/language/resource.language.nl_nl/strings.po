@@ -93,7 +93,7 @@ msgid "Enable online scraper (musicbrainz/audiodb/fanart/last.fm)"
 msgstr ""
 
 msgctxt "#32019"
-msgid "Lookup artwork in a custom folder (e.g. recordings folder)"
+msgid "Lookup artwork in a custom folder"
 msgstr ""
 
 msgctxt "#32020"

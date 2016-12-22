@@ -3,15 +3,15 @@
 
 '''Get artwork for media from fanart.tv'''
 
-from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int
+from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int, ADDON_ID
 from operator import itemgetter
-from simplecache import use_cache
-
+import xbmcaddon
 
 class FanartTv(object):
     '''get artwork from fanart.tv'''
     base_url = 'http://webservice.fanart.tv/v3/'
     api_key = '639191cb0774661597f28a47e7e2bad5'
+    client_key = ''
     ignore_cache = False
 
     def __init__(self, simplecache=None):
@@ -21,6 +21,9 @@ class FanartTv(object):
             self.cache = SimpleCache()
         else:
             self.cache = simplecache
+        addon = xbmcaddon.Addon(ADDON_ID)
+        self.client_key = addon.getSetting("fanarttv_apikey").strip()
+        del addon
 
     def artist(self, artist_id):
         '''get artist artwork'''
@@ -86,11 +89,18 @@ class FanartTv(object):
                     artwork[kodi_type] = images[0]
         return artwork
 
-    @use_cache(7)
     def get_data(self, query):
         '''helper method to get data from fanart.tv json API'''
         url = '%s%s?api_key=%s' % (self.base_url, query, self.api_key)
-        return get_json(url)
+        if self.client_key:
+            url += '&client_key=%s' % self.client_key
+        cache = self.cache.get(url)
+        if cache:
+            result = cache
+        else:
+            result = get_json(url)
+            self.cache.set(url, result)
+        return result
 
     def map_artwork(self, data, mapping_table):
         '''helper method to map the artwork received from fanart.tv to kodi known formats'''

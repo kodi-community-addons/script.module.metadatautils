@@ -93,7 +93,7 @@ msgid "Enable online scraper (musicbrainz/audiodb/fanart/last.fm)"
 msgstr ""
 
 msgctxt "#32019"
-msgid "Lookup artwork in a custom folder (e.g. recordings folder)"
+msgid "Lookup artwork in a custom folder"
 msgstr ""
 
 msgctxt "#32020"
@@ -186,4 +186,16 @@ msgstr ""
 
 msgctxt "#32043"
 msgid "Tvshow"
+msgstr ""
+
+msgctxt "#32044"
+msgid "Other"
+msgstr ""
+
+msgctxt "#32045"
+msgid "Personal API key for Fanart.TV"
+msgstr ""
+
+msgctxt "#32046"
+msgid "see www.fanart.tv for more details about personal and VIP memberships"
 msgstr ""
