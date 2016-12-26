@@ -7,6 +7,7 @@
 
 from kodi_constants import FIELDS_MOVIES
 from utils import get_duration, get_clean_image
+from operator import itemgetter
 from urllib import quote_plus
 import xbmc
 
@@ -44,7 +45,8 @@ def get_moviesetdetails(simplecache, kodidb, set_id, studiologos, studiologos_pa
         title_header = "[B]%s %s[/B][CR]" % (total_movies, xbmc.getLocalizedString(20342))
         all_fanarts = []
         details["art"] = movieset["art"]
-        for count, item in enumerate(movieset['movies']):
+        movieset_movies = sorted(movieset['movies'], key=itemgetter("year"))
+        for count, item in enumerate(movieset_movies):
             if item["playcount"] == 0:
                 unwatchedcount += 1
             else:

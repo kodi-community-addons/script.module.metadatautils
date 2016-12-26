@@ -37,13 +37,13 @@ class MusicBrainz(object):
         del addon
         self.mbrainz = mbrainz
 
-    #@use_cache(60)
+    @use_cache(60)
     def search(self, artist, album, track):
         '''get musicbrainz id by query of artist, album and/or track'''
         albumid = ""
         artistid = ""
         try:
-
+        
             # lookup with artist and album (preferred method)
             if artist and album:
                 artistid, albumid = self.search_release_group_match(artist, album)
@@ -116,22 +116,29 @@ class MusicBrainz(object):
             thumb = url
         return thumb
 
+    @use_cache(14)
     def search_release_group_match(self, artist, album):
         '''try to get a match on releasegroup for given artist/album combi'''
         artistid = ""
         albumid = ""
         mb_albums = self.mbrainz.search_release_groups(query=album,
-                                                       limit=3, offset=None, strict=False, artist=artist)
+                                                       limit=20, offset=None, strict=False, artist=artist)
+        
         if mb_albums and mb_albums.get("release-group-list"):
-            for mb_album in mb_albums["release-group-list"]:
+            for albumtype in ["Album", "Single", ""]:
                 if artistid and albumid:
                     break
-                if mb_album and isinstance(mb_album, dict):
-                    if mb_album.get("artist-credit"):
-                        artistid = self.match_artistcredit(mb_album["artist-credit"], artist)
-                    if artistid:
-                        albumid = mb_album.get("id", "")
+                for mb_album in mb_albums["release-group-list"]:
+                    if artistid and albumid:
                         break
+                    if mb_album and isinstance(mb_album, dict):
+                        if albumtype and albumtype != mb_album["primary-type"]:
+                            continue
+                        if mb_album.get("artist-credit"):
+                            artistid = self.match_artistcredit(mb_album["artist-credit"], artist)
+                        if artistid:
+                            albumid = mb_album.get("id", "")
+                            break
         return (artistid, albumid)
         
     @staticmethod
@@ -161,7 +168,7 @@ class MusicBrainz(object):
                             break
         return artistid
         
-
+    @use_cache(14)
     def search_recording_match(self, artist, track):
         '''try to get the releasegroup (album) for the given artist/track combi, various-artists compilations are ignored'''
         artistid = ""

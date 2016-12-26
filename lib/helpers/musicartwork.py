@@ -348,7 +348,9 @@ class MusicArtwork(object):
                     details["customartpath"] = diskpath
         # lookup online metadata
         if self.artutils.addon.getSetting("music_art_scraper") == "true":
-            mb_albumid = details.get("musicbrainzalbumid", self.get_mb_album_id(artist, album, track))
+            mb_albumid = details.get("musicbrainzalbumid")
+            if not mb_albumid:
+                mb_albumid = self.get_mb_album_id(artist, album, track)
             if mb_albumid:
                 # get artwork from fanarttv
                 details["art"] = extend_dict(details["art"], self.artutils.fanarttv.album(mb_albumid))
