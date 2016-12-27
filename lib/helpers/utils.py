@@ -26,6 +26,8 @@ try:
     SUPPORTS_POOL = True
 except Exception:
     SUPPORTS_POOL = False
+    
+
 
 ADDON_ID = "script.module.skin.helper.artutils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
@@ -142,6 +144,13 @@ def get_clean_image(image):
     '''helper to strip all kodi tags/formatting of an image path/url'''
     if not image:
         return ""
+    if "music@" in image:
+        # fix for embedded images
+        thumbcache = xbmc.getCacheThumbName(image).replace(".tbn",".jpg")
+        thumbcache = "special://thumbnails/%s/%s" % (thumbcache[0], thumbcache)
+        if not xbmcvfs.exists(thumbcache):
+            xbmcvfs.copy(image, thumbcache)
+        image = thumbcache
     if image and "image://" in image:
         image = image.replace("image://", "")
         image = urllib.unquote(image.encode("utf-8"))
@@ -149,9 +158,6 @@ def get_clean_image(image):
             image = image[:-1]
     if not isinstance(image, unicode):
         image = image.decode("utf8")
-    if "music@" in image:
-        # filter out embedded covers
-        image = ""
     return image
 
 
