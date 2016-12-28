@@ -3,11 +3,12 @@
 
 '''Retrieve animated artwork for kodi movies'''
 
-from utils import get_json, DialogSelect
+from utils import get_json, DialogSelect, log_msg
 import xbmc
 import xbmcvfs
 import xbmcgui
 from simplecache import use_cache
+from datetime import timedelta
 
 
 class AnimatedArt(object):
@@ -39,6 +40,7 @@ class AnimatedArt(object):
             "imdb_id": imdb_id
         }
         self.write_kodidb(result)
+        log_msg("get_animated_artwork for imdbid: %s - result: %s" % (imdb_id, result) )
         return result
 
     def poster(self, imdb_id, manual_select=False):
@@ -66,11 +68,13 @@ class AnimatedArt(object):
             return art_db[imdb_id][art_type]
         return []
 
-    @use_cache(7)
     def get_animatedart_db(self):
         '''get the full animated art database as dict with imdbid and tmdbid as key
         uses 7 day cache to prevent overloading the server'''
         # get all animated posters from the online json file
+        cache = self.cache.get("animatedartdb")
+        if cache:
+            return cache
         art_db = {}
         data = get_json('http://www.consiliumb.com/animatedgifs/movies.json', None)
         base_url = data.get("baseURL", "")
@@ -91,6 +95,7 @@ class AnimatedArt(object):
                             art_db[key]["posters"].append(entry_new)
                         elif entry['type'] == 'background':
                             art_db[key]["fanarts"].append(entry_new)
+            self.cache.set("animatedartdb", art_db, expiration=timedelta(days=7))
         return art_db
 
     @staticmethod

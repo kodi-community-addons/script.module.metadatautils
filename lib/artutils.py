@@ -193,16 +193,17 @@ class ArtUtils(object):
         '''get animated artwork, perform extra check if local version still exists'''
         artwork = self.animatedart.get_animated_artwork(
             imdb_id, manual_select, ignore_cache=ignore_cache)
-        refresh_needed = False
-        if artwork.get("animatedposter") and not xbmcvfs.exists(
-                artwork["animatedposter"]):
-            refresh_needed = True
-        if artwork.get("animatedfanart") and not xbmcvfs.exists(
-                artwork["animatedfanart"]):
-            refresh_needed = True
-        if refresh_needed:
-            artwork = self.animatedart.get_animated_artwork(
-                imdb_id, manual_select, ignore_cache=True)
+        if not (manual_select or ignore_cache):
+            refresh_needed = False
+            if artwork.get("animatedposter") and not xbmcvfs.exists(
+                    artwork["animatedposter"]):
+                refresh_needed = True
+            if artwork.get("animatedfanart") and not xbmcvfs.exists(
+                    artwork["animatedfanart"]):
+                refresh_needed = True
+            if refresh_needed:
+                artwork = self.animatedart.get_animated_artwork(
+                    imdb_id, manual_select, ignore_cache=True)
         return {"art": artwork}
 
     @use_cache(14)
