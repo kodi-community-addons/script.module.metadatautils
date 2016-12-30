@@ -15,7 +15,6 @@ from difflib import SequenceMatcher as SM
 from operator import itemgetter
 import re
 from datetime import timedelta
-from simplecache import use_cache
 from urllib import quote_plus
 import os
 
@@ -51,13 +50,13 @@ class PvrArtwork(object):
 
         # no cache - start our lookup adventure
         log_msg("get_pvr_artwork - no data in cache - start lookup - %s" % cache_str)
-        
+
         # workaround for recordings
         recordingdetails = self.lookup_local_recording(title, channel)
         if recordingdetails and not (channel and genre):
             genre = recordingdetails["genre"]
             channel = recordingdetails["channel"]
-        
+
         details = {"art": {}}
         details["pvrtitle"] = title
         details["pvrchannel"] = channel
@@ -349,7 +348,7 @@ class PvrArtwork(object):
             filters.append("PVR Artwork is enabled for recordings only")
         if filters:
             filterstr = " - ".join(filters)
-            log_msg("PVR artwork - filter active for title: %s - channel %s --> %s" % (title, channel, filterstr) )
+            log_msg("PVR artwork - filter active for title: %s - channel %s --> %s" % (title, channel, filterstr))
             return filterstr
         else:
             return ""
@@ -485,7 +484,7 @@ class PvrArtwork(object):
         custom_path = self.artutils.addon.getSetting("pvr_art_custom_path")
         if custom_path and self.artutils.addon.getSetting("pvr_art_custom") == "true":
             delim = "\\" if "\\" in custom_path else "/"
-            dirs, files = xbmcvfs.listdir(custom_path)
+            dirs = xbmcvfs.listdir(custom_path)[0]
             for strictness in [1, 0.95, 0.9, 0.8]:
                 if title_path:
                     break

@@ -39,7 +39,7 @@ class Tmdb(object):
         if details:
             details = self.get_movie_details(details["id"])
         return details
-        
+
     @use_cache(30)
     def search_movieset(self, title):
         '''search for movieset details providing the title of the set'''
@@ -50,7 +50,7 @@ class Tmdb(object):
             set_id = result[0]["id"]
             details = self.get_movieset_details(set_id)
         return details
-        
+
     def search_tvshow(self, title, year="", manual_select=False):
         '''
             Search tmdb for a specific movie, returns full details of best match
@@ -152,11 +152,11 @@ class Tmdb(object):
             "language": KODI_LANGUAGE
         }
         return self.map_details(self.get_data("movie/%s" % movie_id, params), "movie")
-        
+
     def get_movieset_details(self, movieset_id):
         '''get all moviesetdetails'''
-        details = { "art": {} }
-        params = { "language": KODI_LANGUAGE }
+        details = {"art": {}}
+        params = {"language": KODI_LANGUAGE}
         result = self.get_data("collection/%s" % movieset_id, params)
         if result:
             details["title"] = result["name"]
@@ -369,8 +369,8 @@ class Tmdb(object):
                     ) + SM(None, preftitle, itemorgtitle).ratio()
                     if stringmatchscore > 1.6:
                         item["score"] += stringmatchscore * 250
-                        
-                # higher score if result ALSO matches our preferred type or native language 
+
+                # higher score if result ALSO matches our preferred type or native language
                 # (only when we already have a score)
                 if item["score"]:
                     if preftype and (item["media_type"] in preftype) or (preftype in item["media_type"]):
@@ -404,7 +404,7 @@ class Tmdb(object):
                 results_list.append(listitem)
             if manual_select and results_list:
                 dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title="%s - TMDB"
-                                 % xbmc.getLocalizedString(283))
+                                      % xbmc.getLocalizedString(283))
                 dialog.doModal()
                 selected_item = dialog.result
                 del dialog

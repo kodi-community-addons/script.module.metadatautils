@@ -7,7 +7,7 @@
     Get metadata for music
 '''
 
-from utils import log_msg, extend_dict, get_clean_image, ADDON_ID, DialogSelect, strip_newlines, download_artwork
+from utils import log_msg, extend_dict, ADDON_ID, DialogSelect, strip_newlines, download_artwork
 from mbrainz import MusicBrainz
 from lastfm import LastFM
 from theaudiodb import TheAudioDb
@@ -95,8 +95,6 @@ class MusicArtwork(object):
 
     def manual_set_music_artwork(self, artist, album, track, disc):
         '''manual override artwork options'''
-        artist_details = {}
-        album_details = {}
         details = {}
         artists = self.get_all_artists(artist, track)
         if len(artists) > 1:

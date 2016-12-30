@@ -43,7 +43,7 @@ class MusicBrainz(object):
         albumid = ""
         artistid = ""
         try:
-        
+
             # lookup with artist and album (preferred method)
             if artist and album:
                 artistid, albumid = self.search_release_group_match(artist, album)
@@ -123,7 +123,7 @@ class MusicBrainz(object):
         albumid = ""
         mb_albums = self.mbrainz.search_release_groups(query=album,
                                                        limit=20, offset=None, strict=False, artist=artist)
-        
+
         if mb_albums and mb_albums.get("release-group-list"):
             for albumtype in ["Album", "Single", ""]:
                 if artistid and albumid:
@@ -140,7 +140,7 @@ class MusicBrainz(object):
                             albumid = mb_album.get("id", "")
                             break
         return (artistid, albumid)
-        
+
     @staticmethod
     def match_artistcredit(artist_credit, artist):
         '''find match for artist in artist-credits'''
@@ -167,10 +167,13 @@ class MusicBrainz(object):
                             artistid = mb_artist.get("artist").get("id")
                             break
         return artistid
-        
+
     @use_cache(14)
     def search_recording_match(self, artist, track):
-        '''try to get the releasegroup (album) for the given artist/track combi, various-artists compilations are ignored'''
+        '''
+            try to get the releasegroup (album) for the given artist/track combi
+            various-artists compilations are ignored
+        '''
         artistid = ""
         albumid = ""
         mb_albums = self.mbrainz.search_recordings(query=track,
@@ -188,14 +191,15 @@ class MusicBrainz(object):
                         if mb_recording.get("release-list"):
                             for mb_release in mb_recording["release-list"]:
                                 if mb_release.get("artist-credit"):
-                                    if mb_release["artist-credit"][0].get("id","") == artistid:
+                                    if mb_release["artist-credit"][0].get("id", "") == artistid:
                                         albumid = mb_release["release-group"]["id"]
                                         break
                                     else:
                                         continue
-                                if mb_release.get("artist-credit-phrase","") == 'Various Artists':
+                                if mb_release.get("artist-credit-phrase", "") == 'Various Artists':
                                     continue
-                                # grab release group details to make sure we're not looking at some various artists compilation
+                                # grab release group details to make sure we're
+                                # not looking at some various artists compilation
                                 mb_album = self.mbrainz.get_release_group_by_id(
                                     mb_release["release-group"]["id"], includes=["artist-credits"])
                                 mb_album = mb_album["release-group"]

@@ -20,13 +20,12 @@ try:
     import simplejson as json
 except Exception:
     import json
-    
+
 try:
     from multiprocessing.pool import ThreadPool
     SUPPORTS_POOL = True
 except Exception:
     SUPPORTS_POOL = False
-    
 
 
 ADDON_ID = "script.module.skin.helper.artutils"
@@ -146,7 +145,7 @@ def get_clean_image(image):
         return ""
     if "music@" in image:
         # fix for embedded images
-        thumbcache = xbmc.getCacheThumbName(image).replace(".tbn",".jpg")
+        thumbcache = xbmc.getCacheThumbName(image).replace(".tbn", ".jpg")
         thumbcache = "special://thumbnails/%s/%s" % (thumbcache[0], thumbcache)
         if not xbmcvfs.exists(thumbcache):
             xbmcvfs.copy(image, thumbcache)
@@ -385,8 +384,8 @@ def detect_plugin_content(plugin_path):
                     break
         log_msg("detect_plugin_path_content for: %s  - result: %s" % (plugin_path, content_type))
     return content_type
-    
-    
+
+
 def download_artwork(folderpath, artwork):
     '''download artwork to local folder'''
     efa_path = ""
@@ -429,6 +428,7 @@ def download_artwork(folderpath, artwork):
         new_dict["extrafanart"] = efa_path
     return new_dict
 
+
 def download_image(filename, url):
     '''download specific image to local folder'''
     if not url:
@@ -445,8 +445,9 @@ def download_image(filename, url):
             if refresh_needed:
                 refresh_image(filename)
             return filename
-            
+
     return url
+
 
 def refresh_image(imagepath):
     '''tell kodi texture cache to refresh a particular image'''
@@ -461,7 +462,7 @@ def refresh_image(imagepath):
     finally:
         connection.close()
         del connection
-    
+
 
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
