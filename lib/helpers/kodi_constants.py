@@ -6,12 +6,15 @@
     kodi_constants.py
     Several common constants for use with Kodi json api
 '''
+from utils import KODI_VERSION
 
 FIELDS_BASE = ["dateadded", "file", "lastplayed","plot", "title", "art", "playcount"]
 FIELDS_FILE = FIELDS_BASE + ["streamdetails", "director", "resume", "runtime"]
 FIELDS_MOVIES = FIELDS_FILE + ["plotoutline", "sorttitle", "cast", "votes", "showlink", "top250", "trailer", "year",
     "country", "studio", "set", "genre", "mpaa", "setid", "rating", "tag", "tagline", "writer", "originaltitle",
     "imdbnumber"]
+if KODI_VERSION > 16:
+    FIELDS_MOVIES.append("uniqueid")
 FIELDS_TVSHOWS = FIELDS_BASE + ["sorttitle", "mpaa", "premiered", "year", "episode", "watchedepisodes", "votes",
     "rating", "studio", "season", "genre", "cast", "episodeguide", "tag", "originaltitle", "imdbnumber"]
 FIELDS_EPISODES = FIELDS_FILE + ["cast", "productioncode", "rating", "votes", "episode", "showtitle", "tvshowid",

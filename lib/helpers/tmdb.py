@@ -39,7 +39,18 @@ class Tmdb(object):
         if details:
             details = self.get_movie_details(details["id"])
         return details
-
+        
+    @use_cache(30)
+    def search_movieset(self, title):
+        '''search for movieset details providing the title of the set'''
+        details = {}
+        params = {"query": title, "language": KODI_LANGUAGE}
+        result = self.get_data("search/collection", params)
+        if result:
+            set_id = result[0]["id"]
+            details = self.get_movieset_details(set_id)
+        return details
+        
     def search_tvshow(self, title, year="", manual_select=False):
         '''
             Search tmdb for a specific movie, returns full details of best match
@@ -141,6 +152,20 @@ class Tmdb(object):
             "language": KODI_LANGUAGE
         }
         return self.map_details(self.get_data("movie/%s" % movie_id, params), "movie")
+        
+    def get_movieset_details(self, movieset_id):
+        '''get all moviesetdetails'''
+        details = { "art": {} }
+        params = { "language": KODI_LANGUAGE }
+        result = self.get_data("collection/%s" % movieset_id, params)
+        if result:
+            details["title"] = result["name"]
+            details["plot"] = result["overview"]
+            details["tmdb_id"] = result["id"]
+            details["art"]["poster"] = "http://image.tmdb.org/t/p/original%s" % result["poster_path"]
+            details["art"]["fanart"] = "http://image.tmdb.org/t/p/original%s" % result["backdrop_path"]
+            details["totalmovies"] = len(result["parts"])
+        return details
 
     def get_tvshow_details(self, tvshow_id):
         '''get all tvshowdetails'''
@@ -166,7 +191,15 @@ class Tmdb(object):
         '''helper method to get data from tmdb json API'''
         params["api_key"] = self.api_key
         url = u'http://api.themoviedb.org/3/%s' % endpoint
-        return get_json(url, params)
+        result = get_json(url, params)
+        # make sure that we have a plot value (if localized value fails, fallback to english)
+        if result and "language" in params and "overview" in result:
+            if not result["overview"] and params["language"] != "en":
+                params["language"] = "en"
+                result2 = get_json(url, params)
+                if result2 and result2.get("overview"):
+                    result = result2
+        return result
 
     def map_details(self, data, media_type):
         '''helper method to map the details received from tmdb to kodi compatible formatting'''

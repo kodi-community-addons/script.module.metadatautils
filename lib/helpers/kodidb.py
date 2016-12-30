@@ -29,10 +29,18 @@ class KodiDb(object):
     def movie_by_imdbid(self, imdb_id):
         '''gets a movie from kodidb by imdbid.'''
         # apparently you can't filter on imdb so we have to do this the complicated way
-        all_items = self.get_json('VideoLibrary.GetMovies', fields=["imdbnumber"], returntype="movies")
-        for item in all_items:
-            if item["imdbnumber"] == imdb_id:
-                return self.movie(item["movieid"])
+        if KODI_VERSION > 16:
+            # from Kodi 17 we have a uniqueid field instead of imdbnumber
+            all_items = self.get_json('VideoLibrary.GetMovies', fields=["uniqueid"], returntype="movies")
+            for item in all_items:
+                for item2 in item["uniqueid"].values():
+                    if item2 == imdb_id:
+                        return self.movie(item["movieid"])
+        else:
+            all_items = self.get_json('VideoLibrary.GetMovies', fields=["imdbnumber"], returntype="movies")
+            for item in all_items:
+                if item["imdbnumber"] == imdb_id:
+                    return self.movie(item["movieid"])
         return {}
 
     def tvshow(self, db_id):
@@ -48,10 +56,19 @@ class KodiDb(object):
     def tvshow_by_imdbid(self, imdb_id):
         '''gets a tvshow from kodidb by imdbid.'''
         # apparently you can't filter on imdb so we have to do this the complicated way
-        all_items = self.get_json('VideoLibrary.GetTvShows', fields=["imdbnumber"], returntype="tvshows")
-        for item in all_items:
-            if item["imdbnumber"] == imdb_id:
-                return self.tvshow(item["tvshowid"])
+        if KODI_VERSION > 16:
+            # from Kodi 17 we have a uniqueid field instead of imdbnumber
+            all_items = self.get_json('VideoLibrary.GetTvShows', fields=["uniqueid"], returntype="tvshows")
+            for item in all_items:
+                for item2 in item["uniqueid"].values():
+                    if item2 == imdb_id:
+                        return self.movie(item["tvshowid"])
+        else:
+            # pre-kodi 17 approach
+            all_items = self.get_json('VideoLibrary.GetTvShows', fields=["imdbnumber"], returntype="tvshows")
+            for item in all_items:
+                if item["imdbnumber"] == imdb_id:
+                    return self.tvshow(item["tvshowid"])
         return {}
 
     def episode(self, db_id):
@@ -360,7 +377,7 @@ class KodiDb(object):
                     liz.addStreamInfo("video", item["streamdetails"].get("video", {}))
                     liz.addStreamInfo("audio", item["streamdetails"].get("audio", {}))
                     liz.addStreamInfo("subtitle", item["streamdetails"].get("subtitle", {}))
-                    
+
                 if "dateadded" in item:
                     infolabels["dateadded"] = item["dateadded"]
                 if "date" in item:
@@ -386,17 +403,17 @@ class KodiDb(object):
                     infolabels["duration"] = item["duration"]
                 if "lastplayed" in item:
                     infolabels["lastplayed"] = item["lastplayed"]
-            
+
             # setting the dbtype and dbid is supported from kodi krypton and up
             if KODI_VERSION > 16 and item["type"] not in ["recording", "channel", "favourite"]:
                 infolabels["mediatype"] = item["type"]
                 # setting the dbid on music items is not supported ?
                 if nodetype == "Video" and "DBID" in item["extraproperties"]:
                     infolabels["dbid"] = item["extraproperties"]["DBID"]
-            
+
             if "lastplayed" in item:
                 infolabels["lastplayed"] = item["lastplayed"]
-            
+
             # assign the infolabels
             liz.setInfo(type=nodetype, infoLabels=infolabels)
 
@@ -484,6 +501,10 @@ class KodiDb(object):
                 item["premiered"] = item.get("firstaired")
             if not properties.get("imdbnumber") and item.get("imdbnumber"):
                 properties["imdbnumber"] = item.get("imdbnumber")
+            if not properties.get("imdbnumber") and item.get("uniqueid"):
+                for value in item["uniqueid"].values():
+                    if value.startswith("tt"):
+                        properties["imdbnumber"] = value
 
             properties["dbtype"] = item["type"]
             properties["DBTYPE"] = item["type"]

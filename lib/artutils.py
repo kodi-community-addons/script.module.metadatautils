@@ -144,15 +144,11 @@ class ArtUtils(object):
             result.update(self.get_duration(result["runtime"]))
         return result
 
-    def get_moviesetdetails(self, set_id):
+    def get_moviesetdetails(self, title, set_id):
         '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
+        # get details from tmdb
         from helpers.moviesetdetails import get_moviesetdetails
-        return get_moviesetdetails(
-            self.cache,
-            self.kodidb,
-            set_id,
-            self.studiologos,
-            self.studiologos_path)
+        return get_moviesetdetails(self, title, set_id)
 
     @use_cache(14)
     def get_streamdetails(self, db_id, media_type, ignore_cache=False):
