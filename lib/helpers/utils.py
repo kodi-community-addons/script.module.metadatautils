@@ -457,7 +457,8 @@ def refresh_image(imagepath):
     try:
         cache_image = connection.execute('SELECT cachedurl FROM texture WHERE url = ?', (imagepath,)).fetchone()
         if cache_image:
-            xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
+            if xbmcvfs.exists(cache_image):
+                xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
             connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
     finally:
         connection.close()
