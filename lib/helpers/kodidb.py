@@ -136,13 +136,22 @@ class KodiDb(object):
 
     def album(self, db_id):
         '''get albumdetails from kodi db'''
-        return self.get_json("AudioLibrary.GetAlbumDetails", returntype="albumdetails",
+        album = self.get_json("AudioLibrary.GetAlbumDetails", returntype="albumdetails",
                              fields=FIELDS_ALBUMS, optparam=("albumid", try_parse_int(db_id)))
+        # override type as the kodi json api is returning the album type instead of mediatype
+        album["albumtype"] = album["type"]
+        album["type"] = "album"
+        return album
 
     def albums(self, sort=None, filters=None, limits=None, filtertype=None):
         '''get albums from kodi db'''
-        return self.get_json("AudioLibrary.GetAlbums", sort=sort, filters=filters,
+        albums = self.get_json("AudioLibrary.GetAlbums", sort=sort, filters=filters,
                              fields=FIELDS_ALBUMS, limits=limits, returntype="albums", filtertype=filtertype)
+        # override type as the kodi json api is returning the album type instead of mediatype
+        for album in albums:
+            album["albumtype"] = album["type"]
+            album["type"] = "album"
+        return albums
 
     def artist(self, db_id):
         '''get artistdetails from kodi db'''

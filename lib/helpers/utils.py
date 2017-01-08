@@ -460,8 +460,10 @@ def refresh_image(imagepath):
             if xbmcvfs.exists(cache_image):
                 xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
             connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
+            connection.close()
+    except Exception as exc:
+        log_exception(__name__, exc)
     finally:
-        connection.close()
         del connection
 
 
