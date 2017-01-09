@@ -115,6 +115,10 @@ class ArtUtils(object):
         if result["art"].get("fanarts") and len(result["art"]["fanarts"]) > 1:
             result["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
                 "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"]["fanarts"]))
+        for arttype in ["posters", "clearlogos", "banners"]:
+            if result["art"].get(arttype) and len(result["art"][arttype]) > 1:
+                result["art"][arttype] = "plugin://script.skin.helper.service/"\
+                    "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
         return result
 
     @use_cache(14)

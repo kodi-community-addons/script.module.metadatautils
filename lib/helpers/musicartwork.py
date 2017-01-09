@@ -463,6 +463,7 @@ class MusicArtwork(object):
                 bullet = "•".decode("utf-8")
                 details["tracks.formatted"] = u""
                 details["tracks.formatted2"] = ""
+                details["duration"] = 0
                 for item in album_tracks:
                     details["tracks"].append(item["title"])
                     details["tracks.formatted"] += u"%s %s [CR]" % (bullet, item["title"])
@@ -471,6 +472,7 @@ class MusicArtwork(object):
                     minutes = total_seconds / 60
                     seconds = total_seconds - (minutes * 60)
                     duration = "%s:%s" % (minutes, str(seconds).zfill(2))
+                    details["duration"] += minutes
                     details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, item["title"], duration)
                     if not details.get("diskpath"):
                         if not disc or item["disc"] == int(disc):
