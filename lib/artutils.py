@@ -271,7 +271,7 @@ class ArtUtils(object):
     def get_imdbtvdb_id(self, title, content_type, year="", imdbid="", tvshowtitle=""):
         '''try to figure out the imdbnumber and/or tvdbid'''
         tvdbid = ""
-        if content_type in ["seasons", "episodes"]:
+        if content_type in ["seasons", "episodes"] or tvshowtitle:
             title = tvshowtitle
             content_type = "tvshows"
         if imdbid and not imdbid.startswith("tt"):
