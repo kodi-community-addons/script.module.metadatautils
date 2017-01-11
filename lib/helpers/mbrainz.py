@@ -132,7 +132,7 @@ class MusicBrainz(object):
                     if artistid and albumid:
                         break
                     if mb_album and isinstance(mb_album, dict):
-                        if albumtype and albumtype != mb_album["primary-type"]:
+                        if albumtype and albumtype != mb_album.get("primary-type",""):
                             continue
                         if mb_album.get("artist-credit"):
                             artistid = self.match_artistcredit(mb_album["artist-credit"], artist)

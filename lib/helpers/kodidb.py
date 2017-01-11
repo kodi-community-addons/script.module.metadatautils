@@ -139,7 +139,6 @@ class KodiDb(object):
         album = self.get_json("AudioLibrary.GetAlbumDetails", returntype="albumdetails",
                               fields=FIELDS_ALBUMS, optparam=("albumid", try_parse_int(db_id)))
         # override type as the kodi json api is returning the album type instead of mediatype
-        album["albumtype"] = album["type"]
         album["type"] = "album"
         return album
 
@@ -149,7 +148,6 @@ class KodiDb(object):
                                fields=FIELDS_ALBUMS, limits=limits, returntype="albums", filtertype=filtertype)
         # override type as the kodi json api is returning the album type instead of mediatype
         for album in albums:
-            album["albumtype"] = album["type"]
             album["type"] = "album"
         return albums
 
