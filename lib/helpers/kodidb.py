@@ -45,13 +45,18 @@ class KodiDb(object):
 
     def tvshow(self, db_id):
         '''get tvshow from kodi db'''
-        return self.get_json("VideoLibrary.GetTvShowDetails", returntype="tvshowdetails",
-                             fields=FIELDS_TVSHOWS, optparam=("tvshowid", try_parse_int(db_id)))
+        tvshow = self.get_json("VideoLibrary.GetTvShowDetails", returntype="tvshowdetails",
+                               fields=FIELDS_TVSHOWS, optparam=("tvshowid", try_parse_int(db_id)))
+        return self.tvshow_watchedcounts(tvshow)
 
     def tvshows(self, sort=None, filters=None, limits=None, filtertype=None):
         '''get tvshows from kodi db'''
-        return self.get_json("VideoLibrary.GetTvShows", sort=sort, filters=filters,
-                             fields=FIELDS_TVSHOWS, limits=limits, returntype="tvshows", filtertype=filtertype)
+        tvshows = self.get_json("VideoLibrary.GetTvShows", sort=sort, filters=filters,
+                                fields=FIELDS_TVSHOWS, limits=limits, returntype="tvshows", filtertype=filtertype)
+        # append watched counters
+        for tvshow in tvshows:
+            tvshow = self.tvshow_watchedcounts(tvshow)
+        return tvshows
 
     def tvshow_by_imdbid(self, imdb_id):
         '''gets a tvshow from kodidb by imdbid.'''
@@ -62,7 +67,7 @@ class KodiDb(object):
             for item in all_items:
                 for item2 in item["uniqueid"].values():
                     if item2 == imdb_id:
-                        return self.movie(item["tvshowid"])
+                        return self.tvshow(item["tvshowid"])
         else:
             # pre-kodi 17 approach
             all_items = self.get_json('VideoLibrary.GetTvShows', fields=["imdbnumber"], returntype="tvshows")
@@ -666,3 +671,13 @@ class KodiDb(object):
             log_exception(__name__, exc)
             log_msg(item)
             return None
+
+    @staticmethod
+    def tvshow_watchedcounts(tvshow):
+        '''append watched counts to tvshow details'''
+        tvshow["extraproperties"] = {"totalseasons": str(tvshow["season"]),
+                                     "totalepisodes": str(tvshow["episode"]),
+                                     "watchedepisodes": str(tvshow["watchedepisodes"]),
+                                     "unwatchedepisodes": str(tvshow["episode"] - tvshow["watchedepisodes"])
+                                     }
+        return tvshow
