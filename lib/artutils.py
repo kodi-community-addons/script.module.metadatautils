@@ -169,7 +169,7 @@ class ArtUtils(object):
 
     @use_cache(14)
     def get_channellogo(self, channelname):
-        '''get channellogo from the given channel name'''
+        '''get channellogo for the given channel name'''
         return self.channellogos.get_channellogo(channelname)
 
     def get_studio_logo(self, studio):

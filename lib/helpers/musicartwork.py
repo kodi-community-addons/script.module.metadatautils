@@ -87,7 +87,7 @@ class MusicArtwork(object):
                     "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
         # set special extrafanart path if multiple artists
         # so we can have rotating fanart slideshow for all artists of the track
-        if len(artists) > 1 and details["art"].get("fanarts"):
+        if len(artists) > 1 and details.get("art").get("fanarts"):
             details["art"]["extrafanart"] = details["art"]["fanarts"]
 
         # return the endresult
@@ -463,7 +463,7 @@ class MusicArtwork(object):
                 bullet = "•".decode("utf-8")
                 details["tracks.formatted"] = u""
                 details["tracks.formatted2"] = ""
-                details["duration"] = 0
+                details["runtime"] = 0
                 for item in album_tracks:
                     details["tracks"].append(item["title"])
                     details["tracks.formatted"] += u"%s %s [CR]" % (bullet, item["title"])
@@ -472,13 +472,18 @@ class MusicArtwork(object):
                     minutes = total_seconds / 60
                     seconds = total_seconds - (minutes * 60)
                     duration = "%s:%s" % (minutes, str(seconds).zfill(2))
-                    details["duration"] += minutes
+                    details["runtime"] += item["duration"]
                     details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, item["title"], duration)
                     if not details.get("diskpath"):
                         if not disc or item["disc"] == int(disc):
                             details["diskpath"] = self.get_albumpath_by_songpath(item["file"])
                 details["art"] = {}
                 details["songcount"] = len(album_tracks)
+                # get album total duration pretty printed as mm:ss
+                total_seconds = int(details["runtime"])
+                minutes = total_seconds / 60
+                seconds = total_seconds - (minutes * 60)
+                details["duration"] = "%s:%s" % (minutes, str(seconds).zfill(2))
                 # do not retrieve artwork from item as there's no way to write it back
                 # and it will already be retrieved if user enables to get the artwork from the song path
         return details
