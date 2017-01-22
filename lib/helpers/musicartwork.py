@@ -39,8 +39,6 @@ class MusicArtwork(object):
     @use_cache(14)
     def get_music_artwork(self, artist, album, track, disc, ignore_cache=False, flush_cache=False):
         '''get music metadata by providing artist and/or track'''
-        if flush_cache:
-            ignore_cache = False
         artist_details = {"art": {}}
         feat_artist_details = {"art": {}}
         album_details = {}
@@ -54,15 +52,21 @@ class MusicArtwork(object):
         for artist in artists:
             if not (artist_details.get("plot") or artist_details.get("art")):
                 # get main artist details
-                artist_details = self.get_artist_metadata(artist, album, track, ignore_cache=ignore_cache)
+                artist_details = self.get_artist_metadata(
+                    artist, album, track, ignore_cache=ignore_cache, flush_cache=flush_cache)
             else:
                 # assume featuring artist
                 feat_artist_details = extend_dict(
                     feat_artist_details, self.get_artist_metadata(
-                        artist, album, track, ignore_cache=ignore_cache))
+                        artist, album, track, ignore_cache=ignore_cache, flush_cache=flush_cache))
             if album or track and not (album_details.get("plot") or album_details.get("art")):
-                album_details = self.get_album_metadata(artist, album, track, disc, ignore_cache=ignore_cache)
+                album_details = self.get_album_metadata(
+                    artist, album, track, disc, ignore_cache=ignore_cache, flush_cache=flush_cache)
 
+        # flush cache returns blank result
+        if flush_cache:
+            return None
+            
         # combine artist details and album details
         details = extend_dict(album_details, artist_details)
 
@@ -242,7 +246,7 @@ class MusicArtwork(object):
             # Open addon settings
             xbmc.executebuiltin("Addon.OpenSettings(%s)" % ADDON_ID)
 
-    def get_artist_metadata(self, artist, album, track, ignore_cache=False):
+    def get_artist_metadata(self, artist, album, track, ignore_cache=False, flush_cache=False):
         '''collect artist metadata'''
         artists = self.get_all_artists(artist, track)
         album = self.get_clean_title(album)
@@ -250,6 +254,9 @@ class MusicArtwork(object):
         artist = artists[0]
         cache_str = "music_artwork.artist.%s" % artist.lower()
         cache = self.artutils.cache.get(cache_str)
+        if flush_cache:
+            self.artutils.cache.set(cache_str, None)
+            return {"art": {}}
         if cache and not ignore_cache:
             return cache
 
@@ -315,13 +322,16 @@ class MusicArtwork(object):
         self.artutils.cache.set(cache_str, details)
         return details
 
-    def get_album_metadata(self, artist, album, track, disc, ignore_cache=False):
+    def get_album_metadata(self, artist, album, track, disc, ignore_cache=False, flush_cache=False):
         '''collect all album metadata'''
 
         cache_str = "music_artwork.album.%s.%s.%s" % (artist.lower(), album.lower(), disc.lower())
         if not album and track:
             cache_str = "music_artwork.album.%s.%s" % (artist.lower(), track.lower())
         cache = self.artutils.cache.get(cache_str)
+        if flush_cache:
+            self.artutils.cache.set(cache_str, None)
+            return {"art": {}}
         if cache and not ignore_cache:
             return cache
 
