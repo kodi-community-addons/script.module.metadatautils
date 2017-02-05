@@ -27,7 +27,12 @@
         <setting id="music_art_custom_path" label="32020" type="folder" source="auto" default="" visible="eq(-1,true)"/>
         <setting id="music_art_download" type="bool" label="32022" default="false" visible="eq(-4,true) + eq(-3,true)"/>
         <setting id="music_art_download_custom" type="bool" label="32023" default="false" visible="eq(-5,true) + eq(-3,true)"/>
-        <setting id="music_art_mb_mirror" label="32024" type="text" visible="eq(-6,true)"/>
+        <setting label="" type="lsep" />
+        <setting label="32047" type="lsep" />
+        <setting id="music_art_mb_mirror" label="32024" type="text" visible="eq(-8,true)"/>
+        <setting id="music_art_scraper_adb" type="bool" label="32049" default="false" visible="eq(-9,true)"/>
+        <setting id="music_art_scraper_lfm" type="bool" label="32050" default="true" visible="eq(-10,true)"/>
+        <setting id="music_art_scraper_fatv" type="bool" label="32051" default="true" visible="eq(-11,true)"/>
     </category>
     <category label="32044">
         <setting id="fanarttv_apikey" label="32045" type="text"/>

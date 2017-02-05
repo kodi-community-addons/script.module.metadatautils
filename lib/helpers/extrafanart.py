@@ -20,6 +20,8 @@ def get_extrafanart(file_path):
         efa_path = u"plugin://plugin.video.emby/extrafanart?path=" + file_path
     elif "plugin://" in file_path:
         efa_path = ""
+    elif "videodb://" in file_path:
+        efa_path = ""
     else:
         count = 0
         while not count == 3:

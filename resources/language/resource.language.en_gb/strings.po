@@ -89,7 +89,7 @@ msgid "Works with both library and online sources (radio)"
 msgstr ""
 
 msgctxt "#32018"
-msgid "Enable online scraper (musicbrainz/audiodb/fanart/last.fm)"
+msgid "Enable online scraper"
 msgstr ""
 
 msgctxt "#32019"
@@ -199,3 +199,24 @@ msgstr ""
 msgctxt "#32046"
 msgid "see www.fanart.tv for more details about personal and VIP memberships"
 msgstr ""
+
+msgctxt "#32047"
+msgid "Scraper settings"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Enable theaudiodb for metadata/artwork"
+msgstr ""
+
+msgctxt "#32049"
+msgid "Enable TheAudioDb for metadata/artwork"
+msgstr ""
+
+msgctxt "#32050"
+msgid "Enable last.fm for metadata"
+msgstr ""
+
+msgctxt "#32051"
+msgid "Enable fanart.tv for artwork"
+msgstr ""
+

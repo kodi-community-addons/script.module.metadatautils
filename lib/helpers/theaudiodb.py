@@ -14,7 +14,7 @@ import xbmcvfs
 
 class TheAudioDb(object):
     '''get metadata from the audiodb'''
-    api_key = "32176f5352254d85853778"
+    api_key = "12376f5352254d85853987"
     ignore_cache = False
 
     def __init__(self, simplecache=None):
