@@ -168,7 +168,10 @@ def get_duration(duration):
         duration.replace("min", "").replace("", "").replace(".", "")
     try:
         total_minutes = int(duration)
-        hours = total_minutes / 60
+        if total_minutes < 60:
+            hours = 0
+        else:
+            hours = total_minutes / 60
         minutes = total_minutes - (hours * 60)
         formatted_time = "%s:%s" % (hours, str(minutes).zfill(2))
     except Exception as exc:
