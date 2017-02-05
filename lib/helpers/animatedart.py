@@ -3,10 +3,11 @@
 
 '''Retrieve animated artwork for kodi movies'''
 
-from utils import get_json, DialogSelect, log_msg
+from utils import get_json, DialogSelect, log_msg, ADDON_ID
 import xbmc
 import xbmcvfs
 import xbmcgui
+import xbmcaddon
 from simplecache import use_cache
 from datetime import timedelta
 
@@ -137,13 +138,16 @@ class AnimatedArt(object):
     def process_image(image_url, art_type, imdb_id):
         '''animated gifs need to be stored locally, otherwise they won't work'''
         # make sure that our local path for the gif images exists
-        if not xbmcvfs.exists("special://thumbnails/animatedgifs/"):
-            xbmcvfs.mkdir("special://thumbnails/animatedgifs/")
+        addon = xbmcaddon.Addon(ADDON_ID)
+        gifs_path = "%s/animatedgifs/" % addon.getAddonInfo('profile')
+        del addon
+        if not xbmcvfs.exists(gifs_path):
+            xbmcvfs.mkdirs(gifs_path)
         # only process existing images
         if not image_url or not xbmcvfs.exists(image_url):
             return None
         # copy the image to our local path and return the new path as value
-        local_filename = "special://thumbnails/animatedgifs/%s_%s.gif" % (imdb_id, art_type)
+        local_filename = "%s%s_%s.gif" % (gifs_path, imdb_id, art_type)
         if xbmcvfs.exists(local_filename):
             xbmcvfs.delete(local_filename)
         # we don't use xbmcvfs.copy because we want to wait for the action to complete
