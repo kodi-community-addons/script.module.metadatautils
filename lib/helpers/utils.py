@@ -61,24 +61,26 @@ def get_json(url, params=None, retries=0):
     if not params:
         params = {}
     try:
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, timeout=20)
         if response and response.content and response.status_code == 200:
             result = json.loads(response.content.decode('utf-8', 'replace'))
             if "results" in result:
                 result = result["results"]
             elif "result" in result:
                 result = result["result"]
-            return result
+        elif response.status_code == 503:
+            result = None
     except Exception as exc:
-        if "Read timed out" in str(exc) and not retries == 10:
-            # auto retry...
-            xbmc.sleep(500)
-            return get_json(url, params, retries + 1)
-        elif "getaddrinfo failed" in str(exc):
-            log_msg("No internet or server not reachable - request failed for url: %s" % url, xbmc.LOGWARNING)
-            return None
+        if "Read timed out" in str(exc):
+            result = None
         else:
             log_exception(__name__, exc)
+            return None
+    # auto retry connection errors
+    if result is None and retries < 5:
+        xbmc.sleep(500 * retries)
+        return get_json(url, params, retries + 1)
+    # return result
     return result
 
 

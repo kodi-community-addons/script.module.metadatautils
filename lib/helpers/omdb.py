@@ -25,12 +25,12 @@ class Omdb(object):
         '''get omdb details by providing an imdb id'''
         params = {"i": imdb_id}
         data = self.get_data(params)
-        return self.map_details(data)
+        return self.map_details(data) if data else {}
 
     def get_details_by_title(self, title, year="", media_type=""):
         ''' get omdb details by title
             title --> The title of the media to look for (required)
-            year (str/int)--> The year of the media (optional, better results of provided)
+            year (str/int)--> The year of the media (optional, better results when provided)
             media_type --> The type of the media: movie/tvshow (optional, better results of provided)
         '''
         if "movie" in media_type:
@@ -39,7 +39,7 @@ class Omdb(object):
             media_type = "series"
         params = {"t": title, "y": year, "type": media_type}
         data = self.get_data(params)
-        return self.map_details(data)
+        return self.map_details(data) if data else {}
 
     @use_cache(7)
     def get_data(self, params):
@@ -48,10 +48,10 @@ class Omdb(object):
         params["tomatoes"] = True
         params["r"] = "json"
         data = get_json(self.base_url, params)
-        if data:
-            return data
-        else:
-            return {}
+        if data is None:
+            self.base_url = 'http://svr2.omdbapi.com/'  # fallback to temporary omdb server
+            data = get_json(self.base_url, params)
+        return data
 
     @staticmethod
     def map_details(data):
@@ -71,7 +71,7 @@ class Omdb(object):
             elif key == "Year":
                 result["year"] = value
             if key == "Rated":
-                result["mpaa"] = value.replace("Rated","")
+                result["mpaa"] = value.replace("Rated", "")
             elif key == "Title":
                 result["title"] = value
             elif key == "Released":
