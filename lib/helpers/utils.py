@@ -472,6 +472,90 @@ def refresh_image(imagepath):
         del connection
 
 
+def manual_set_artwork(artwork, mediatype, header=None):
+    '''Allow user to manually select the artwork with a select dialog'''
+    changemade = False
+    if mediatype == "artist":
+        art_types = ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]
+    elif mediatype == "album":
+        art_types = ["thumb", "discart"]
+    else:
+        art_types = ["thumb", "poster", "fanart", "banner", "clearart",
+                     "clearlogo", "discart", "landscape", "characterart"]
+
+    if not header:
+        header = xbmc.getLocalizedString(13511)
+
+    # show dialogselect with all artwork options
+    abort = False
+    while not abort:
+        listitems = []
+        for arttype in art_types:
+            img = artwork.get(arttype, "")
+            listitem = xbmcgui.ListItem(label=arttype, label2=img, iconImage=img)
+            listitem.setProperty("icon", img)
+            listitems.append(listitem)
+        dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
+                              window_title=header, multiselect=False)
+        dialog.doModal()
+        selected_item = dialog.result
+        del dialog
+        if selected_item == -1:
+            abort = True
+        else:
+            # show results for selected art type
+            artoptions = []
+            selected_item = listitems[selected_item]
+            image = selected_item.getProperty("icon").decode("utf-8")
+            label = selected_item.getLabel().decode("utf-8")
+            subheader = "%s: %s" % (header, label)
+            if image:
+                # current image
+                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), iconImage=image, label2=image)
+                listitem.setProperty("icon", image)
+                artoptions.append(listitem)
+                # none option
+                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231), iconImage="DefaultAddonNone.png")
+                listitem.setProperty("icon", "DefaultAddonNone.png")
+                artoptions.append(listitem)
+            # browse option
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1024), iconImage="DefaultFolder.png")
+            listitem.setProperty("icon", "DefaultFolder.png")
+            artoptions.append(listitem)
+
+            # add remaining images as option
+            allarts = artwork.get(label + "s", [])
+            for item in allarts:
+                listitem = xbmcgui.ListItem(label=item, iconImage=item)
+                listitem.setProperty("icon", item)
+                artoptions.append(listitem)
+
+            dialog = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=subheader)
+            dialog.doModal()
+            selected_item = dialog.result
+            del dialog
+            if image and selected_item == 1:
+                # set image to None
+                artwork[label] = ""
+                changemade = True
+            elif (image and selected_item > 2) or (not image and selected_item > 0):
+                # one of the optional images is selected as new default
+                artwork[label] = artoptions[selected_item].getProperty("icon")
+                changemade = True
+            elif (image and selected_item == 2) or (not image and selected_item == 0):
+                # manual browse...
+                dialog = xbmcgui.Dialog()
+                image = dialog.browse(2, xbmc.getLocalizedString(1030),
+                                      'files', mask='.gif|.png|.jpg').decode("utf-8")
+                del dialog
+                if image:
+                    artwork[label] = image
+                    changemade = True
+
+    # return endresult
+    return changemade, artwork
+
+
 class DialogSelect(xbmcgui.WindowXMLDialog):
     '''wrapper around Kodi dialogselect to present a list of items'''
 

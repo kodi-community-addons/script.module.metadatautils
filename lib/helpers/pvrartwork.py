@@ -40,232 +40,176 @@ class PvrArtwork(object):
             genre: (optional)
             the more optional parameters are supplied, the better the search results
         '''
-
+        details = {"art": {}}
         # try cache first
         cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
         cache = self.artutils.cache.get(cache_str)
         if cache and not manual_select and not ignore_cache:
             log_msg("get_pvr_artwork - return data from cache - %s" % cache_str)
-            return cache
-
-        # no cache - start our lookup adventure
-        log_msg("get_pvr_artwork - no data in cache - start lookup - %s" % cache_str)
-
-        # workaround for recordings
-        recordingdetails = self.lookup_local_recording(title, channel)
-        if recordingdetails and not (channel and genre):
-            genre = recordingdetails["genre"]
-            channel = recordingdetails["channel"]
-
-        details = {"art": {}}
-        details["pvrtitle"] = title
-        details["pvrchannel"] = channel
-        details["pvrgenre"] = genre
-        details["cachestr"] = cache_str
-        details["media_type"] = ""
-        details["art"] = {}
-
-        # filter genre unknown/other
-        if not genre or genre.split(" / ")[0] in xbmc.getLocalizedString(19499).split(" / "):
-            details["genre"] = []
-            genre = ""
-            log_msg("genre is unknown so ignore....")
+            details = cache
         else:
-            details["genre"] = genre.split(" / ")
-            details["media_type"] = self.get_mediatype_from_genre(genre)
-        searchtitle = self.get_searchtitle(title, channel)
+            # no cache - start our lookup adventure
+            log_msg("get_pvr_artwork - no data in cache - start lookup - %s" % cache_str)
 
-        # only continue if we pass our basic checks
-        filterstr = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
-        proceed_lookup = False if filterstr else True
-        if not proceed_lookup and manual_select:
-            # warn user about active skip filter
-            proceed_lookup = xbmcgui.Dialog().yesno(
-                line1=self.artutils.addon.getLocalizedString(32027), line2=filterstr,
-                heading=xbmc.getLocalizedString(750))
+            # workaround for recordings
+            recordingdetails = self.lookup_local_recording(title, channel)
+            if recordingdetails and not (channel and genre):
+                genre = recordingdetails["genre"]
+                channel = recordingdetails["channel"]
 
-        if proceed_lookup:
+            details["pvrtitle"] = title
+            details["pvrchannel"] = channel
+            details["pvrgenre"] = genre
+            details["cachestr"] = cache_str
+            details["media_type"] = ""
+            details["art"] = {}
 
-            # if manual lookup get the title from the user
-            if manual_select:
-                searchtitle = xbmcgui.Dialog().input(xbmc.getLocalizedString(16017), searchtitle,
-                                                     type=xbmcgui.INPUT_ALPHANUM).decode("utf-8")
-                if not searchtitle:
-                    return
+            # filter genre unknown/other
+            if not genre or genre.split(" / ")[0] in xbmc.getLocalizedString(19499).split(" / "):
+                details["genre"] = []
+                genre = ""
+                log_msg("genre is unknown so ignore....")
+            else:
+                details["genre"] = genre.split(" / ")
+                details["media_type"] = self.get_mediatype_from_genre(genre)
+            searchtitle = self.get_searchtitle(title, channel)
 
-            # if manual lookup and no mediatype, ask the user
-            if manual_select and not details["media_type"]:
-                yesbtn = self.artutils.addon.getLocalizedString(32042)
-                nobtn = self.artutils.addon.getLocalizedString(32043)
-                header = self.artutils.addon.getLocalizedString(32041)
-                if xbmcgui.Dialog().yesno(header, header, yeslabel=yesbtn, nolabel=nobtn):
-                    details["media_type"] = "movie"
-                else:
-                    details["media_type"] = "tvshow"
+            # only continue if we pass our basic checks
+            filterstr = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
+            proceed_lookup = False if filterstr else True
+            if not proceed_lookup and manual_select:
+                # warn user about active skip filter
+                proceed_lookup = xbmcgui.Dialog().yesno(
+                    line1=self.artutils.addon.getLocalizedString(32027), line2=filterstr,
+                    heading=xbmc.getLocalizedString(750))
 
-            # append thumb from recordingdetails
-            if recordingdetails and recordingdetails.get("thumbnail"):
-                details["art"]["thumb"] = recordingdetails["thumbnail"]
-            # lookup custom path
-            details = extend_dict(details, self.lookup_custom_path(searchtitle, title))
-            # lookup movie/tv library
-            details = extend_dict(details, self.lookup_local_library(searchtitle, details["media_type"]))
+            if proceed_lookup:
 
-            # do internet scraping if enabled
-            if self.artutils.addon.getSetting("pvr_art_scraper") == "true":
+                # if manual lookup get the title from the user
+                if manual_select:
+                    searchtitle = xbmcgui.Dialog().input(xbmc.getLocalizedString(16017), searchtitle,
+                                                         type=xbmcgui.INPUT_ALPHANUM).decode("utf-8")
+                    if not searchtitle:
+                        return
 
-                log_msg(
-                    "pvrart start scraping metadata for title: %s - media_type: %s" %
-                    (searchtitle, details["media_type"]))
-
-                # prefer tmdb scraper
-                tmdb_result = self.artutils.get_tmdb_details(
-                    "", "", searchtitle, "", "", details["media_type"],
-                        manual_select=manual_select, ignore_cache=manual_select)
-                log_msg("pvrart lookup for title: %s - TMDB result: %s" % (searchtitle, tmdb_result))
-                if tmdb_result:
-                    details["media_type"] = tmdb_result["media_type"]
-                    details = extend_dict(details, tmdb_result)
-
-                # fallback to tvdb scraper
-                if (not tmdb_result or (tmdb_result and not tmdb_result.get("art")) or
-                        details["media_type"] == "tvshow"):
-                    tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select)
-                    log_msg("pvrart lookup for title: %s - TVDB result: %s" % (searchtitle, tvdb_match))
-                    if tvdb_match:
-                        # get full tvdb results and extend with tmdb
-                        if not details["media_type"]:
-                            details["media_type"] = "tvshow"
-                        details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
-                        details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
-                            tvdb_match, "tvdb_id"), ["poster", "fanart"])
-
-                # fanart.tv scraping - append result to existing art
-                if details.get("imdbnumber") and details["media_type"] == "movie":
-                    details["art"] = extend_dict(
-                        details["art"], self.artutils.fanarttv.movie(
-                            details["imdbnumber"]), [
-                            "poster", "fanart", "landscape"])
-                elif details.get("tvdb_id") and details["media_type"] == "tvshow":
-                    details["art"] = extend_dict(
-                        details["art"], self.artutils.fanarttv.tvshow(
-                            details["tvdb_id"]), [
-                            "poster", "fanart", "landscape"])
-
-                # append omdb details
-                if details.get("imdbnumber"):
-                    details = extend_dict(
-                        details, self.artutils.omdb.get_details_by_imdbid(
-                            details["imdbnumber"]), [
-                            "rating", "votes"])
-
-                # set thumbnail - prefer scrapers
-                thumb = ""
-                if details.get("thumbnail"):
-                    thumb = details["thumbnail"]
-                elif details["art"].get("landscape"):
-                    thumb = details["art"]["landscape"]
-                elif details["art"].get("fanart"):
-                    thumb = details["art"]["fanart"]
-                elif details["art"].get("poster"):
-                    thumb = details["art"]["poster"]
-                # use google images as last-resort fallback for thumbs - if enabled
-                elif self.artutils.addon.getSetting("pvr_art_google") == "true":
-                    if manual_select:
-                        google_title = searchtitle
+                # if manual lookup and no mediatype, ask the user
+                if manual_select and not details["media_type"]:
+                    yesbtn = self.artutils.addon.getLocalizedString(32042)
+                    nobtn = self.artutils.addon.getLocalizedString(32043)
+                    header = self.artutils.addon.getLocalizedString(32041)
+                    if xbmcgui.Dialog().yesno(header, header, yeslabel=yesbtn, nolabel=nobtn):
+                        details["media_type"] = "movie"
                     else:
-                        google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
-                    thumb = self.artutils.google.search_image(google_title, manual_select)
-                if thumb:
-                    details["thumbnail"] = thumb
-                    details["art"]["thumb"] = thumb
-                # extrafanart
-                if details["art"].get("fanarts"):
-                    for count, item in enumerate(details["art"]["fanarts"]):
-                        details["art"]["fanart.%s" % count] = item
-                    if not details["art"].get("extrafanart") and len(details["art"]["fanarts"]) > 1:
-                        details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
-                            "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
+                        details["media_type"] = "tvshow"
 
-                # download artwork to custom folder
-                if self.artutils.addon.getSetting("pvr_art_download") == "true":
-                    details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
+                # append thumb from recordingdetails
+                if recordingdetails and recordingdetails.get("thumbnail"):
+                    details["art"]["thumb"] = recordingdetails["thumbnail"]
+                # lookup custom path
+                details = extend_dict(details, self.lookup_custom_path(searchtitle, title))
+                # lookup movie/tv library
+                details = extend_dict(details, self.lookup_local_library(searchtitle, details["media_type"]))
 
-            # store result in cache and return details
+                # do internet scraping if enabled
+                if self.artutils.addon.getSetting("pvr_art_scraper") == "true":
+
+                    log_msg(
+                        "pvrart start scraping metadata for title: %s - media_type: %s" %
+                        (searchtitle, details["media_type"]))
+
+                    # prefer tmdb scraper
+                    tmdb_result = self.artutils.get_tmdb_details(
+                        "", "", searchtitle, "", "", details["media_type"],
+                            manual_select=manual_select, ignore_cache=manual_select)
+                    log_msg("pvrart lookup for title: %s - TMDB result: %s" % (searchtitle, tmdb_result))
+                    if tmdb_result:
+                        details["media_type"] = tmdb_result["media_type"]
+                        details = extend_dict(details, tmdb_result)
+
+                    # fallback to tvdb scraper
+                    if (not tmdb_result or (tmdb_result and not tmdb_result.get("art")) or
+                            details["media_type"] == "tvshow"):
+                        tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select)
+                        log_msg("pvrart lookup for title: %s - TVDB result: %s" % (searchtitle, tvdb_match))
+                        if tvdb_match:
+                            # get full tvdb results and extend with tmdb
+                            if not details["media_type"]:
+                                details["media_type"] = "tvshow"
+                            details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
+                            details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
+                                tvdb_match, "tvdb_id"), ["poster", "fanart"])
+
+                    # fanart.tv scraping - append result to existing art
+                    if details.get("imdbnumber") and details["media_type"] == "movie":
+                        details["art"] = extend_dict(
+                            details["art"], self.artutils.fanarttv.movie(
+                                details["imdbnumber"]), [
+                                "poster", "fanart", "landscape"])
+                    elif details.get("tvdb_id") and details["media_type"] == "tvshow":
+                        details["art"] = extend_dict(
+                            details["art"], self.artutils.fanarttv.tvshow(
+                                details["tvdb_id"]), [
+                                "poster", "fanart", "landscape"])
+
+                    # append omdb details
+                    if details.get("imdbnumber"):
+                        details = extend_dict(
+                            details, self.artutils.omdb.get_details_by_imdbid(
+                                details["imdbnumber"]), [
+                                "rating", "votes"])
+
+                    # set thumbnail - prefer scrapers
+                    thumb = ""
+                    if details.get("thumbnail"):
+                        thumb = details["thumbnail"]
+                    elif details["art"].get("landscape"):
+                        thumb = details["art"]["landscape"]
+                    elif details["art"].get("fanart"):
+                        thumb = details["art"]["fanart"]
+                    elif details["art"].get("poster"):
+                        thumb = details["art"]["poster"]
+                    # use google images as last-resort fallback for thumbs - if enabled
+                    elif self.artutils.addon.getSetting("pvr_art_google") == "true":
+                        if manual_select:
+                            google_title = searchtitle
+                        else:
+                            google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
+                        thumb = self.artutils.google.search_image(google_title, manual_select)
+                    if thumb:
+                        details["thumbnail"] = thumb
+                        details["art"]["thumb"] = thumb
+                    # extrafanart
+                    if details["art"].get("fanarts"):
+                        for count, item in enumerate(details["art"]["fanarts"]):
+                            details["art"]["fanart.%s" % count] = item
+                        if not details["art"].get("extrafanart") and len(details["art"]["fanarts"]) > 1:
+                            details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
+                                "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
+
+                    # download artwork to custom folder
+                    if self.artutils.addon.getSetting("pvr_art_download") == "true":
+                        details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
+
             log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
-            self.artutils.cache.set(cache_str, details, expiration=timedelta(days=120))
+
+        # store result in cache and return details
+        # always re-store in cache to prevent the cache from expiring
+        self.artutils.cache.set(cache_str, details)
         return details
 
     def manual_set_pvr_artwork(self, title, channel, genre):
         '''manual override artwork options'''
 
-        artwork = self.get_pvr_artwork(title, channel, genre)
-        cache_str = artwork["cachestr"]
+        details = self.get_pvr_artwork(title, channel, genre)
+        cache_str = details["cachestr"]
 
         # show dialogselect with all artwork options
-        abort = False
-        while not abort:
-            listitems = []
-            for arttype in ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo",
-                            "discart", "landscape", "characterart"]:
-                listitem = xbmcgui.ListItem(label=arttype, iconImage=artwork["art"].get(arttype, ""))
-                listitem.setProperty("icon", artwork["art"].get(arttype, ""))
-                listitems.append(listitem)
-            dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
-                                  windowtitle=xbmc.getLocalizedString(13511), multiselect=False)
-            dialog.doModal()
-            selected_item = dialog.result
-            del dialog
-            if selected_item == -1:
-                abort = True
-            else:
-                # show results for selected art type
-                artoptions = []
-                selected_item = listitems[selected_item]
-                image = selected_item.getProperty("icon").decode("utf-8")
-                label = selected_item.getLabel().decode("utf-8")
-                heading = "%s: %s" % (xbmc.getLocalizedString(13511), label)
-                if image:
-                    # current image
-                    listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), iconImage=image)
-                    listitem.setProperty("icon", image)
-                    artoptions.append(listitem)
-                    # none option
-                    listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231), iconImage="DefaultAddonNone.png")
-                    listitem.setProperty("icon", "DefaultAddonNone.png")
-                    artoptions.append(listitem)
-                # browse option
-                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1024), iconImage="DefaultFolder.png")
-                listitem.setProperty("icon", "DefaultFolder.png")
-                artoptions.append(listitem)
-
-                # add remaining images as option
-                allarts = artwork["art"].get(label + "s", [])
-                if len(allarts) > 1:
-                    for item in allarts:
-                        listitem = xbmcgui.ListItem(label=item, iconImage=item)
-                        listitem.setProperty("icon", item)
-                        artoptions.append(listitem)
-
-                dialog = DialogSelect("DialogSelect.xml", "", listing=artoptions, window_title=heading)
-                dialog.doModal()
-                selected_item = dialog.result
-                del dialog
-                if image and selected_item == 1:
-                    artwork["art"][label] = ""
-                elif image and selected_item > 2:
-                    artwork["art"][label] = artoptions[selected_item].getProperty("icon").decode("utf-8")
-                elif (image and selected_item == 2) or not image and selected_item == 0:
-                    # manual browse...
-                    dialog = xbmcgui.Dialog()
-                    image = dialog.browse(2, xbmc.getLocalizedString(1030),
-                                          'files', mask='.gif|.png|.jpg').decode("utf-8")
-                    del dialog
-                    if image:
-                        artwork["art"][label] = image
-
-        # save results in cache
-        self.artutils.cache.set(cache_str, artwork, expiration=timedelta(days=120))
+        from utils import manual_set_artwork
+        changemade, artwork = manual_set_artwork(details["art"], "pvr")
+        if changemade:
+            details["art"] = artwork
+            # save results in cache
+            self.artutils.cache.set(cache_str, details)
 
     def pvr_artwork_options(self, title, channel, genre):
         '''show options for pvr artwork'''
