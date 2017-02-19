@@ -471,7 +471,7 @@ def refresh_image(imagepath):
     finally:
         del connection
 
-
+# pylint:disable=max-locals
 def manual_set_artwork(artwork, mediatype, header=None):
     '''Allow user to manually select the artwork with a select dialog'''
     changemade = False

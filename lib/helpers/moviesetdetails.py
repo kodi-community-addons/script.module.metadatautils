@@ -161,6 +161,10 @@ def get_kodidb_setdata(artutils, set_id):
     details["genre"] = genre
     details["studio"] = studio
     details["years"] = years
+    if len(years) > 1:
+        details["year"] = "%s - %s" %(years[0], years[-1])
+    else:
+        details["year"] = years[0] if years else ""
     details["country"] = countries
     details["watchedcount"] = str(watchedcount)
     details["unwatchedcount"] = str(unwatchedcount)

@@ -14,7 +14,6 @@ import xbmcvfs
 from difflib import SequenceMatcher as SM
 from operator import itemgetter
 import re
-from datetime import timedelta
 from urllib import quote_plus
 import os
 
