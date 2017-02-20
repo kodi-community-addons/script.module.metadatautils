@@ -1,6 +1,6 @@
 # Kodi language file
-# Addon Name: Skin Helper Artwork Module
-# Addon id: script.module.skin.helper.artutils
+# Addon Name: Metadata and Artwork module
+# Addon id: script.module.metadatautils
 # Addon Provider: marcelveldt
 msgid ""
 msgstr ""

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-    script.module.skin.helper.artutils
+    script.module.metadatautils
     streamdetails.py
     Get all streamdetails for a kodi media item in database
 '''

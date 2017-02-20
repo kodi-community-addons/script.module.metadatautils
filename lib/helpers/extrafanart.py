@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-    script.module.skin.helper.artutils
+    script.module.metadatautils
     extrafanart.py
     Get extrafanart location for kodi media
 '''

@@ -12,23 +12,23 @@ from urllib import quote_plus
 import xbmc
 
 
-def get_moviesetdetails(artutils, title, set_id):
+def get_moviesetdetails(metadatautils, title, set_id):
     '''Returns complete (nicely formatted) information about the movieset and it's movies'''
     details = {}
     # try to get from cache first
     # use checksum compare based on playcounts because moviesets do not get refreshed automatically
-    movieset = artutils.kodidb.movieset(set_id, ["playcount"])
+    movieset = metadatautils.kodidb.movieset(set_id, ["playcount"])
     cache_str = "MovieSetDetails.%s" % (set_id)
-    cache_checksum = "%s.%s" % (set_id, artutils.studiologos_path)
+    cache_checksum = "%s.%s" % (set_id, metadatautils.studiologos_path)
     if movieset:
         for movie in movieset["movies"]:
             cache_checksum += "%s" % movie["playcount"]
-        cache = artutils.cache.get(cache_str, checksum=cache_checksum)
+        cache = metadatautils.cache.get(cache_str, checksum=cache_checksum)
         if cache:
             return cache
         # grab all details online and from kodi dbid
-        details = get_online_setdata(artutils, title)
-        details = extend_dict(details, get_kodidb_setdata(artutils, set_id))
+        details = get_online_setdata(metadatautils, title)
+        details = extend_dict(details, get_kodidb_setdata(metadatautils, set_id))
         if not details.get("plot"):
             details["plot"] = details["plots"]
         details["extendedplot"] = details["titles"] + u"[CR]" + details["plot"]
@@ -37,23 +37,23 @@ def get_moviesetdetails(artutils, title, set_id):
         details["art"]["extrafanart"] = efa_path
         for count, fanart in enumerate(all_fanarts):
             details["art"]["ExtraFanArt.%s" % count] = fanart
-    artutils.cache.set(cache_str, details, checksum=cache_checksum)
+    metadatautils.cache.set(cache_str, details, checksum=cache_checksum)
     return details
 
 
-def get_online_setdata(artutils, title):
+def get_online_setdata(metadatautils, title):
     '''get moviesetdetails from TMDB and fanart.tv'''
-    details = artutils.tmdb.search_movieset(title)
+    details = metadatautils.tmdb.search_movieset(title)
     if details:
         # append images from fanart.tv
-        details["art"] = extend_dict(details["art"], artutils.fanarttv.movie(details["tmdb_id"]), ["poster", "fanart"])
+        details["art"] = extend_dict(details["art"], metadatautils.fanarttv.movie(details["tmdb_id"]), ["poster", "fanart"])
     return details
 
 
-def get_kodidb_setdata(artutils, set_id):
+def get_kodidb_setdata(metadatautils, set_id):
     '''get moviesetdetails from Kodi DB'''
     details = {}
-    movieset = artutils.kodidb.movieset(set_id, FIELDS_MOVIES)
+    movieset = metadatautils.kodidb.movieset(set_id, FIELDS_MOVIES)
     count = 0
     runtime = 0
     unwatchedcount = 0
@@ -168,7 +168,7 @@ def get_kodidb_setdata(artutils, set_id):
     details["country"] = countries
     details["watchedcount"] = str(watchedcount)
     details["unwatchedcount"] = str(unwatchedcount)
-    details.update(artutils.studiologos.get_studio_logo(studio, artutils.studiologos_path))
+    details.update(metadatautils.studiologos.get_studio_logo(studio, metadatautils.studiologos_path))
     details["count"] = total_movies
     details["art"]["fanarts"] = all_fanarts
     return details

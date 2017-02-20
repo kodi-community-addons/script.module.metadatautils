@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-    script.module.skin.helper.artutils
+    script.module.metadatautils
     pvrartwork.py
     Get metadata for Kodi PVR programs
 '''
@@ -21,14 +21,14 @@ import os
 class PvrArtwork(object):
     '''get artwork for kodi pvr'''
 
-    def __init__(self, artutils=None):
-        '''Initialize - optionaly provide our base ArtUtils class'''
-        if not artutils:
-            from artutils import ArtUtils
-            self.artutils = ArtUtils
+    def __init__(self, metadatautils=None):
+        '''Initialize - optionaly provide our base MetadataUtils class'''
+        if not metadatautils:
+            from metadatautils import MetadataUtils
+            self.metadatautils = MetadataUtils
         else:
-            self.artutils = artutils
-        self.cache = self.artutils.cache
+            self.metadatautils = metadatautils
+        self.cache = self.metadatautils.cache
 
     def get_pvr_artwork(self, title, channel, genre="", manual_select=False, ignore_cache=False):
         '''
@@ -42,7 +42,7 @@ class PvrArtwork(object):
         details = {"art": {}}
         # try cache first
         cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
-        cache = self.artutils.cache.get(cache_str)
+        cache = self.metadatautils.cache.get(cache_str)
         if cache and not manual_select and not ignore_cache:
             log_msg("get_pvr_artwork - return data from cache - %s" % cache_str)
             details = cache
@@ -79,7 +79,7 @@ class PvrArtwork(object):
             if not proceed_lookup and manual_select:
                 # warn user about active skip filter
                 proceed_lookup = xbmcgui.Dialog().yesno(
-                    line1=self.artutils.addon.getLocalizedString(32027), line2=filterstr,
+                    line1=self.metadatautils.addon.getLocalizedString(32027), line2=filterstr,
                     heading=xbmc.getLocalizedString(750))
 
             if proceed_lookup:
@@ -93,9 +93,9 @@ class PvrArtwork(object):
 
                 # if manual lookup and no mediatype, ask the user
                 if manual_select and not details["media_type"]:
-                    yesbtn = self.artutils.addon.getLocalizedString(32042)
-                    nobtn = self.artutils.addon.getLocalizedString(32043)
-                    header = self.artutils.addon.getLocalizedString(32041)
+                    yesbtn = self.metadatautils.addon.getLocalizedString(32042)
+                    nobtn = self.metadatautils.addon.getLocalizedString(32043)
+                    header = self.metadatautils.addon.getLocalizedString(32041)
                     if xbmcgui.Dialog().yesno(header, header, yeslabel=yesbtn, nolabel=nobtn):
                         details["media_type"] = "movie"
                     else:
@@ -110,14 +110,14 @@ class PvrArtwork(object):
                 details = extend_dict(details, self.lookup_local_library(searchtitle, details["media_type"]))
 
                 # do internet scraping if enabled
-                if self.artutils.addon.getSetting("pvr_art_scraper") == "true":
+                if self.metadatautils.addon.getSetting("pvr_art_scraper") == "true":
 
                     log_msg(
                         "pvrart start scraping metadata for title: %s - media_type: %s" %
                         (searchtitle, details["media_type"]))
 
                     # prefer tmdb scraper
-                    tmdb_result = self.artutils.get_tmdb_details(
+                    tmdb_result = self.metadatautils.get_tmdb_details(
                         "", "", searchtitle, "", "", details["media_type"],
                             manual_select=manual_select, ignore_cache=manual_select)
                     log_msg("pvrart lookup for title: %s - TMDB result: %s" % (searchtitle, tmdb_result))
@@ -134,26 +134,26 @@ class PvrArtwork(object):
                             # get full tvdb results and extend with tmdb
                             if not details["media_type"]:
                                 details["media_type"] = "tvshow"
-                            details = extend_dict(details, self.artutils.thetvdb.get_series(tvdb_match))
-                            details = extend_dict(details, self.artutils.tmdb.get_videodetails_by_externalid(
+                            details = extend_dict(details, self.metadatautils.thetvdb.get_series(tvdb_match))
+                            details = extend_dict(details, self.metadatautils.tmdb.get_videodetails_by_externalid(
                                 tvdb_match, "tvdb_id"), ["poster", "fanart"])
 
                     # fanart.tv scraping - append result to existing art
                     if details.get("imdbnumber") and details["media_type"] == "movie":
                         details["art"] = extend_dict(
-                            details["art"], self.artutils.fanarttv.movie(
+                            details["art"], self.metadatautils.fanarttv.movie(
                                 details["imdbnumber"]), [
                                 "poster", "fanart", "landscape"])
                     elif details.get("tvdb_id") and details["media_type"] == "tvshow":
                         details["art"] = extend_dict(
-                            details["art"], self.artutils.fanarttv.tvshow(
+                            details["art"], self.metadatautils.fanarttv.tvshow(
                                 details["tvdb_id"]), [
                                 "poster", "fanart", "landscape"])
 
                     # append omdb details
                     if details.get("imdbnumber"):
                         details = extend_dict(
-                            details, self.artutils.omdb.get_details_by_imdbid(
+                            details, self.metadatautils.omdb.get_details_by_imdbid(
                                 details["imdbnumber"]), [
                                 "rating", "votes"])
 
@@ -168,12 +168,12 @@ class PvrArtwork(object):
                     elif details["art"].get("poster"):
                         thumb = details["art"]["poster"]
                     # use google images as last-resort fallback for thumbs - if enabled
-                    elif self.artutils.addon.getSetting("pvr_art_google") == "true":
+                    elif self.metadatautils.addon.getSetting("pvr_art_google") == "true":
                         if manual_select:
                             google_title = searchtitle
                         else:
                             google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
-                        thumb = self.artutils.google.search_image(google_title, manual_select)
+                        thumb = self.metadatautils.google.search_image(google_title, manual_select)
                     if thumb:
                         details["thumbnail"] = thumb
                         details["art"]["thumb"] = thumb
@@ -186,14 +186,14 @@ class PvrArtwork(object):
                                 "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
 
                     # download artwork to custom folder
-                    if self.artutils.addon.getSetting("pvr_art_download") == "true":
+                    if self.metadatautils.addon.getSetting("pvr_art_download") == "true":
                         details["art"] = download_artwork(self.get_custom_path(searchtitle, title), details["art"])
 
             log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
 
         # store result in cache and return details
         # always re-store in cache to prevent the cache from expiring
-        self.artutils.cache.set(cache_str, details)
+        self.metadatautils.cache.set(cache_str, details)
         return details
 
     def manual_set_pvr_artwork(self, title, channel, genre):
@@ -208,28 +208,28 @@ class PvrArtwork(object):
         if changemade:
             details["art"] = artwork
             # save results in cache
-            self.artutils.cache.set(cache_str, details)
+            self.metadatautils.cache.set(cache_str, details)
 
     def pvr_artwork_options(self, title, channel, genre):
         '''show options for pvr artwork'''
         if not channel and genre:
             channel, genre = self.get_pvr_channel_and_genre(title)
-        ignorechannels = self.artutils.addon.getSetting("pvr_art_ignore_channels").split("|")
-        ignoretitles = self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|")
+        ignorechannels = self.metadatautils.addon.getSetting("pvr_art_ignore_channels").split("|")
+        ignoretitles = self.metadatautils.addon.getSetting("pvr_art_ignore_titles").split("|")
         options = []
-        options.append(self.artutils.addon.getLocalizedString(32028))  # Refresh item (auto lookup)
-        options.append(self.artutils.addon.getLocalizedString(32029))  # Refresh item (manual lookup)
-        options.append(self.artutils.addon.getLocalizedString(32036))  # Choose art
+        options.append(self.metadatautils.addon.getLocalizedString(32028))  # Refresh item (auto lookup)
+        options.append(self.metadatautils.addon.getLocalizedString(32029))  # Refresh item (manual lookup)
+        options.append(self.metadatautils.addon.getLocalizedString(32036))  # Choose art
         if channel in ignorechannels:
-            options.append(self.artutils.addon.getLocalizedString(32030))  # Remove channel from ignore list
+            options.append(self.metadatautils.addon.getLocalizedString(32030))  # Remove channel from ignore list
         else:
-            options.append(self.artutils.addon.getLocalizedString(32031))  # Add channel to ignore list
+            options.append(self.metadatautils.addon.getLocalizedString(32031))  # Add channel to ignore list
         if title in ignoretitles:
-            options.append(self.artutils.addon.getLocalizedString(32032))  # Remove title from ignore list
+            options.append(self.metadatautils.addon.getLocalizedString(32032))  # Remove title from ignore list
         else:
-            options.append(self.artutils.addon.getLocalizedString(32033))  # Add title to ignore list
-        options.append(self.artutils.addon.getLocalizedString(32034))  # Open addon settings
-        header = self.artutils.addon.getLocalizedString(32035)
+            options.append(self.metadatautils.addon.getLocalizedString(32033))  # Add title to ignore list
+        options.append(self.metadatautils.addon.getLocalizedString(32034))  # Open addon settings
+        header = self.metadatautils.addon.getLocalizedString(32035)
         dialog = xbmcgui.Dialog()
         ret = dialog.select(header, options)
         del dialog
@@ -249,7 +249,7 @@ class PvrArtwork(object):
             else:
                 ignorechannels.append(channel)
             ignorechannels_str = "|".join(ignorechannels)
-            self.artutils.addon.setSetting("pvr_art_ignore_channels", ignorechannels_str)
+            self.metadatautils.addon.setSetting("pvr_art_ignore_channels", ignorechannels_str)
             self.get_pvr_artwork(title=title, channel=channel, genre=genre, ignore_cache=True, manual_select=False)
         elif ret == 4:
             # Add/remove title to ignore list
@@ -258,7 +258,7 @@ class PvrArtwork(object):
             else:
                 ignoretitles.append(title)
             ignoretitles_str = "|".join(ignoretitles)
-            self.artutils.addon.setSetting("pvr_art_ignore_titles", ignoretitles_str)
+            self.metadatautils.addon.setSetting("pvr_art_ignore_titles", ignoretitles_str)
             self.get_pvr_artwork(title=title, channel=channel, genre=genre, ignore_cache=True, manual_select=False)
         elif ret == 5:
             # Open addon settings
@@ -269,16 +269,16 @@ class PvrArtwork(object):
         filters = []
         if not title:
             filters.append("Title is empty")
-        for item in self.artutils.addon.getSetting("pvr_art_ignore_titles").split("|"):
+        for item in self.metadatautils.addon.getSetting("pvr_art_ignore_titles").split("|"):
             if item and item.lower() == title.lower():
                 filters.append("Title is in list of titles to ignore")
-        for item in self.artutils.addon.getSetting("pvr_art_ignore_channels").split("|"):
+        for item in self.metadatautils.addon.getSetting("pvr_art_ignore_channels").split("|"):
             if item and item.lower() == channel.lower():
                 filters.append("Channel is in list of channels to ignore")
-        for item in self.artutils.addon.getSetting("pvr_art_ignore_genres").split("|"):
+        for item in self.metadatautils.addon.getSetting("pvr_art_ignore_genres").split("|"):
             if genre and item and item.lower() in genre.lower():
                 filters.append("Genre is in list of genres to ignore")
-        if self.artutils.addon.getSetting("pvr_art_ignore_commongenre") == "true":
+        if self.metadatautils.addon.getSetting("pvr_art_ignore_commongenre") == "true":
             # skip common genres like sports, weather, news etc.
             genre = genre.lower()
             kodi_strings = [19516, 19517, 19518, 19520, 19548, 19549, 19551,
@@ -287,7 +287,7 @@ class PvrArtwork(object):
                 kodi_string = xbmc.getLocalizedString(kodi_string).lower()
                 if (genre and (genre in kodi_string or kodi_string in genre)) or kodi_string in title:
                     filters.append("Common genres like weather/sports are set to be ignored")
-        if self.artutils.addon.getSetting("pvr_art_recordings_only") == "true" and not recordingdetails:
+        if self.metadatautils.addon.getSetting("pvr_art_recordings_only") == "true" and not recordingdetails:
             filters.append("PVR Artwork is enabled for recordings only")
         if filters:
             filterstr = " - ".join(filters)
@@ -327,14 +327,14 @@ class PvrArtwork(object):
             title = title.decode("utf-8")
         title = title.lower()
         # split characters - split on common splitters
-        splitters = self.artutils.addon.getSetting("pvr_art_splittitlechar").decode("utf-8").split("|")
+        splitters = self.metadatautils.addon.getSetting("pvr_art_splittitlechar").decode("utf-8").split("|")
         if channel:
             splitters.append(" %s" % channel.lower())
         for splitchar in splitters:
             title = title.split(splitchar)[0]
         # replace common chars and words
-        title = re.sub(self.artutils.addon.getSetting("pvr_art_replace_by_space").decode("utf-8"), ' ', title)
-        title = re.sub(self.artutils.addon.getSetting("pvr_art_stripchars").decode("utf-8"), '', title)
+        title = re.sub(self.metadatautils.addon.getSetting("pvr_art_replace_by_space").decode("utf-8"), ' ', title)
+        title = re.sub(self.metadatautils.addon.getSetting("pvr_art_stripchars").decode("utf-8"), '', title)
         title = title.strip()
         return title
 
@@ -342,11 +342,11 @@ class PvrArtwork(object):
         '''lookup actual recordings to get details for grouped recordings
            also grab a thumb provided by the pvr
         '''
-        cache = self.artutils.cache.get("recordingdetails.%s%s" % (title, channel))
+        cache = self.metadatautils.cache.get("recordingdetails.%s%s" % (title, channel))
         if cache:
             return cache
         details = {}
-        recordings = self.artutils.kodidb.recordings()
+        recordings = self.metadatautils.kodidb.recordings()
         for item in recordings:
             if (title == item["title"] or title in item["file"]) and (channel == item["channel"] or not channel):
                 # grab thumb from pvr
@@ -358,14 +358,14 @@ class PvrArtwork(object):
                 details["channel"] = item["channel"]
                 details["genre"] = " / ".join(item["genre"])
                 break
-        self.artutils.cache.set("recordingdetails.%s%s" % (title, channel), details)
+        self.metadatautils.cache.set("recordingdetails.%s%s" % (title, channel), details)
         return details
 
     def lookup_tvdb(self, searchtitle, channel, manual_select=False):
         '''helper to select a match on tvdb'''
         tvdb_match = None
         searchtitle = searchtitle.lower()
-        tvdb_result = self.artutils.thetvdb.search_series(searchtitle, True)
+        tvdb_result = self.metadatautils.thetvdb.search_series(searchtitle, True)
         searchchannel = channel.lower().split("hd")[0].replace(" ", "")
         match_results = []
         if tvdb_result:
@@ -424,8 +424,8 @@ class PvrArtwork(object):
     def get_custom_path(self, searchtitle, title):
         '''locate custom folder on disk as pvrart location'''
         title_path = ""
-        custom_path = self.artutils.addon.getSetting("pvr_art_custom_path")
-        if custom_path and self.artutils.addon.getSetting("pvr_art_custom") == "true":
+        custom_path = self.metadatautils.addon.getSetting("pvr_art_custom_path")
+        if custom_path and self.metadatautils.addon.getSetting("pvr_art_custom") == "true":
             delim = "\\" if "\\" in custom_path else "/"
             dirs = xbmcvfs.listdir(custom_path)[0]
             for strictness in [1, 0.95, 0.9, 0.8]:
@@ -441,7 +441,7 @@ class PvrArtwork(object):
                         if match >= strictness:
                             title_path = curpath
                             break
-            if not title_path and self.artutils.addon.getSetting("pvr_art_download") == "true":
+            if not title_path and self.metadatautils.addon.getSetting("pvr_art_download") == "true":
                 title_path = os.path.join(custom_path, normalize_string(title)) + delim
         return title_path
 
@@ -479,12 +479,12 @@ class PvrArtwork(object):
         details = {}
         filters = [{"operator": "is", "field": "title", "value": title}]
         if not media_type or media_type == "tvshow":
-            kodi_items = self.artutils.kodidb.tvshows(filters=filters, limits=(0, 1))
+            kodi_items = self.metadatautils.kodidb.tvshows(filters=filters, limits=(0, 1))
             if kodi_items:
                 details = kodi_items[0]
                 details["media_type"] = "tvshow"
         if not details and (not media_type or media_type == "movie"):
-            kodi_items = self.artutils.kodidb.movies(filters=filters, limits=(0, 1))
+            kodi_items = self.metadatautils.kodidb.movies(filters=filters, limits=(0, 1))
             if kodi_items:
                 details = kodi_items[0]
                 details["media_type"] = "movie"

@@ -28,7 +28,7 @@ except Exception:
     SUPPORTS_POOL = False
 
 
-ADDON_ID = "script.module.skin.helper.artutils"
+ADDON_ID = "script.module.metadatautils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
 if not KODI_LANGUAGE:
     KODI_LANGUAGE = "en"
@@ -46,7 +46,7 @@ def log_msg(msg, loglevel=xbmc.LOGDEBUG):
     '''log message to kodi logfile'''
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')
-    xbmc.log("Skin Helper ArtUtils --> %s" % msg, level=loglevel)
+    xbmc.log("Metadata and Artwork module --> %s" % msg, level=loglevel)
 
 
 def log_exception(modulename, exceptiondetails):

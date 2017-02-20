@@ -1,4 +1,4 @@
-# script.module.skin.helper.artutils
+# script.module.metadatautils
 Kodi python module to retrieve rich artwork and metadata for common kodi media items
 The module is integrated with the simplecache module so that information is properly cached
 
@@ -9,7 +9,7 @@ Just make sure to import it within your addon.xml:
 
 ```xml
 <requires>
-    <import addon="script.module.skin.helper.artutils" version="1.0.0" />
+    <import addon="script.module.metadatautils" version="1.0.0" />
 </requires>
 ```
 
@@ -17,14 +17,14 @@ Now, to use it in your Kodi addon/script, make sure to import it and you can acc
 
 
 ```
-from artutils import ArtUtils
-artutils = ArtUtils()
+from metadatautils import MetadataUtils
+metadatautils = MetadataUtils()
 
 #do your stuff here, like like calling any of the available methods
 ```
 
 NOTE: make sure to use unnamed arguments for all methods to not confuse the cache
-e.g. artutils.use get_tvdb_details("", "12345") instead of artutils.use get_tvdb_details(tvdb_id="12345")
+e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.use get_tvdb_details(tvdb_id="12345")
 
 ---------------------------------------------------------------------------
 
@@ -144,7 +144,7 @@ e.g. artutils.use get_tvdb_details("", "12345") instead of artutils.use get_tvdb
 ```
     Sets/gets the path to look for studio logos, used in above "get_studio_logo" method.
     this can be a path on the filesystem, VFS path or path to a resource addon:
-    _artutils.studiologos_path("my_path_to_the_studio_logos")
+    _metadatautils.studiologos_path("my_path_to_the_studio_logos")
     Can also be used as getter if no value supplied.
 ```
 
