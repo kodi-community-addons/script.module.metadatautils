@@ -371,6 +371,8 @@ class PvrArtwork(object):
         if tvdb_result:
             for item in tvdb_result:
                 item["score"] = 0
+                if not item["seriesName"]:
+                    continue  # seriesname can be None in some conditions
                 itemtitle = item["seriesName"].lower()
                 network = item["network"].lower().replace(" ", "")
                 # high score if channel name matches

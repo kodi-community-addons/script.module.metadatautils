@@ -128,10 +128,9 @@ class MusicArtwork(object):
                     # use the extrafanart plugin entry to display multi images
                     artist_details["art"][arttype] = "plugin://script.skin.helper.service/"\
                         "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
-            # set special extrafanart path if multiple artists
-            # so we can have rotating fanart slideshow for all artists of the track
-            if len(artists) > 1 and artist_details.get("art").get("fanarts"):
-                artist_details["art"]["extrafanart"] = artist_details["art"]["fanarts"]
+                    # also set extrafanart path
+                    if arttype == "fanarts":
+                        artist_details["art"]["extrafanart"] = artist_details["art"][arttype]
         # return the result
         return artist_details
 
@@ -207,6 +206,13 @@ class MusicArtwork(object):
                         if not details["art"].get("extrafanart") and len(details["art"]["fanarts"]) > 1:
                             details["art"]["extrafanart"] = "plugin://script.skin.helper.service/"\
                                 "?action=extrafanart&fanarts=%s" % quote_plus(repr(details["art"]["fanarts"]))
+                    # multi-image path for all images for each arttype
+                    for arttype in ["banners", "clearlogos", "thumbs"]:
+                        art = details["art"].get(arttype, [])
+                        if len(art) > 1:
+                            # use the extrafanart plugin entry to display multi images
+                            details["art"][arttype] = "plugin://script.skin.helper.service/"\
+                                "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
         # set default details
         if not details.get("artist"):
             details["artist"] = artist
