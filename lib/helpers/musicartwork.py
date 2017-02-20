@@ -135,7 +135,7 @@ class MusicArtwork(object):
         # return the result
         return artist_details
 
-    # pylint:disable=max-locals
+    # pylint: disable-msg=too-many-local-variables
     def get_artist_metadata(self, artist, album, track, ignore_cache=False, flush_cache=False, manual=False):
         '''collect artist metadata for given artist'''
         details = {"art": {}}
@@ -217,7 +217,6 @@ class MusicArtwork(object):
         self.metadatautils.cache.set(cache_str, details)
         return details
 
-    # pylint:disable=max-locals
     def get_album_metadata(self, artist, album, track, disc, ignore_cache=False, flush_cache=False, manual=False):
         '''collect all album metadata'''
         cache_str = "music_artwork.album.%s.%s.%s" % (artist.lower(), album.lower(), disc.lower())
@@ -296,6 +295,8 @@ class MusicArtwork(object):
         # store results in cache and return results
         self.metadatautils.cache.set(cache_str, details)
         return details
+
+    # pylint: enable-msg=too-many-local-variables
 
     def get_artist_kodi_metadata(self, artist):
         '''get artist details from the kodi database'''

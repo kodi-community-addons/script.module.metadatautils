@@ -471,7 +471,9 @@ def refresh_image(imagepath):
     finally:
         del connection
 
-# pylint:disable=max-locals
+# pylint: disable-msg=too-many-local-variables
+
+
 def manual_set_artwork(artwork, mediatype, header=None):
     '''Allow user to manually select the artwork with a select dialog'''
     changemade = False
@@ -554,6 +556,8 @@ def manual_set_artwork(artwork, mediatype, header=None):
 
     # return endresult
     return changemade, artwork
+
+# pylint: enable-msg=too-many-local-variables
 
 
 class DialogSelect(xbmcgui.WindowXMLDialog):
