@@ -180,10 +180,15 @@ class KodiDb(object):
         return self.get_json("PVR.GetChannelDetails", returntype="channeldetails",
                              fields=FIELDS_CHANNELS, optparam=("channelid", try_parse_int(db_id)))
 
-    def channels(self, limits=None):
-        '''get pvr recordings from kodi db'''
+    def channels(self, limits=None, channelgroupid="alltv"):
+        '''get pvr channels from kodi db'''
         return self.get_json("PVR.GetChannels", fields=FIELDS_CHANNELS, limits=limits,
-                             returntype="channels", optparam=("channelgroupid", "alltv"))
+                             returntype="channels", optparam=("channelgroupid", channelgroupid))
+
+    def channelgroups(self, limits=None, channeltype="tv"):
+        '''get pvr channelgroups from kodi db'''
+        return self.get_json("PVR.GetChannelGroups", fields=[], limits=limits,
+                             returntype="channelgroups", optparam=("channeltype", channeltype))
 
     def timers(self, limits=None):
         '''get pvr recordings from kodi db'''
