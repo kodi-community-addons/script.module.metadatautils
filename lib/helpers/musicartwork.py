@@ -35,7 +35,6 @@ class MusicArtwork(object):
         self.mbrainz = MusicBrainz()
         self.audiodb = TheAudioDb()
 
-    @use_cache(14)
     def get_music_artwork(self, artist, album, track, disc, ignore_cache=False, flush_cache=False, manual=False):
         '''
             get music metadata by providing artist and/or album/track
@@ -103,6 +102,7 @@ class MusicArtwork(object):
                 artists[0], album, track, ignore_cache=ignore_cache, flush_cache=flush_cache, manual=manual)
             artist_details["albumartist"] = artists[0]
         else:
+            # multi-artist track
             # The first artist with details is considered the main artist
             # all others are assumed as featuring artists
             artist_details = {"art": {}}
@@ -226,7 +226,7 @@ class MusicArtwork(object):
     def get_album_metadata(self, artist, album, track, disc, ignore_cache=False, flush_cache=False, manual=False):
         '''collect all album metadata'''
         cache_str = "music_artwork.album.%s.%s.%s" % (artist.lower(), album.lower(), disc.lower())
-        if not album and track:
+        if not album:
             cache_str = "music_artwork.album.%s.%s" % (artist.lower(), track.lower())
         details = {"art": {}}
         details["cachestr"] = cache_str
