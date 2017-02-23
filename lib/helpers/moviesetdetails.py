@@ -41,12 +41,15 @@ def get_moviesetdetails(metadatautils, title, set_id):
     return details
 
 
-def get_online_setdata(mutils, title):
+def get_online_setdata(metadatautils, title):
     '''get moviesetdetails from TMDB and fanart.tv'''
     details = metadatautils.tmdb.search_movieset(title)
     if details:
         # append images from fanart.tv
-        details["art"] = extend_dict(details["art"], mutils.fanarttv.movie(details["tmdb_id"]), ["poster", "fanart"])
+        details["art"] = extend_dict(
+            details["art"],
+            metadatautils.fanarttv.movie(details["tmdb_id"]),
+            ["poster", "fanart"])
     return details
 
 # pylint: disable-msg=too-many-local-variables
