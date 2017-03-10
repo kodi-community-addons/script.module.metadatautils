@@ -106,7 +106,7 @@ class MusicArtwork(object):
             # The first artist with details is considered the main artist
             # all others are assumed as featuring artists
             artist_details = {"art": {}}
-            feat_artist_details = {"art": {}}
+            feat_artist_details = []
             for artist in artists:
                 if not (artist_details.get("plot") or artist_details.get("art")):
                     # get main artist details
@@ -115,19 +115,27 @@ class MusicArtwork(object):
                         artist, album, track, ignore_cache=ignore_cache, manual=manual)
                 else:
                     # assume featuring artist
-                    feat_artist_details = extend_dict(
-                        feat_artist_details, self.get_artist_metadata(
-                            artist, album, track, ignore_cache=ignore_cache, manual=manual))
+                    feat_artist_details.append(self.get_artist_metadata(
+                        artist, album, track, ignore_cache=ignore_cache, manual=manual))
 
             # combined images to use as multiimage (for all artists)
             # append featuring artist details
             for arttype in ["banners", "fanarts", "clearlogos", "thumbs"]:
-                art = artist_details["art"].get(arttype, [])
-                art += feat_artist_details["art"].get(arttype, [])
-                if art:
+                combined_art = []
+                for artist_item in [artist_details] + feat_artist_details:
+                    art = artist_item["art"].get(arttype, [])
+                    if isinstance(art, list):
+                        for item in art:
+                            if item not in combined_art:
+                                combined_art.append(item)
+                    else:
+                        for item in self.metadatautils.kodidb.files(art):
+                            if item["file"] not in combined_art:
+                                combined_art.append(item["file"])
+                if combined_art:
                     # use the extrafanart plugin entry to display multi images
                     artist_details["art"][arttype] = "plugin://script.skin.helper.service/"\
-                        "?action=extrafanart&fanarts=%s" % quote_plus(repr(art))
+                        "?action=extrafanart&fanarts=%s" % quote_plus(repr(combined_art))
                     # also set extrafanart path
                     if arttype == "fanarts":
                         artist_details["art"]["extrafanart"] = artist_details["art"][arttype]
