@@ -59,7 +59,7 @@ class Omdb(object):
         result = {}
         for key, value in data.iteritems():
             # filter the N/A values
-            if value == "N/A" or not value:
+            if value in ["N/A", "NA"] or not value:
                 continue
             if key == "Title":
                 result["title"] = value
@@ -93,7 +93,6 @@ class Omdb(object):
                 result["country"] = value.split(", ")
             elif key == "Awards":
                 result["awards"] = value
-                result["RottenTomatoesAwards"] = value  # legacy
             elif key == "Poster":
                 result["thumbnail"] = value
                 result["art"] = {}
@@ -130,19 +129,14 @@ class Omdb(object):
                 result["rating.rt"] = value
             elif key == "tomatoFresh":
                 result["rottentomatoes.fresh"] = value
-                result["rottentomatoesfresh"] = value  # legacy
             elif key == "tomatoReviews":
                 result["rottentomatoes.reviews"] = formatted_number(value)
-                result["rottentomatoesreviews"] = formatted_number(value)  # legacy
             elif key == "tomatoRotten":
                 result["rottentomatoes.rotten"] = value
-                result["rottentomatoesrotten"] = value  # legacy
             elif key == "tomatoImage":
                 result["rottentomatoes.image"] = value
-                result["rottentomatoesimage"] = value  # legacy
             elif key == "tomatoConsensus":
                 result["rottentomatoes.consensus"] = value
-                result["rottentomatoesconsensus"] = value  # legacy
             elif key == "tomatoUserMeter":
                 result["rottentomatoes.usermeter"] = value
             elif key == "tomatoUserRating":
