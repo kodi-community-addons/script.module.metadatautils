@@ -306,9 +306,9 @@ class PvrArtwork(object):
             media_type = "tvshow"
         if not media_type:
             # Kodi defined movie genres
-            kodi_genres = [19500, 19507, 19508, 19602, 19603, 19502, 19503, 19501]
+            kodi_genres = [19500, 19507, 19508, 19602, 19603]
             for kodi_genre in kodi_genres:
-                if genre in xbmc.getLocalizedString(kodi_genre):
+                if xbmc.getLocalizedString(kodi_genre) in genre:
                     media_type = "movie"
                     break
         if not media_type:
@@ -316,7 +316,7 @@ class PvrArtwork(object):
             kodi_genres = [19505, 19516, 19517, 19518, 19520, 19532, 19533, 19534, 19535, 19548, 19549,
                            19550, 19551, 19552, 19553, 19554, 19555, 19556, 19557, 19558, 19559]
             for kodi_genre in kodi_genres:
-                if genre in xbmc.getLocalizedString(kodi_genre):
+                if xbmc.getLocalizedString(kodi_genre) in genre:
                     media_type = "tvshow"
                     break
         return media_type
