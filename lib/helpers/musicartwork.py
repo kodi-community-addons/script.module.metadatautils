@@ -528,6 +528,10 @@ class MusicArtwork(object):
             item = item.decode("utf-8")
             if item in ["cdart.png", "disc.png"]:
                 artwork["discart"] = folderpath + item
+            if item == "thumbback.jpg":
+                artwork["thumbback"] = folderpath + item
+            if item == "spin.jpg":
+                artwork["spin"] = folderpath + item                
             elif item == "folder.jpg":
                 artwork["thumb"] = folderpath + item
         return artwork
