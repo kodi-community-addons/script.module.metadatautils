@@ -531,7 +531,7 @@ class MusicArtwork(object):
             if item == "thumbback.jpg":
                 artwork["thumbback"] = folderpath + item
             if item == "spine.jpg":
-                artwork["spine"] = folderpath + item                
+                artwork["spine"] = folderpath + item
             elif item == "folder.jpg":
                 artwork["thumb"] = folderpath + item
         return artwork
