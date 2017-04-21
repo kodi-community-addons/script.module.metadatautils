@@ -530,8 +530,8 @@ class MusicArtwork(object):
                 artwork["discart"] = folderpath + item
             if item == "thumbback.jpg":
                 artwork["thumbback"] = folderpath + item
-            if item == "spin.jpg":
-                artwork["spin"] = folderpath + item                
+            if item == "spine.jpg":
+                artwork["spine"] = folderpath + item                
             elif item == "folder.jpg":
                 artwork["thumb"] = folderpath + item
         return artwork
