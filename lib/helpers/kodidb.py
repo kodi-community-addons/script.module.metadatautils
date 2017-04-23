@@ -295,36 +295,39 @@ class KodiDb(object):
     @staticmethod
     def get_favourites_from_file():
         '''json method for favourites doesn't return all items (such as android apps) so retrieve them from file'''
-        from xml.dom.minidom import parse
         allfavourites = []
-        favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
-        if xbmcvfs.exists(favourites_path):
-            doc = parse(favourites_path)
-            result = doc.documentElement.getElementsByTagName('favourite')
-            for fav in result:
-                action = fav.childNodes[0].nodeValue
-                action = action.replace('"', '')
-                label = fav.attributes['name'].nodeValue
-                try:
-                    thumb = fav.attributes['thumb'].nodeValue
-                except Exception:
-                    thumb = ""
-                window = ""
-                windowparameter = ""
-                action_type = "unknown"
-                if action.startswith("StartAndroidActivity"):
-                    action_type = "androidapp"
-                elif action.startswith("ActivateWindow"):
-                    action_type = "window"
-                    actionparts = action.replace("ActivateWindow(", "").replace(",return)", "").split(",")
-                    window = actionparts[0]
-                    if len(actionparts) > 1:
-                        windowparameter = actionparts[1]
-                elif action.startswith("PlayMedia"):
-                    action_type = "media"
-                    action = action.replace("PlayMedia(", "")[:-1]
-                allfavourites.append({"label": label, "path": action, "thumbnail": thumb, "window": window,
-                                      "windowparameter": windowparameter, "type": action_type})
+        try:
+            from xml.dom.minidom import parse
+            favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
+            if xbmcvfs.exists(favourites_path):
+                doc = parse(favourites_path)
+                result = doc.documentElement.getElementsByTagName('favourite')
+                for fav in result:
+                    action = fav.childNodes[0].nodeValue
+                    action = action.replace('"', '')
+                    label = fav.attributes['name'].nodeValue
+                    try:
+                        thumb = fav.attributes['thumb'].nodeValue
+                    except Exception:
+                        thumb = ""
+                    window = ""
+                    windowparameter = ""
+                    action_type = "unknown"
+                    if action.startswith("StartAndroidActivity"):
+                        action_type = "androidapp"
+                    elif action.startswith("ActivateWindow"):
+                        action_type = "window"
+                        actionparts = action.replace("ActivateWindow(", "").replace(",return)", "").split(",")
+                        window = actionparts[0]
+                        if len(actionparts) > 1:
+                            windowparameter = actionparts[1]
+                    elif action.startswith("PlayMedia"):
+                        action_type = "media"
+                        action = action.replace("PlayMedia(", "")[:-1]
+                    allfavourites.append({"label": label, "path": action, "thumbnail": thumb, "window": window,
+                                          "windowparameter": windowparameter, "type": action_type})
+        except Exception as exc:
+            log_exception(__name__, exc)
         return allfavourites
 
     @staticmethod
