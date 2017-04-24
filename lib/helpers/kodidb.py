@@ -665,6 +665,14 @@ class KodiDb(object):
                 art["animatedposter"] = get_clean_image(art["animatedposter"])
             if art.get("animatedfanart"):
                 art["animatedfanart"] = get_clean_image(art["animatedfanart"])
+            if art.get("clearlogo"):
+                art["clearlogo"] = get_clean_image(art["clearlogo"])
+            if art.get("clearart"):
+                art["clearart"] = get_clean_image(art["clearart"])
+            if art.get("discart"):
+                art["discart"] = get_clean_image(art["discart"])
+            if art.get("characterart"):
+                art["characterart"] = get_clean_image(art["characterart"])
             for key, value in art.iteritems():
                 if not isinstance(value, (str, unicode)):
                     art[key] = ""
