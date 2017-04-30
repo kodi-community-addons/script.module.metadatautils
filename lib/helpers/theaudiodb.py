@@ -130,6 +130,10 @@ class TheAudioDb(object):
             if adbdetails.get("strAlbumCDart") and xbmcvfs.exists(adbdetails.get("strAlbumCDart")):
                 details["art"]["discart"] = adbdetails.get("strAlbumCDart")
                 details["art"]["discarts"] = [adbdetails.get("strAlbumCDart")]
+            if adbdetails.get("strAlbumSpine") and xbmcvfs.exists(adbdetails.get("strAlbumSpine")):
+                details["art"]["spine"] = adbdetails.get("strAlbumSpine")
+            if adbdetails.get("strAlbumThumbBack") and xbmcvfs.exists(adbdetails.get("strAlbumThumbBack")):
+                details["art"]["thumbback"] = adbdetails.get("strAlbumThumbBack")
             if adbdetails.get("strDescription%s" % KODI_LANGUAGE.upper()):
                 details["plot"] = adbdetails.get("strDescription%s" % KODI_LANGUAGE.upper())
             if not details.get("plot") and adbdetails.get("strDescriptionEN"):
