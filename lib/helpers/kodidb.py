@@ -521,7 +521,7 @@ class KodiDb(object):
                 item["premiered"] = item.get("firstaired")
             if "imdbnumber" not in properties and "imdbnumber" in item:
                 properties["imdbnumber"] = item.get("imdbnumber")
-            if "imdbnumber" not properties and "uniqueid" in item:
+            if "imdbnumber" not in properties and "uniqueid" in item:
                 for value in item["uniqueid"].values():
                     if value.startswith("tt"):
                         properties["imdbnumber"] = value
@@ -661,7 +661,7 @@ class KodiDb(object):
                 art["thumb"] = get_clean_image(item.get('icon'))
             if not item.get("thumbnail") and art.get('thumb'):
                 item["thumbnail"] = art["thumb"]
-            
+
             # clean art
             for key, value in art.iteritems():
                 if not isinstance(value, (str, unicode)):
