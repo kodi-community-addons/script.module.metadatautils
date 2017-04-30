@@ -508,20 +508,20 @@ class KodiDb(object):
                 item["artist"] = []
             if item['type'] == "album" and not item.get('album'):
                 item['album'] = item.get('label')
-            if not item.get("duration") and item.get("runtime"):
+            if "duration" not in item and "runtime" in item:
                 if (item["runtime"] / 60) > 300:
                     item["duration"] = item.get("runtime") / 60
                 else:
                     item["duration"] = item.get("runtime")
-            if not item.get("plot") and item.get("comment"):
+            if "plot" not in item and "comment" in item:
                 item["plot"] = item.get("comment")
-            if not item.get("tvshowtitle") and item.get("showtitle"):
+            if "tvshowtitle" not in item and item.get("showtitle"):
                 item["tvshowtitle"] = item.get("showtitle")
-            if not item.get("premiered") and item.get("firstaired"):
+            if "premiered" not in item and "firstaired" in item:
                 item["premiered"] = item.get("firstaired")
-            if not properties.get("imdbnumber") and item.get("imdbnumber"):
+            if "imdbnumber" not in properties and "imdbnumber" in item:
                 properties["imdbnumber"] = item.get("imdbnumber")
-            if not properties.get("imdbnumber") and item.get("uniqueid"):
+            if "imdbnumber" not properties and "uniqueid" in item:
                 for value in item["uniqueid"].values():
                     if value.startswith("tt"):
                         properties["imdbnumber"] = value
@@ -535,7 +535,7 @@ class KodiDb(object):
             list_cast = []
             list_castandrole = []
             item["cast_org"] = item.get("cast", [])
-            if item.get("cast") and isinstance(item["cast"], list):
+            if "cast" in item and isinstance(item["cast"], list):
                 for castmember in item["cast"]:
                     if isinstance(castmember, dict):
                         list_cast.append(castmember.get("name", ""))
@@ -547,15 +547,15 @@ class KodiDb(object):
             item["cast"] = list_cast
             item["castandrole"] = list_castandrole
 
-            if item.get("season") and item.get("episode"):
+            if "season" in item and "episode" in item:
                 properties["episodeno"] = "s%se%s" % (item.get("season"), item.get("episode"))
-            if item.get("resume"):
+            if "resume" in item:
                 properties["resumetime"] = str(item['resume']['position'])
                 properties["totaltime"] = str(item['resume']['total'])
                 properties['StartOffset'] = str(item['resume']['position'])
 
             # streamdetails
-            if item.get("streamdetails"):
+            if "streamdetails" in item:
                 streamdetails = item["streamdetails"]
                 audiostreams = streamdetails.get('audio', [])
                 videostreams = streamdetails.get('video', [])
@@ -602,11 +602,11 @@ class KodiDb(object):
                 item["streamdetails"]["video"] = {'duration': item.get('duration', 0)}
 
             # additional music properties
-            if item.get('album_description'):
+            if 'album_description' in item:
                 properties["Album_Description"] = item.get('album_description')
 
             # pvr properties
-            if item.get("starttime"):
+            if "starttime" in item:
                 # convert utc time to local time
                 item["starttime"] = localdate_from_utc_string(item["starttime"])
                 item["endtime"] = localdate_from_utc_string(item["endtime"])
@@ -622,12 +622,12 @@ class KodiDb(object):
                 properties["EndDateTime"] = "%s %s" % (enddate, endtime)
                 # set date to startdate
                 item["date"] = arrow.get(item["starttime"]).format("DD.MM.YYYY")
-            if item.get("channellogo"):
+            if "channellogo" in item:
                 properties["channellogo"] = item["channellogo"]
                 properties["channelicon"] = item["channellogo"]
-            if item.get("episodename"):
+            if "episodename" in item:
                 properties["episodename"] = item["episodename"]
-            if item.get("channel"):
+            if "channel" in item:
                 properties["channel"] = item["channel"]
                 properties["channelname"] = item["channel"]
                 item["label2"] = item["channel"]
@@ -661,13 +661,13 @@ class KodiDb(object):
                 art["thumb"] = get_clean_image(item.get('icon'))
             if not item.get("thumbnail") and art.get('thumb'):
                 item["thumbnail"] = art["thumb"]
-            if art.get("animatedposter"):
-                art["animatedposter"] = get_clean_image(art["animatedposter"])
-            if art.get("animatedfanart"):
-                art["animatedfanart"] = get_clean_image(art["animatedfanart"])
+            
+            # clean art
             for key, value in art.iteritems():
                 if not isinstance(value, (str, unicode)):
                     art[key] = ""
+                elif value:
+                    art[key] = get_clean_image(value)
             item["art"] = art
 
             item["extraproperties"] = properties
