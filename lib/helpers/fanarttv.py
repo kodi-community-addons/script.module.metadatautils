@@ -6,6 +6,8 @@
 from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int, ADDON_ID
 from operator import itemgetter
 import xbmcaddon
+import datetime
+from simplecache import use_cache
 
 class FanartTv(object):
     '''get artwork from fanart.tv'''
@@ -94,12 +96,18 @@ class FanartTv(object):
         url = '%s%s?api_key=%s' % (self.base_url, query, self.api_key)
         if self.client_key:
             url += '&client_key=%s' % self.client_key
+            rate_limit = None
+            expiration = datetime.timedelta(days=7)
+        else:
+            # without personal api key = rate limiting and older info from cache
+            rate_limit = ("fanart.tv",2)
+            expiration = datetime.timedelta(days=60)
         cache = self.cache.get(url)
         if cache:
             result = cache
         else:
-            result = get_json(url)
-            self.cache.set(url, result)
+            result = get_json(url, ratelimit=rate_limit)
+            self.cache.set(url, result, expiration=expiration)
         return result
 
     def map_artwork(self, data, mapping_table):

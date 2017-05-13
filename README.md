@@ -2,6 +2,15 @@
 Kodi python module to retrieve rich artwork and metadata for common kodi media items
 The module is integrated with the simplecache module so that information is properly cached
 
+This product uses the TMDb API but is not endorsed or certified by TMDb.
+
+
+For the retrieval of metadata several API's are used (like omdbapi, fanart.tv tmdb)
+The requests to these api's are rate-limited and cached by this addon to not overload those free, great services.
+The addon settings will contain options for users to enter their personal/payed API-key to enable all features of the API and remove the rate limiter.
+
+
+
 ## Usage
 
 You can use this python library as module within your own Kodi scripts/addons.

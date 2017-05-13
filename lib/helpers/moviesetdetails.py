@@ -20,7 +20,7 @@ def get_moviesetdetails(metadatautils, title, set_id):
     movieset = metadatautils.kodidb.movieset(set_id, ["playcount"])
     cache_str = "MovieSetDetails.%s" % (set_id)
     cache_checksum = "%s.%s" % (set_id, metadatautils.studiologos_path)
-    if movieset:
+    if movieset and len(movieset["movies"]) < 50:
         for movie in movieset["movies"]:
             cache_checksum += "%s" % movie["playcount"]
         cache = metadatautils.cache.get(cache_str, checksum=cache_checksum)

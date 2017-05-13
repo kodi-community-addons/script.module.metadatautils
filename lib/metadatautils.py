@@ -26,6 +26,7 @@ from helpers.utils import detect_plugin_content as _detect_plugin_content
 from helpers.utils import process_method_on_list as _process_method_on_list
 from simplecache import use_cache, SimpleCache
 from thetvdb import TheTvDb
+from urllib import quote_plus
 import xbmcaddon
 import xbmcvfs
 
@@ -95,15 +96,14 @@ class MetadataUtils(object):
         '''options for music metadata for specific item'''
         return self.musicart.music_artwork_options(artist, album, track, disc)
 
-    @use_cache(14)
+    @use_cache(7)
     def get_extended_artwork(self, imdb_id="", tvdb_id="", tmdb_id="", media_type=""):
         '''get extended artwork for the given imdbid or tvdbid'''
-        from urllib import quote_plus
-        result = {"art": {}}
+        result = None
         if "movie" in media_type and tmdb_id:
-            result["art"] = self.fanarttv.movie(tmdb_id)
+            result = self.fanarttv.movie(tmdb_id)
         elif "movie" in media_type and imdb_id:
-            result["art"] = self.fanarttv.movie(imdb_id)
+            result = self.fanarttv.movie(imdb_id)
         elif media_type in ["tvshow", "tvshows", "seasons", "episodes"]:
             if not tvdb_id:
                 if imdb_id and not imdb_id.startswith("tt"):
@@ -111,15 +111,16 @@ class MetadataUtils(object):
                 elif imdb_id:
                     tvdb_id = self.thetvdb.get_series_by_imdb_id(imdb_id).get("tvdb_id")
             if tvdb_id:
-                result["art"] = self.fanarttv.tvshow(tvdb_id)
+                result = self.fanarttv.tvshow(tvdb_id)
         # add additional art with special path
-        for arttype in ["fanarts", "posters", "clearlogos", "banners"]:
-            if result["art"].get(arttype):
-                result["art"][arttype] = "plugin://script.skin.helper.service/"\
-                    "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
+        if result:
+            result = {"art": result}
+            for arttype in ["fanarts", "posters", "clearlogos", "banners"]:
+                if result["art"].get(arttype):
+                    result["art"][arttype] = "plugin://script.skin.helper.service/"\
+                        "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
         return result
 
-    @use_cache(14)
     def get_tmdb_details(self, imdb_id="", tvdb_id="", title="", year="", media_type="",
                          preftype="", manual_select=False, ignore_cache=False):
         '''returns details from tmdb'''
@@ -139,9 +140,9 @@ class MetadataUtils(object):
         elif title:
             result = self.tmdb.search_video(
                 title, year, preftype=preftype, manual_select=manual_select)
-        if result.get("status"):
+        if result and result.get("status"):
             result["status"] = self.translate_string(result["status"])
-        if result.get("runtime"):
+        if result and result.get("runtime"):
             result["runtime"] = result["runtime"] / 60
             result.update(self.get_duration(result["runtime"]))
         return result
@@ -167,7 +168,6 @@ class MetadataUtils(object):
         '''options for pvr metadata for specific item'''
         return self.pvrart.pvr_artwork_options(title, channel, genre)
 
-    @use_cache(14)
     def get_channellogo(self, channelname):
         '''get channellogo for the given channel name'''
         return self.channellogos.get_channellogo(channelname)
@@ -202,7 +202,6 @@ class MetadataUtils(object):
 
         return {"art": artwork}
 
-    @use_cache(14)
     def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):
         '''Get (kodi compatible formatted) metadata from OMDB, including Rotten tomatoes details'''
         title = title.split(" (")[0]  # strip year appended to title
@@ -213,14 +212,13 @@ class MetadataUtils(object):
             result = self.omdb.get_details_by_title(title, "", "tvshows")
         elif title and year:
             result = self.omdb.get_details_by_title(title, year, content_type)
-        if result.get("status"):
+        if result and result.get("status"):
             result["status"] = self.translate_string(result["status"])
-        if result.get("runtime"):
+        if result and result.get("runtime"):
             result["runtime"] = result["runtime"] / 60
             result.update(self.get_duration(result["runtime"]))
         return result
 
-    @use_cache(7)
     def get_top250_rating(self, imdb_id):
         '''get the position in the IMDB top250 for the given IMDB ID'''
         return self.imdb.get_top250_rating(imdb_id)
@@ -263,7 +261,7 @@ class MetadataUtils(object):
                 result.update(_get_duration(result["runtime"]))
         return result
 
-    @use_cache(14)
+    @use_cache(90)
     def get_imdbtvdb_id(self, title, content_type, year="", imdbid="", tvshowtitle=""):
         '''try to figure out the imdbnumber and/or tvdbid'''
         tvdbid = ""

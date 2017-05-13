@@ -23,6 +23,7 @@ class Imdb(object):
         else:
             self.cache = simplecache
 
+    @use_cache(2)
     def get_top250_rating(self, imdb_id):
         '''get the top250 rating for the given imdbid'''
         return {"IMDB.Top250": self.get_top250_db().get(imdb_id, 0)}

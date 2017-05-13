@@ -15,6 +15,8 @@ from requests.adapters import HTTPAdapter
 import urllib
 import unicodedata
 import os
+import datetime
+import time
 
 try:
     import simplejson as json
@@ -37,7 +39,7 @@ KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0])
 # setup requests with some additional options
 requests.packages.urllib3.disable_warnings()
 SESSION = requests.Session()
-RETRIES = Retry(total=5, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
+RETRIES = Retry(total=5, backoff_factor=5, status_forcelist=[500, 502, 503, 504])
 SESSION.mount('http://', HTTPAdapter(max_retries=RETRIES))
 SESSION.mount('https://', HTTPAdapter(max_retries=RETRIES))
 
@@ -55,11 +57,39 @@ def log_exception(modulename, exceptiondetails):
     log_msg("ERROR in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
 
 
-def get_json(url, params=None, retries=0):
+def rate_limiter(rl_params):
+    ''' A very basic rate limiter which limits to 1 request per X seconds to the api'''
+    # Please respect the parties providing these free api's to us and do not modify this code.
+    # If I suspect any abuse I will revoke all api keys and require all users
+    # to have a personal api key for all services.
+    # Thank you
+    if not rl_params:
+        return
+    rl_name = rl_params[0]
+    rl_delay = rl_params[1]
+    cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
+    prev_timestamp = try_parse_int(xbmc.getInfoLabel("Window(Home).Property(ratelimiter.%s)" % rl_name))
+    if (prev_timestamp + rl_delay) > cur_timestamp:
+        sec_to_wait = (prev_timestamp + rl_delay) - cur_timestamp
+        log_msg("Rate limiter active for %s - delaying request with %s seconds - "
+            "Configure a personal API key in the settings to get rid of this message and the delay." % (rl_name, sec_to_wait), xbmc.LOGNOTICE)
+        while sec_to_wait and not xbmc.getInfoLabel("Window(Home).Property(SkinHelperShutdownRequested)"):
+            xbmc.sleep(1000)
+            # keep setting the timestamp to create some sort of queue
+            cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
+            xbmc.executebuiltin("SetProperty(ratelimiter.%s,%s,Home)" % (rl_name, cur_timestamp))
+            sec_to_wait -= 1
+    # always set the timestamp
+    cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
+    xbmc.executebuiltin("SetProperty(ratelimiter.%s,%s,Home)" % (rl_name, cur_timestamp))
+
+
+def get_json(url, params=None, retries=0, ratelimit=None):
     '''get info from a rest api'''
     result = {}
     if not params:
         params = {}
+    rate_limiter(ratelimit)
     try:
         response = requests.get(url, params=params, timeout=20)
         if response and response.content and response.status_code == 200:
@@ -77,8 +107,8 @@ def get_json(url, params=None, retries=0):
             log_exception(__name__, exc)
             return None
     # auto retry connection errors
-    if result is None and retries < 5:
-        xbmc.sleep(500 * retries)
+    if result is None and retries < 5 and not ratelimit and not xbmc.getInfoLabel("Window(Home).Property(SkinHelperShutdownRequested)"):
+        xbmc.sleep(1000 * retries)
         return get_json(url, params, retries + 1)
     # return result
     return result
