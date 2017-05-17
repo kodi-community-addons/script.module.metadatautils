@@ -39,7 +39,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 
 ## Available methods
 
-###get_extrafanart(file_path, media_type)
+### get_extrafanart(file_path, media_type)
 ```
     retrieve the extrafanart path for a kodi media item
     Parameters: 
@@ -48,7 +48,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 ```
 
 
-###get_music_artwork(self, artist, album="", track="", disc="")
+### get_music_artwork(self, artist, album="", track="", disc="")
 ```
     get music artwork for the given artist/album/song
     Parameters: 
@@ -62,7 +62,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 ```
 
 
-###music_artwork_options(self, artist, album="", track="", disc="")
+### music_artwork_options(self, artist, album="", track="", disc="")
 ```
     Shows a dialog to manually override the artwork by the user for the given media
     Parameters: 
@@ -72,7 +72,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     disc: discnumber of the track (optional)
 ```
 
-###get_extended_artwork(imdb_id="", tvdb_id="", media_type="")
+### get_extended_artwork(imdb_id="", tvdb_id="", media_type="")
 ```
     Returns all available artwork from fanart.tv for the kodi video
     Parameters: 
@@ -82,7 +82,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     in case of episodes or seasons, provide the tvshow details
 ```
 
-###get_tmdb_details(imdb_id="", tvdb_id="", title="", year="", media_type="", manual_select=False)
+### get_tmdb_details(imdb_id="", tvdb_id="", title="", year="", media_type="", manual_select=False)
 ```
     Returns the complete (kodi compatible formatted) metadata from TMDB
     Parameters: 
@@ -96,14 +96,14 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     By default, the search by title will return the most likely result. It is suggested to also submit the year and/or media type for better matching
 ```
 
-###get_moviesetdetails(set_id)
+### get_moviesetdetails(set_id)
 ```
     Returns complete (nicely formatted) information about the movieset and it's movies
     Parameters: 
     set_id: Kodi DBID for the movieset (str/int)
 ```
 
-###get_streamdetails(db_id, media_type)
+### get_streamdetails(db_id, media_type)
 ```
     Returns complete (nicely formatted) streamdetails (resolutions, audiostreams etc.) for the kodi media item
     Parameters: 
@@ -112,7 +112,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 ```
 
 
-###get_pvr_artwork(title, channel="", genre="", manual_select=False)
+### get_pvr_artwork(title, channel="", genre="", manual_select=False)
 ```
     Returns complete (nicely formatted) metadata including artwork for the given pvr broadcast.
     Uses numerous searches to get the info. Result is localized whenever possible.
@@ -125,7 +125,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     Note: In the addon settings for the kodi module, the user can set personal preferences for the scraper.
 ```
 
-###pvr_artwork_options(title, channel="", genre="")
+### pvr_artwork_options(title, channel="", genre="")
 ```
     Shows a dialog to manually override/scrape the artwork by the user for the given PVR entry (used for example in contextmenu)
     Parameters: 
@@ -134,13 +134,13 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     genre: the genre of the PVR entry (optional, for better matching)
 ```
 
-###get_channellogo(channelname)
+### get_channellogo(channelname)
 ```
     Returns the channellogo (if found) for the given channel name.
     Looks up kodi PVR addon first, and fallsback to the logo db.
 ```
 
-###get_studio_logo(studio)
+### get_studio_logo(studio)
 ```
     Returns the studio logo for the given studio (searches the artwork paths to find the correct logo)
     Input may be a single studio as string, multiple studios as string or even a list of studios.
@@ -149,7 +149,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     NOTE: Requires a searchpath to be set, see method below!
 ```
 
-###studiologos_path(filepath)
+### studiologos_path(filepath)
 ```
     Sets/gets the path to look for studio logos, used in above "get_studio_logo" method.
     this can be a path on the filesystem, VFS path or path to a resource addon:
@@ -158,7 +158,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 ```
 
 
-###get_animated_artwork(imdb_id, manual_select=False)
+### get_animated_artwork(imdb_id, manual_select=False)
 ```
     Get animated artwork (poster and/or fanart) if exists for the given movie by querying the consiliumdb with animatedart.
     For more info, see: http://forum.kodi.tv/showthread.php?tid=215727
@@ -171,7 +171,7 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 ```
 
 
-###get_omdb_info(imdb_id="", title="", year="", content_type="")
+### get_omdb_info(imdb_id="", title="", year="", content_type="")
 ```
     Get (kodi compatible formatted) metadata from OMDB, including Rotten tomatoes details
     
@@ -182,12 +182,12 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
     media_type: Mediatype movies/tvshows (for better search results when searching by title)
 ```
 
-###get_top250_rating(imdb_id)
+### get_top250_rating(imdb_id)
 ```
     get the position in the IMDB top250 for the given IMDB ID (tvshow or movie)
 ```
 
-###get_tvdb_details(imdbid="", tvdbid="")
+### get_tvdb_details(imdbid="", tvdbid="")
 ```
     gets all information for the given tvshow from TVDB, including details of the next airing episode, the last aired episoded and air date and time.
     Input is either the imdbid or the tvdbid.
