@@ -393,6 +393,7 @@ class MusicArtwork(object):
                 details["plot"] = strip_newlines(details["description"])
                 filters = [{"albumid": details["albumid"]}]
                 album_tracks = self.metadatautils.kodidb.songs(filters=filters)
+                details["artistid"] = details["artistid"][0]
                 details["tracks"] = []
                 bullet = "•".decode("utf-8")
                 details["tracks.formatted"] = u""
