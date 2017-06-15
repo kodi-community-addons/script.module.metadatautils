@@ -53,7 +53,7 @@ class Omdb(object):
         base_url = 'http://www.omdbapi.com/'
         params["plot"] = "short"
         if self.api_key:
-            params["apikey"] = api_key
+            params["apikey"] = self.api_key
             rate_limit = None
         else:
             # rate limited api key !

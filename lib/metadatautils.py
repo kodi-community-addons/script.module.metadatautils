@@ -115,7 +115,7 @@ class MetadataUtils(object):
         # add additional art with special path
         if result:
             result = {"art": result}
-            for arttype in ["fanarts", "posters", "clearlogos", "banners"]:
+            for arttype in ["fanarts", "posters", "clearlogos", "banners", "discarts", "cleararts", "characterarts"]:
                 if result["art"].get(arttype):
                     result["art"][arttype] = "plugin://script.skin.helper.service/"\
                         "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
