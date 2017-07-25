@@ -65,23 +65,27 @@ def rate_limiter(rl_params):
     # Thank you
     if not rl_params:
         return
+    monitor = xbmc.Monitor()
+    win = xbmcgui.Window(10000)
     rl_name = rl_params[0]
     rl_delay = rl_params[1]
     cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
-    prev_timestamp = try_parse_int(xbmc.getInfoLabel("Window(Home).Property(ratelimiter.%s)" % rl_name))
+    prev_timestamp = try_parse_int(win.getProperty("ratelimiter.%s" % rl_name))
     if (prev_timestamp + rl_delay) > cur_timestamp:
         sec_to_wait = (prev_timestamp + rl_delay) - cur_timestamp
         log_msg("Rate limiter active for %s - delaying request with %s seconds - "
             "Configure a personal API key in the settings to get rid of this message and the delay." % (rl_name, sec_to_wait), xbmc.LOGNOTICE)
-        while sec_to_wait and not xbmc.getInfoLabel("Window(Home).Property(SkinHelperShutdownRequested)"):
-            xbmc.sleep(1000)
+        while sec_to_wait and not monitor.abortRequested():
+            monitor.waitForAbort(1)
             # keep setting the timestamp to create some sort of queue
             cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
-            xbmc.executebuiltin("SetProperty(ratelimiter.%s,%s,Home)" % (rl_name, cur_timestamp))
+            win.setProperty("ratelimiter.%s" % rl_name, "%s" % cur_timestamp)
             sec_to_wait -= 1
     # always set the timestamp
     cur_timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
-    xbmc.executebuiltin("SetProperty(ratelimiter.%s,%s,Home)" % (rl_name, cur_timestamp))
+    win.setProperty("ratelimiter.%s" % rl_name, "%s" % cur_timestamp)
+    del monitor
+    del win
 
 
 def get_json(url, params=None, retries=0, ratelimit=None):
@@ -89,6 +93,7 @@ def get_json(url, params=None, retries=0, ratelimit=None):
     result = {}
     if not params:
         params = {}
+    # apply rate limiting if needed
     rate_limiter(ratelimit)
     try:
         response = requests.get(url, params=params, timeout=20)
@@ -98,18 +103,18 @@ def get_json(url, params=None, retries=0, ratelimit=None):
                 result = result["results"]
             elif "result" in result:
                 result = result["result"]
-        elif response.status_code == 503:
-            result = None
+        elif response.status_code in (429, 503, 504):
+            raise Exception('Read timed out')
     except Exception as exc:
-        if "Read timed out" in str(exc):
-            result = None
+        result = None
+        if "Read timed out" in str(exc) and retries < 5 and not ratelimit:
+            # retry on connection error or http server limiting
+            monitor = xbmc.Monitor()
+            if not monitor.waitForAbort(2):
+                result = get_json(url, params, retries + 1)
+            del monitor
         else:
             log_exception(__name__, exc)
-            return None
-    # auto retry connection errors
-    if result is None and retries < 5 and not ratelimit and not xbmc.getInfoLabel("Window(Home).Property(SkinHelperShutdownRequested)"):
-        xbmc.sleep(1000 * retries)
-        return get_json(url, params, retries + 1)
     # return result
     return result
 
