@@ -9,8 +9,6 @@
 
 from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
 from mbrainz import MusicBrainz
-from lastfm import LastFM
-from theaudiodb import TheAudioDb
 import os
 import xbmc
 import xbmcvfs
@@ -31,9 +29,9 @@ class MusicArtwork(object):
         else:
             self.metadatautils = metadatautils
         self.cache = self.metadatautils.cache
-        self.lastfm = LastFM()
+        self.lastfm = self.metadatautils.lastfm
         self.mbrainz = MusicBrainz()
-        self.audiodb = TheAudioDb()
+        self.audiodb = self.metadatautils.audiodb
 
     def get_music_artwork(self, artist, album, track, disc, ignore_cache=False, flush_cache=False, manual=False):
         '''

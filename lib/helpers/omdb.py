@@ -12,7 +12,7 @@ import xbmcaddon
 
 class Omdb(object):
     '''get metadata from omdb'''
-    api_key = None
+    api_key = None # public var to be set by the calling addon
 
     def __init__(self, simplecache=None):
         '''Initialize - optionaly provide simplecache object'''
@@ -22,7 +22,9 @@ class Omdb(object):
         else:
             self.cache = simplecache
         addon = xbmcaddon.Addon(id=ADDON_ID)
-        self.api_key = addon.getSetting("omdbapi_apikey")
+        api_key = addon.getSetting("omdbapi_apikey")
+        if api_key:
+            self.api_key = api_key
         del addon
 
     @use_cache(2)

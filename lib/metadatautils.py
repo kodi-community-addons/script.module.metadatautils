@@ -6,28 +6,10 @@
     Provides all kind of mediainfo for kodi media, returned as dict with details
 '''
 
-from helpers.animatedart import AnimatedArt
-from helpers.tmdb import Tmdb
-from helpers.omdb import Omdb
-from helpers.imdb import Imdb
-from helpers.google import GoogleImages
-from helpers.channellogos import ChannelLogos
-from helpers.fanarttv import FanartTv
-from helpers.kodidb import KodiDb
 import helpers.kodi_constants as kodi_constants
-from helpers.pvrartwork import PvrArtwork
-from helpers.studiologos import StudioLogos
-from helpers.musicartwork import MusicArtwork
 from helpers.utils import log_msg, ADDON_ID
-from helpers.utils import get_clean_image as _get_clean_image
-from helpers.utils import extend_dict as _extend_dict
-from helpers.utils import get_duration as _get_duration
-from helpers.utils import detect_plugin_content as _detect_plugin_content
-from helpers.utils import process_method_on_list as _process_method_on_list
 from simplecache import use_cache, SimpleCache
-from thetvdb import TheTvDb
 from urllib import quote_plus
-import xbmcaddon
 import xbmcvfs
 
 
@@ -35,57 +17,187 @@ class MetadataUtils(object):
     '''
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
-    close_called = False
+    _cache = None
+    _addon = None
+    _close_called = False
+    _omdb = None
+    _kodidb = None
+    _tmdb = None
+    _fanarttv = None
+    _channellogos = None
+    _imdb = None
+    _google = None
+    _studiologos = None
+    _animatedart = None
+    _thetvdb = None
+    _musicart = None
+    _pvrart = None
+    _lastfm = None
+    _audiodb = None
+    _studiologos_path = None
+    _process_method_on_list = None
+    _detect_plugin_content = None
+    _extend_dict = None
+    _get_clean_image = None
+    _get_duration = None
+    _get_extrafanart = None
+    _get_moviesetdetails = None
+    _get_streamdetails = None
 
     def __init__(self):
         '''Initialize and load all our helpers'''
-        self._studiologos_path = ""
-        self.cache = SimpleCache()
-        self.addon = xbmcaddon.Addon(ADDON_ID)
-        self.kodidb = KodiDb()
-        self.omdb = Omdb(self.cache)
-        self.tmdb = Tmdb(self.cache)
-        self.channellogos = ChannelLogos(self.kodidb)
-        self.fanarttv = FanartTv(self.cache)
-        self.imdb = Imdb(self.cache)
-        self.google = GoogleImages(self.cache)
-        self.studiologos = StudioLogos(self.cache)
-        self.animatedart = AnimatedArt(self.cache, self.kodidb)
-        self.thetvdb = TheTvDb()
-        self.musicart = MusicArtwork(self)
-        self.pvrart = PvrArtwork(self)
         log_msg("Initialized")
 
     def close(self):
         '''Cleanup instances'''
-        self.close_called = True
-        self.cache.close()
-        self.addon = None
-        del self.addon
-        del self.kodidb
-        del self.omdb
-        del self.tmdb
-        del self.channellogos
-        del self.fanarttv
-        del self.imdb
-        del self.google
-        del self.studiologos
-        del self.animatedart
-        del self.thetvdb
-        del self.musicart
-        del self.pvrart
+        self._close_called = True
+        if self._cache:
+            self._cache.close()
+            del self._cache
+        if self._addon:
+            del self._addon
         log_msg("Exited")
 
     def __del__(self):
         '''make sure close is called'''
-        if not self.close_called:
+        if not self._close_called:
             self.close()
+
+    @property
+    def omdb(self):
+        '''public omdb object - for lazy loading'''
+        if not self._omdb:
+            from helpers.omdb import Omdb
+            self._omdb = Omdb(self.cache)
+        return self._omdb
+
+    @property
+    def kodidb(self):
+        '''public kodidb object - for lazy loading'''
+        if not self._kodidb:
+            from helpers.kodidb import KodiDb
+            self._kodidb = KodiDb()
+        return self._kodidb
+
+    @property
+    def tmdb(self):
+        '''public Tmdb object - for lazy loading'''
+        if not self._tmdb:
+            from helpers.tmdb import Tmdb
+            self._tmdb = Tmdb(self.cache)
+        return self._tmdb
+
+    @property
+    def fanarttv(self):
+        '''public FanartTv object - for lazy loading'''
+        if not self._fanarttv:
+            from helpers.fanarttv import FanartTv
+            self._fanarttv = FanartTv(self.cache)
+        return self._fanarttv
+
+    @property
+    def channellogos(self):
+        '''public ChannelLogos object - for lazy loading'''
+        if not self._channellogos:
+            from helpers.channellogos import ChannelLogos
+            self._channellogos = ChannelLogos(self.kodidb)
+        return self._channellogos
+
+    @property
+    def imdb(self):
+        '''public Imdb object - for lazy loading'''
+        if not self._imdb:
+            from helpers.imdb import Imdb
+            self._imdb = Imdb(self.cache)
+        return self._imdb
+
+    @property
+    def google(self):
+        '''public GoogleImages object - for lazy loading'''
+        if not self._google:
+            from helpers.google import GoogleImages
+            self._google = GoogleImages(self.cache)
+        return self._google
+
+    @property
+    def studiologos(self):
+        '''public StudioLogos object - for lazy loading'''
+        if not self._studiologos:
+            from helpers.studiologos import StudioLogos
+            self._studiologos = StudioLogos(self.cache)
+        return self._studiologos
+
+    @property
+    def animatedart(self):
+        '''public AnimatedArt object - for lazy loading'''
+        if not self._animatedart:
+            from helpers.animatedart import AnimatedArt
+            self._animatedart = AnimatedArt(self.cache, self.kodidb)
+        return self._animatedart
+
+    @property
+    def thetvdb(self):
+        '''public TheTvDb object - for lazy loading'''
+        if not self._thetvdb:
+            from thetvdb import TheTvDb
+            self._thetvdb = TheTvDb()
+        return self._thetvdb
+
+    @property
+    def musicart(self):
+        '''public MusicArtwork object - for lazy loading'''
+        if not self._musicart:
+            from helpers.musicartwork import MusicArtwork
+            self._musicart = MusicArtwork(self)
+        return self._musicart
+
+    @property
+    def pvrart(self):
+        '''public PvrArtwork object - for lazy loading'''
+        if not self._pvrart:
+            from helpers.pvrartwork import PvrArtwork
+            self._pvrart = PvrArtwork(self)
+        return self._pvrart
+
+    @property
+    def addon(self):
+        '''public Addon object - for lazy loading'''
+        if not self._addon:
+            import xbmcaddon
+            self._addon = xbmcaddon.Addon(ADDON_ID)
+        return self._addon
+
+    @property
+    def cache(self):
+        '''public SimpleCache object - for lazy loading'''
+        if not self._cache:
+            self._cache = SimpleCache()
+        return self._cache
+        
+    @property
+    def lastfm(self):
+        '''public LastFM object - for lazy loading'''
+        if not self._lastfm:
+            from helpers.lastfm import LastFM
+            self._lastfm = LastFM()
+        return self._lastfm
+        
+    @property
+    def audiodb(self):
+        '''public TheAudioDb object - for lazy loading'''
+        if not self._audiodb:
+            from helpers.theaudiodb import TheAudioDb
+            self._audiodb = TheAudioDb()
+        return self._audiodb
+
 
     @use_cache(14)
     def get_extrafanart(self, file_path):
         '''helper to retrieve the extrafanart path for a kodi media item'''
-        from helpers.extrafanart import get_extrafanart
-        return get_extrafanart(file_path)
+        if not self._get_extrafanart:
+            from helpers.extrafanart import get_extrafanart
+            self._get_extrafanart = get_extrafanart
+        return self._get_extrafanart(file_path)
 
     def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False, flush_cache=False):
         '''method to get music artwork for the goven artist/album/song'''
@@ -133,13 +245,13 @@ class MetadataUtils(object):
                 tvdb_id, "tvdb_id")
         elif title and media_type in ["movies", "setmovies", "movie"]:
             result = self.tmdb.search_movie(
-                title, year, manual_select=manual_select)
+                title, year, manual_select=manual_select, ignore_cache=ignore_cache)
         elif title and media_type in ["tvshows", "tvshow"]:
             result = self.tmdb.search_tvshow(
-                title, year, manual_select=manual_select)
+                title, year, manual_select=manual_select, ignore_cache=ignore_cache)
         elif title:
             result = self.tmdb.search_video(
-                title, year, preftype=preftype, manual_select=manual_select)
+                title, year, preftype=preftype, manual_select=manual_select, ignore_cache=ignore_cache)
         if result and result.get("status"):
             result["status"] = self.translate_string(result["status"])
         if result and result.get("runtime"):
@@ -150,14 +262,18 @@ class MetadataUtils(object):
     def get_moviesetdetails(self, title, set_id):
         '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
         # get details from tmdb
-        from helpers.moviesetdetails import get_moviesetdetails
-        return get_moviesetdetails(self, title, set_id)
+        if not self._get_moviesetdetails:
+            from helpers.moviesetdetails import get_moviesetdetails
+            self._get_moviesetdetails = get_moviesetdetails
+        return self._get_moviesetdetails(self, title, set_id)
 
     @use_cache(14)
     def get_streamdetails(self, db_id, media_type, ignore_cache=False):
-        '''get a nicely formatted dict of the streamdetails '''
-        from helpers.streamdetails import get_streamdetails
-        return get_streamdetails(self.kodidb, db_id, media_type)
+        '''get a nicely formatted dict of the streamdetails'''
+        if not self._get_streamdetails:
+            from helpers.streamdetails import get_streamdetails
+            self._get_streamdetails = get_streamdetails
+        return self._get_streamdetails(self.kodidb, db_id, media_type)
 
     def get_pvr_artwork(self, title, channel="", genre="", manual_select=False, ignore_cache=False):
         '''get artwork and mediadetails for PVR entries'''
@@ -226,6 +342,9 @@ class MetadataUtils(object):
     @use_cache(14)
     def get_duration(self, duration):
         '''helper to get a formatted duration'''
+        if not self._get_duration:
+            from helpers.utils import get_duration
+            self._get_duration = get_duration
         if isinstance(duration, (str, unicode)) and ":" in duration:
             dur_lst = duration.split(":")
             return {
@@ -235,7 +354,7 @@ class MetadataUtils(object):
                 "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
             }
         else:
-            return _get_duration(duration)
+            return self._get_duration(duration)
 
     @use_cache(2)
     def get_tvdb_details(self, imdbid="", tvdbid=""):
@@ -293,22 +412,30 @@ class MetadataUtils(object):
             translation = self.addon.getLocalizedString(32040)
         return translation
 
+    def process_method_on_list(self, *args, **kwargs):
+        '''expose our process_method_on_list method to public'''
+        if not self._process_method_on_list:
+            from helpers.utils import process_method_on_list
+            self._process_method_on_list = process_method_on_list
+        return self._process_method_on_list(*args, **kwargs)
 
-def process_method_on_list(*args, **kwargs):
-    '''expose our process_method_on_list method to public'''
-    return _process_method_on_list(*args, **kwargs)
+    def detect_plugin_content(self, *args, **kwargs):
+        '''expose our detect_plugin_content method to public'''
+        if not self._detect_plugin_content:
+            from helpers.utils import detect_plugin_content
+            self._detect_plugin_content = detect_plugin_content
+        return self._detect_plugin_content(*args, **kwargs)
 
+    def extend_dict(self, *args, **kwargs):
+        '''expose our extend_dict method to public'''
+        if not self._extend_dict:
+            from helpers.utils import extend_dict
+            self._extend_dict = extend_dict
+        return self._extend_dict(*args, **kwargs)
 
-def detect_plugin_content(*args, **kwargs):
-    '''expose our detect_plugin_content method to public'''
-    return _detect_plugin_content(*args, **kwargs)
-
-
-def extend_dict(*args, **kwargs):
-    '''expose our extend_dict method to public'''
-    return _extend_dict(*args, **kwargs)
-
-
-def get_clean_image(*args, **kwargs):
-    '''expose our get_clean_image method to public'''
-    return _get_clean_image(*args, **kwargs)
+    def get_clean_image(self, *args, **kwargs):
+        '''expose our get_clean_image method to public'''
+        if not self._get_clean_image:
+            from helpers.utils import get_clean_image
+            self._get_clean_image = get_clean_image
+        return self._get_clean_image(*args, **kwargs)

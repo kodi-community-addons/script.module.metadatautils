@@ -37,6 +37,31 @@ e.g. metadatautils.use get_tvdb_details("", "12345") instead of metadatautils.us
 
 ---------------------------------------------------------------------------
 
+## API Keys
+
+The module contains some default api keys to get you started quickly 
+but be aware, these api keys are heavily rate limited (and use a very long cache expiration)
+There will be a warning printed in the log for each time a call is made with a rate limited api key
+consider them as for testing purposes only and respect the metadata websites providing the info.
+There are 2 ways to override the default, rate limited api keys:
+
+1. User/Personal api keys.
+A user can set his own, personal api key in the Kodi addon settings for the module.
+
+
+2. API key for your application
+You can set your own api key(s) when initializing the class:
+
+```
+mutils = MetadataUtils()
+mutils.omdb.api_key = 'YOUR API KEY FOR OMDB API'
+mutils.tmdb.api_key = 'YOUR API KEY FOR TMDB'
+mutils.fanarttv.api_key = 'YOUR API KEY FOR FANART.TV'
+mutils.thetvdb.api_key = 'YOUR API KEY FOR TheTvdb'
+mutils.lastfm.api_key = 'YOUR API KEY FOR LastFM'
+mutils.audiodb.api_key = 'YOUR API KEY FOR The Audio DB'
+```
+
 ## Available methods
 
 ### get_extrafanart(file_path, media_type)

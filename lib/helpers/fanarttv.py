@@ -12,7 +12,7 @@ from simplecache import use_cache
 class FanartTv(object):
     '''get artwork from fanart.tv'''
     base_url = 'http://webservice.fanart.tv/v3/'
-    api_key = '639191cb0774661597f28a47e7e2bad5'
+    api_key = ''
     client_key = ''
     ignore_cache = False
 
@@ -93,13 +93,17 @@ class FanartTv(object):
 
     def get_data(self, query):
         '''helper method to get data from fanart.tv json API'''
-        url = '%s%s?api_key=%s' % (self.base_url, query, self.api_key)
-        if self.client_key:
-            url += '&client_key=%s' % self.client_key
+        api_key = self.api_key
+        if not api_key:
+            api_key = '639191cb0774661597f28a47e7e2bad5' # rate limited default api key
+        url = '%s%s?api_key=%s' % (self.base_url, query, api_key)
+        if self.client_key or self.api_key:
+            if self.client_key:
+                url += '&client_key=%s' % self.client_key
             rate_limit = None
             expiration = datetime.timedelta(days=7)
         else:
-            # without personal api key = rate limiting and older info from cache
+            # without personal or app provided api key = rate limiting and older info from cache
             rate_limit = ("fanart.tv",2)
             expiration = datetime.timedelta(days=60)
         cache = self.cache.get(url)
