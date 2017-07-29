@@ -17,179 +17,16 @@ class MetadataUtils(object):
     '''
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
-    _cache = None
-    _addon = None
-    _close_called = False
-    _omdb = None
-    _kodidb = None
-    _tmdb = None
-    _fanarttv = None
-    _channellogos = None
-    _imdb = None
-    _google = None
-    _studiologos = None
-    _animatedart = None
-    _thetvdb = None
-    _musicart = None
-    _pvrart = None
-    _lastfm = None
-    _audiodb = None
-    _studiologos_path = None
-    _process_method_on_list = None
-    _detect_plugin_content = None
-    _extend_dict = None
-    _get_clean_image = None
-    _get_duration = None
-    _get_extrafanart = None
-    _get_moviesetdetails = None
-    _get_streamdetails = None
+    _audiodb, _addon, _close_called, _omdb, _kodidb, _tmdb, _fanarttv, _channellogos = [None] * 8
+    _imdb, _google, _studiologos, _animatedart, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 8
+    _studiologos_path, _process_method_on_list, _detect_plugin_content, _get_streamdetails = [None] * 4
+    _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_moviesetdetails = [None] * 5
+
 
     def __init__(self):
         '''Initialize and load all our helpers'''
+        self.cache = SimpleCache()
         log_msg("Initialized")
-
-    def close(self):
-        '''Cleanup instances'''
-        self._close_called = True
-        if self._cache:
-            self._cache.close()
-            del self._cache
-        if self._addon:
-            del self._addon
-        log_msg("Exited")
-
-    def __del__(self):
-        '''make sure close is called'''
-        if not self._close_called:
-            self.close()
-
-    @property
-    def omdb(self):
-        '''public omdb object - for lazy loading'''
-        if not self._omdb:
-            from helpers.omdb import Omdb
-            self._omdb = Omdb(self.cache)
-        return self._omdb
-
-    @property
-    def kodidb(self):
-        '''public kodidb object - for lazy loading'''
-        if not self._kodidb:
-            from helpers.kodidb import KodiDb
-            self._kodidb = KodiDb()
-        return self._kodidb
-
-    @property
-    def tmdb(self):
-        '''public Tmdb object - for lazy loading'''
-        if not self._tmdb:
-            from helpers.tmdb import Tmdb
-            self._tmdb = Tmdb(self.cache)
-        return self._tmdb
-
-    @property
-    def fanarttv(self):
-        '''public FanartTv object - for lazy loading'''
-        if not self._fanarttv:
-            from helpers.fanarttv import FanartTv
-            self._fanarttv = FanartTv(self.cache)
-        return self._fanarttv
-
-    @property
-    def channellogos(self):
-        '''public ChannelLogos object - for lazy loading'''
-        if not self._channellogos:
-            from helpers.channellogos import ChannelLogos
-            self._channellogos = ChannelLogos(self.kodidb)
-        return self._channellogos
-
-    @property
-    def imdb(self):
-        '''public Imdb object - for lazy loading'''
-        if not self._imdb:
-            from helpers.imdb import Imdb
-            self._imdb = Imdb(self.cache)
-        return self._imdb
-
-    @property
-    def google(self):
-        '''public GoogleImages object - for lazy loading'''
-        if not self._google:
-            from helpers.google import GoogleImages
-            self._google = GoogleImages(self.cache)
-        return self._google
-
-    @property
-    def studiologos(self):
-        '''public StudioLogos object - for lazy loading'''
-        if not self._studiologos:
-            from helpers.studiologos import StudioLogos
-            self._studiologos = StudioLogos(self.cache)
-        return self._studiologos
-
-    @property
-    def animatedart(self):
-        '''public AnimatedArt object - for lazy loading'''
-        if not self._animatedart:
-            from helpers.animatedart import AnimatedArt
-            self._animatedart = AnimatedArt(self.cache, self.kodidb)
-        return self._animatedart
-
-    @property
-    def thetvdb(self):
-        '''public TheTvDb object - for lazy loading'''
-        if not self._thetvdb:
-            from thetvdb import TheTvDb
-            self._thetvdb = TheTvDb()
-        return self._thetvdb
-
-    @property
-    def musicart(self):
-        '''public MusicArtwork object - for lazy loading'''
-        if not self._musicart:
-            from helpers.musicartwork import MusicArtwork
-            self._musicart = MusicArtwork(self)
-        return self._musicart
-
-    @property
-    def pvrart(self):
-        '''public PvrArtwork object - for lazy loading'''
-        if not self._pvrart:
-            from helpers.pvrartwork import PvrArtwork
-            self._pvrart = PvrArtwork(self)
-        return self._pvrart
-
-    @property
-    def addon(self):
-        '''public Addon object - for lazy loading'''
-        if not self._addon:
-            import xbmcaddon
-            self._addon = xbmcaddon.Addon(ADDON_ID)
-        return self._addon
-
-    @property
-    def cache(self):
-        '''public SimpleCache object - for lazy loading'''
-        if not self._cache:
-            self._cache = SimpleCache()
-        return self._cache
-        
-    @property
-    def lastfm(self):
-        '''public LastFM object - for lazy loading'''
-        if not self._lastfm:
-            from helpers.lastfm import LastFM
-            self._lastfm = LastFM()
-        return self._lastfm
-        
-    @property
-    def audiodb(self):
-        '''public TheAudioDb object - for lazy loading'''
-        if not self._audiodb:
-            from helpers.theaudiodb import TheAudioDb
-            self._audiodb = TheAudioDb()
-        return self._audiodb
-
 
     @use_cache(14)
     def get_extrafanart(self, file_path):
@@ -377,7 +214,7 @@ class MetadataUtils(object):
             result["status"] = self.translate_string(result["status"])
             if result.get("runtime"):
                 result["runtime"] = result["runtime"] / 60
-                result.update(self._get_duration(result["runtime"]))
+                result.update(self.get_duration(result["runtime"]))
         return result
 
     @use_cache(90)
@@ -439,3 +276,139 @@ class MetadataUtils(object):
             from helpers.utils import get_clean_image
             self._get_clean_image = get_clean_image
         return self._get_clean_image(*args, **kwargs)
+
+    @property
+    def omdb(self):
+        '''public omdb object - for lazy loading'''
+        if not self._omdb:
+            from helpers.omdb import Omdb
+            self._omdb = Omdb(self.cache)
+        return self._omdb
+
+    @property
+    def kodidb(self):
+        '''public kodidb object - for lazy loading'''
+        if not self._kodidb:
+            from helpers.kodidb import KodiDb
+            self._kodidb = KodiDb()
+        return self._kodidb
+
+    @property
+    def tmdb(self):
+        '''public Tmdb object - for lazy loading'''
+        if not self._tmdb:
+            from helpers.tmdb import Tmdb
+            self._tmdb = Tmdb(self.cache)
+        return self._tmdb
+
+    @property
+    def fanarttv(self):
+        '''public FanartTv object - for lazy loading'''
+        if not self._fanarttv:
+            from helpers.fanarttv import FanartTv
+            self._fanarttv = FanartTv(self.cache)
+        return self._fanarttv
+
+    @property
+    def channellogos(self):
+        '''public ChannelLogos object - for lazy loading'''
+        if not self._channellogos:
+            from helpers.channellogos import ChannelLogos
+            self._channellogos = ChannelLogos(self.kodidb)
+        return self._channellogos
+
+    @property
+    def imdb(self):
+        '''public Imdb object - for lazy loading'''
+        if not self._imdb:
+            from helpers.imdb import Imdb
+            self._imdb = Imdb(self.cache)
+        return self._imdb
+
+    @property
+    def google(self):
+        '''public GoogleImages object - for lazy loading'''
+        if not self._google:
+            from helpers.google import GoogleImages
+            self._google = GoogleImages(self.cache)
+        return self._google
+
+    @property
+    def studiologos(self):
+        '''public StudioLogos object - for lazy loading'''
+        if not self._studiologos:
+            from helpers.studiologos import StudioLogos
+            self._studiologos = StudioLogos(self.cache)
+        return self._studiologos
+
+    @property
+    def animatedart(self):
+        '''public AnimatedArt object - for lazy loading'''
+        if not self._animatedart:
+            from helpers.animatedart import AnimatedArt
+            self._animatedart = AnimatedArt(self.cache, self.kodidb)
+        return self._animatedart
+
+    @property
+    def thetvdb(self):
+        '''public TheTvDb object - for lazy loading'''
+        if not self._thetvdb:
+            from thetvdb import TheTvDb
+            self._thetvdb = TheTvDb()
+        return self._thetvdb
+
+    @property
+    def musicart(self):
+        '''public MusicArtwork object - for lazy loading'''
+        if not self._musicart:
+            from helpers.musicartwork import MusicArtwork
+            self._musicart = MusicArtwork(self)
+        return self._musicart
+
+    @property
+    def pvrart(self):
+        '''public PvrArtwork object - for lazy loading'''
+        if not self._pvrart:
+            from helpers.pvrartwork import PvrArtwork
+            self._pvrart = PvrArtwork(self)
+        return self._pvrart
+
+    @property
+    def addon(self):
+        '''public Addon object - for lazy loading'''
+        if not self._addon:
+            import xbmcaddon
+            self._addon = xbmcaddon.Addon(ADDON_ID)
+        return self._addon
+
+    @property
+    def lastfm(self):
+        '''public LastFM object - for lazy loading'''
+        if not self._lastfm:
+            from helpers.lastfm import LastFM
+            self._lastfm = LastFM()
+        return self._lastfm
+
+    @property
+    def audiodb(self):
+        '''public TheAudioDb object - for lazy loading'''
+        if not self._audiodb:
+            from helpers.theaudiodb import TheAudioDb
+            self._audiodb = TheAudioDb()
+        return self._audiodb
+
+    def close(self):
+        '''Cleanup instances'''
+        self._close_called = True
+        self.cache.close()
+        del self.cache
+        if self._addon:
+            del self._addon
+        if self._thetvdb:
+            del self._thetvdb
+        log_msg("Exited")
+
+    def __del__(self):
+        '''make sure close is called'''
+        if not self._close_called:
+            self.close()
