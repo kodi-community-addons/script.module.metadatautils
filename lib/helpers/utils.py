@@ -73,8 +73,10 @@ def rate_limiter(rl_params):
     prev_timestamp = try_parse_int(win.getProperty("ratelimiter.%s" % rl_name))
     if (prev_timestamp + rl_delay) > cur_timestamp:
         sec_to_wait = (prev_timestamp + rl_delay) - cur_timestamp
-        log_msg("Rate limiter active for %s - delaying request with %s seconds - "
-            "Configure a personal API key in the settings to get rid of this message and the delay." % (rl_name, sec_to_wait), xbmc.LOGNOTICE)
+        log_msg(
+            "Rate limiter active for %s - delaying request with %s seconds - "
+            "Configure a personal API key in the settings to get rid of this message and the delay." %
+            (rl_name, sec_to_wait), xbmc.LOGNOTICE)
         while sec_to_wait and not monitor.abortRequested():
             monitor.waitForAbort(1)
             # keep setting the timestamp to create some sort of queue
@@ -519,9 +521,9 @@ def manual_set_artwork(artwork, mediatype, header=None):
     if mediatype == "artist":
         art_types = ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]
     elif mediatype == "album":
-        art_types = ["thumb", "discart"]
+        art_types = ["thumb", "discart", "thumbback", "spine"]
     else:
-        art_types = ["thumb", "poster", "fanart", "banner", "clearart", "thumbback", "spine",
+        art_types = ["thumb", "poster", "fanart", "banner", "clearart",
                      "clearlogo", "discart", "landscape", "characterart"]
 
     if not header:
