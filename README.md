@@ -1,4 +1,7 @@
 # script.module.metadatautils
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cad4bb3808294334a5f0cb7deeb4c40f)](https://www.codacy.com/app/m-vanderveldt/script.module.metadatautils?utm_source=github.com&utm_medium=referral&utm_content=marcelveldt/script.module.metadatautils&utm_campaign=badger)
+
 Kodi python module to retrieve rich artwork and metadata for common kodi media items
 The module is integrated with the simplecache module so that information is properly cached
 
