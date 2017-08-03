@@ -451,6 +451,10 @@ def download_artwork(folderpath, artwork):
             new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
         elif key == "landscape":
             new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
+        elif key == "thumbback":
+            new_dict[key] = download_image(os.path.join(folderpath, "thumbback.jpg"), value)
+        elif key == "spine":
+            new_dict[key] = download_image(os.path.join(folderpath, "spine.jpg"), value)
         elif key == "fanarts" and value:
             # copy extrafanarts only if the directory doesn't exist at all
             delim = "\\" if "\\" in folderpath else "/"
@@ -517,7 +521,7 @@ def manual_set_artwork(artwork, mediatype, header=None):
     elif mediatype == "album":
         art_types = ["thumb", "discart"]
     else:
-        art_types = ["thumb", "poster", "fanart", "banner", "clearart",
+        art_types = ["thumb", "poster", "fanart", "banner", "clearart", "thumbback", "spine",
                      "clearlogo", "discart", "landscape", "characterart"]
 
     if not header:
