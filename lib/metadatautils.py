@@ -20,7 +20,7 @@ class MetadataUtils(object):
     _audiodb, _addon, _close_called, _omdb, _kodidb, _tmdb, _fanarttv, _channellogos = [None] * 8
     _imdb, _google, _studiologos, _animatedart, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 8
     _studiologos_path, _process_method_on_list, _detect_plugin_content, _get_streamdetails = [None] * 4
-    _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_moviesetdetails = [None] * 5
+    _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 6
 
 
     def __init__(self):
@@ -35,6 +35,14 @@ class MetadataUtils(object):
             from helpers.extrafanart import get_extrafanart
             self._get_extrafanart = get_extrafanart
         return self._get_extrafanart(file_path)
+
+    @use_cache(14)
+    def get_extraposter(self, file_path):
+        '''helper to retrieve the extraposter path for a kodi media item'''
+        if not self._get_extraposter:
+            from helpers.extraposter import get_extraposter
+            self._get_extraposter = get_extraposter
+        return self._get_extraposter(file_path)
 
     def get_music_artwork(self, artist, album="", track="", disc="", ignore_cache=False, flush_cache=False):
         '''method to get music artwork for the goven artist/album/song'''
