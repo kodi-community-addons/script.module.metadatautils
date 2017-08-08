@@ -595,7 +595,7 @@ class MusicArtwork(object):
             if not sublevel:
                 self.cache.set(cachestr, folder_path)
             if not folder_path and self._mutils.addon.getSetting("music_art_download_custom") == "true":
-				folder_path = os.path.join(artistcustom_path, foldername) + delim
+                folder_path = os.path.join(artistcustom_path, foldername) + delim
         return folder_path
 
     @staticmethod
