@@ -513,7 +513,7 @@ class KodiDb(object):
                 item["director"] = " / ".join(item.get('director'))
             if 'artist' in item and not isinstance(item['artist'], list):
                 item["artist"] = [item.get('artist')]
-            if not 'artist' in item:
+            if 'artist' not in item:
                 item["artist"] = []
             if item['type'] == "album" and not item.get('album'):
                 item['album'] = item.get('label')

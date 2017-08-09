@@ -210,7 +210,7 @@ class Tmdb(object):
             # fallback api key (rate limited !)
             params["api_key"] = "80246691939720672db3fc71c74e0ef2"
             # without personal (or addon specific) api key = rate limiting and older info from cache
-            rate_limit = ("themoviedb.org",10)
+            rate_limit = ("themoviedb.org", 10)
             expiration = datetime.timedelta(days=60)
         cachestr = "tmdb.%s" % params.itervalues()
         cache = self.cache.get(cachestr)
@@ -220,7 +220,7 @@ class Tmdb(object):
         else:
             # no cache, grab data from API
             url = u'http://api.themoviedb.org/3/%s' % endpoint
-            result = get_json(url, params)
+            result = get_json(url, params, ratelimit=rate_limit)
             # make sure that we have a plot value (if localized value fails, fallback to english)
             if result and "language" in params and "overview" in result:
                 if not result["overview"] and params["language"] != "en":
