@@ -453,7 +453,7 @@ class PvrArtwork(object):
             files = xbmcvfs.listdir(title_path)[1]
             for item in files:
                 item = item.decode("utf-8")
-                if item in ["banner.jpg", "clearart.png", "poster.png", "fanart.jpg", "landscape.jpg"]:
+                if item in ["banner.jpg", "clearart.png", "poster.jpg", "disc.png", "characterart.png", "fanart.jpg", "landscape.jpg"]:
                     key = item.split(".")[0]
                     details["art"][key] = title_path + item
                 elif item == "logo.png":
