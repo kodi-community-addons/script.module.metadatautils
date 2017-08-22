@@ -210,7 +210,7 @@ class Tmdb(object):
             # fallback api key (rate limited !)
             params["api_key"] = "80246691939720672db3fc71c74e0ef2"
             # without personal (or addon specific) api key = rate limiting and older info from cache
-            rate_limit = ("themoviedb.org", 10)
+            rate_limit = ("themoviedb.org", 5)
             expiration = datetime.timedelta(days=60)
         cachestr = "tmdb.%s" % params.itervalues()
         cache = self.cache.get(cachestr)
