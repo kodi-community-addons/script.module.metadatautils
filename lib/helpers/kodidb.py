@@ -81,13 +81,13 @@ class KodiDb(object):
         return self.get_json("VideoLibrary.GetEpisodeDetails", returntype="episodedetails",
                              fields=FIELDS_EPISODES, optparam=("episodeid", try_parse_int(db_id)))
 
-    def episodes(self, sort=None, filters=None, limits=None, filtertype=None, tvshowid=None):
+    def episodes(self, sort=None, filters=None, limits=None, filtertype=None, tvshowid=None, fields=FIELDS_EPISODES):
         '''get episodes from kodi db'''
         if tvshowid:
             params = ("tvshowid", try_parse_int(tvshowid))
         else:
             params = None
-        return self.get_json("VideoLibrary.GetEpisodes", sort=sort, filters=filters, fields=FIELDS_EPISODES,
+        return self.get_json("VideoLibrary.GetEpisodes", sort=sort, filters=filters, fields=fields,
                              limits=limits, returntype="episodes", filtertype=filtertype, optparam=params)
 
     def musicvideo(self, db_id):
@@ -504,32 +504,34 @@ class KodiDb(object):
 
             # general properties
             if "genre" in item and isinstance(item['genre'], list):
-                item["genre"] = " / ".join(item.get('genre'))
+                item["genre"] = " / ".join(item['genre'])
             if "studio" in item and isinstance(item['studio'], list):
-                item["studio"] = " / ".join(item.get('studio'))
+                item["studio"] = " / ".join(item['studio'])
             if "writer" in item and isinstance(item['writer'], list):
-                item["writer"] = " / ".join(item.get('writer'))
+                item["writer"] = " / ".join(item['writer'])
             if 'director' in item and isinstance(item['director'], list):
-                item["director"] = " / ".join(item.get('director'))
+                item["director"] = " / ".join(item['director'])
             if 'artist' in item and not isinstance(item['artist'], list):
-                item["artist"] = [item.get('artist')]
+                item["artist"] = [item['artist']]
             if 'artist' not in item:
                 item["artist"] = []
-            if item['type'] == "album" and not item.get('album'):
-                item['album'] = item.get('label')
+            if item['type'] == "album" and 'album' not in item and 'label' in item:
+                item['album'] = item['label']
             if "duration" not in item and "runtime" in item:
                 if (item["runtime"] / 60) > 300:
-                    item["duration"] = item.get("runtime") / 60
+                    item["duration"] = item["runtime"] / 60
                 else:
-                    item["duration"] = item.get("runtime")
+                    item["duration"] = item["runtime"]
             if "plot" not in item and "comment" in item:
-                item["plot"] = item.get("comment")
-            if "tvshowtitle" not in item and item.get("showtitle"):
-                item["tvshowtitle"] = item.get("showtitle")
+                item["plot"] = item["comment"]
+            if "tvshowtitle" not in item and "showtitle" in item:
+                item["tvshowtitle"] = item["showtitle"]
             if "premiered" not in item and "firstaired" in item:
-                item["premiered"] = item.get("firstaired")
+                item["premiered"] = item["firstaired"]
+            if "firstaired" in item and "aired" not in item:
+                item["aired"] = item["firstaired"]
             if "imdbnumber" not in properties and "imdbnumber" in item:
-                properties["imdbnumber"] = item.get("imdbnumber")
+                properties["imdbnumber"] = item["imdbnumber"]
             if "imdbnumber" not in properties and "uniqueid" in item:
                 for value in item["uniqueid"].values():
                     if value.startswith("tt"):
