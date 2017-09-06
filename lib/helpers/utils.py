@@ -45,9 +45,11 @@ SESSION.mount('http://', HTTPAdapter(max_retries=RETRIES))
 SESSION.mount('https://', HTTPAdapter(max_retries=RETRIES))
 
 FORCE_DEBUG_LOG = False
+LIMIT_EXTRAFANART = 0
 try:
     ADDON = xbmcaddon.Addon(ADDON_ID)
     FORCE_DEBUG_LOG = ADDON.getSetting('debug_log') == 'true'
+    LIMIT_EXTRAFANART = int(ADDON.getSetting('max_extrafanarts'))
     del ADDON
 except Exception:
     pass
@@ -478,6 +480,8 @@ def download_artwork(folderpath, artwork):
                 for count, image in enumerate(value):
                     image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
                     images.append(image)
+                    if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                        break
                 new_dict[key] = images
         elif key == "posters" and value:
             # copy extraposters only if the directory doesn't exist at all
@@ -489,6 +493,8 @@ def download_artwork(folderpath, artwork):
                 for count, image in enumerate(value):
                     image = download_image(os.path.join(efa_path, "poster%s.jpg" % count), image)
                     images.append(image)
+                    if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                        break
                 new_dict[key] = images
         else:
             new_dict[key] = value
