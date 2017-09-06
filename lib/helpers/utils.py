@@ -6,6 +6,7 @@
 import xbmcgui
 import xbmc
 import xbmcvfs
+import xbmcaddon
 import sys
 from traceback import format_exc
 import requests
@@ -43,12 +44,22 @@ RETRIES = Retry(total=5, backoff_factor=5, status_forcelist=[500, 502, 503, 504]
 SESSION.mount('http://', HTTPAdapter(max_retries=RETRIES))
 SESSION.mount('https://', HTTPAdapter(max_retries=RETRIES))
 
+FORCE_DEBUG_LOG = False
+try:
+    ADDON = xbmcaddon.Addon(ADDON_ID)
+    FORCE_DEBUG_LOG = ADDON.getSetting('debug_log') == 'true'
+    del ADDON
+except Exception:
+    pass
+
 
 def log_msg(msg, loglevel=xbmc.LOGDEBUG):
     '''log message to kodi logfile'''
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')
-    xbmc.log("Metadata and Artwork module --> %s" % msg, level=loglevel)
+    if loglevel == xbmc.LOGDEBUG and FORCE_DEBUG_LOG:
+        loglevel = xbmc.LOGNOTICE
+    xbmc.log("%s --> %s" % (ADDON_ID, msg), level=loglevel)
 
 
 def log_exception(modulename, exceptiondetails):

@@ -14,7 +14,7 @@
         <setting id="pvr_art_ignore_titles" label="32011" type="text"/>
         <setting id="pvr_art_ignore_genres" label="32025" type="text" default="Sport|News"/>
         <setting id="pvr_art_ignore_commongenre" label="32026" type="bool" default="true"/>
-        <setting id="pvr_art_splittitlechar" label="32012" type="text" default=": | ( | ;"/>        
+        <setting id="pvr_art_splittitlechar" label="32012" type="text" default=" ( | ;"/>        
         <setting id="pvr_art_replace_by_space" label="32013" type="text" default="-|_"/>
         <setting id="pvr_art_stripchars" label="32014" type="text" default="\*|,|(|)|:|;|\&quot;|`|_new|new_|.|\&apos;"/>
     </category>
@@ -56,5 +56,10 @@
         <setting id="fanarttv_apikey" label="32045" type="text"/>
         <setting id="omdbapi_apikey" label="32054" type="text"/>
         <setting id="tmdb_apikey" label="32055" type="text"/>
+    </category>
+    <category label="32044">
+        <setting label="32034" type="lsep" />
+        <setting type="sep" />
+        <setting id="debug_log" type="bool" label="32059" default="false"/>
     </category>
 </settings>
