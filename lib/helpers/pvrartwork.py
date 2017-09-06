@@ -16,6 +16,7 @@ from operator import itemgetter
 import re
 from urllib import quote_plus
 import os
+from datetime import timedelta
 
 
 class PvrArtwork(object):
@@ -187,9 +188,12 @@ class PvrArtwork(object):
 
             log_msg("pvrart lookup for title: %s - final result: %s" % (searchtitle, details))
 
-        # store result in cache and return details
-        # always re-store in cache to prevent the cache from expiring
-        self._mutils.cache.set(cache_str, details)
+        # always store result in cache
+        # manual lookups should not expire too often
+        if manual_select:
+            self._mutils.cache.set(cache_str, details, expiration=timedelta(days=365))
+        else:
+            self._mutils.cache.set(cache_str, details)
         return details
 
     def manual_set_pvr_artwork(self, title, channel, genre):
@@ -204,7 +208,7 @@ class PvrArtwork(object):
         if changemade:
             details["art"] = artwork
             # save results in cache
-            self._mutils.cache.set(cache_str, details)
+            self._mutils.cache.set(cache_str, details, expiration=timedelta(days=365))
 
     def pvr_artwork_options(self, title, channel, genre):
         '''show options for pvr artwork'''
