@@ -105,7 +105,7 @@ class Omdb(object):
             elif key == "Awards":
                 result["awards"] = value
             elif key == "Plot":
-                result["omdb.plot"] = value
+                result["imdb.plot"] = value
             elif key == "Poster":
                 result["thumbnail"] = value
                 result["art"] = {}
