@@ -53,7 +53,7 @@ class Omdb(object):
     def get_data(self, params):
         '''helper method to get data from omdb json API'''
         base_url = 'http://www.omdbapi.com/'
-        params["plot"] = "short"
+        params["plot"] = "full"
         if self.api_key:
             params["apikey"] = self.api_key
             rate_limit = None
@@ -104,6 +104,8 @@ class Omdb(object):
                 result["country"] = value.split(", ")
             elif key == "Awards":
                 result["awards"] = value
+            elif key == "Plot":
+                result["imdb.plot"] = value
             elif key == "Poster":
                 result["thumbnail"] = value
                 result["art"] = {}
