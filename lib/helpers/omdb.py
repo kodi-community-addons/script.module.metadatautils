@@ -53,7 +53,7 @@ class Omdb(object):
     def get_data(self, params):
         '''helper method to get data from omdb json API'''
         base_url = 'http://www.omdbapi.com/'
-        params["plot"] = "short"
+        params["plot"] = "full"
         if self.api_key:
             params["apikey"] = self.api_key
             rate_limit = None
@@ -155,18 +155,7 @@ class Omdb(object):
                 result["studio"] = value.split(", ")
             elif key == "Website":
                 result["homepage"] = value
-            # rotten tomatoes - will probably never work again (OMDBAPI doesnt't provide them anymore)
-            elif key == "tomatoReviews":
-                result["rottentomatoes.reviews"] = formatted_number(value)
-            elif key == "tomatoConsensus":
-                result["rottentomatoes.consensus"] = value
-            elif key == "tomatoUserMeter":
-                result["rottentomatoes.usermeter"] = value
-            elif key == "tomatoUserRating":
-                result["rottentomatoes.userrating"] = value
-                result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
-            elif key == "tomatoUserReviews":
-                result["rottentomatoes.userreviews"] = int_with_commas(value)
-            elif key == "tomatoURL":
-                result["rottentomatoes.url"] = value
+            elif key == "Plot":
+                result["plot"] = value
+                result["imdb.plot"] = value
         return result
