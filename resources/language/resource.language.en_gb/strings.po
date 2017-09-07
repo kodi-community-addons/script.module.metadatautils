@@ -248,3 +248,10 @@ msgctxt "#32058"
 msgid "This modules uses the following sites/services to grab metadata"
 msgstr ""
 
+msgctxt "#32059"
+msgid "Enable debug logging (regardless of Kodi log level)"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Limit number of extrafanarts to download (0 is no limit)"
+msgstr ""

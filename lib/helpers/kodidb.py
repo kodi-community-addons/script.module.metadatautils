@@ -59,7 +59,7 @@ class KodiDb(object):
         return tvshows
 
     def tvshow_by_imdbid(self, imdb_id):
-        '''gets a tvshow from kodidb by imdbid.'''
+        '''gets a tvshow from kodidb by imdbid (or tvdbid).'''
         # apparently you can't filter on imdb so we have to do this the complicated way
         if KODI_VERSION > 16:
             # from Kodi 17 we have a uniqueid field instead of imdbnumber

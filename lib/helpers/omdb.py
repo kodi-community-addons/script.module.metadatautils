@@ -79,9 +79,7 @@ class Omdb(object):
                     result["year"] = try_parse_int(value.split("-")[0])
                 except Exception:
                     result["year"] = value
-            elif key == "Year":
-                result["year"] = value
-            if key == "Rated":
+            elif key == "Rated":
                 result["mpaa"] = value.replace("Rated", "")
             elif key == "Title":
                 result["title"] = value
@@ -158,4 +156,10 @@ class Omdb(object):
             elif key == "Plot":
                 result["plot"] = value
                 result["imdb.plot"] = value
+            elif key == "Type":
+                if value == "series":
+                    result["type"] = "tvshow"
+                else:
+                    result["type"] = value
+                result["media_type"] = result["type"]
         return result

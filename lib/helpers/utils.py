@@ -268,6 +268,8 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
     without overwriting existing values.'''
     if not new_dict:
         return org_dict
+    if not org_dict:
+        return new_dict
     for key, value in new_dict.iteritems():
         if value:
             if not org_dict.get(key):

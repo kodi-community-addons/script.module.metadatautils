@@ -60,7 +60,11 @@ class MetadataUtils(object):
         if "movie" in media_type and tmdb_id:
             result = self.fanarttv.movie(tmdb_id)
         elif "movie" in media_type and imdb_id:
-            result = self.fanarttv.movie(imdb_id)
+            # prefer local artwork
+            local_details = self.kodidb.movie_by_imdbid(imdb_id)
+            if local_details:
+                result = local_details["art"]
+            result = self.extend_dict(result, self.fanarttv.movie(imdb_id))
         elif media_type in ["tvshow", "tvshows", "seasons", "episodes"]:
             if not tvdb_id:
                 if imdb_id and not imdb_id.startswith("tt"):
@@ -68,7 +72,15 @@ class MetadataUtils(object):
                 elif imdb_id:
                     tvdb_id = self.thetvdb.get_series_by_imdb_id(imdb_id).get("tvdb_id")
             if tvdb_id:
-                result = self.fanarttv.tvshow(tvdb_id)
+                # prefer local artwork
+                local_details = self.kodidb.tvshow_by_imdbid(tvdb_id)
+                if local_details:
+                    result = local_details["art"]
+                elif imdb_id and imdb_id != tvdb_id:
+                    local_details = self.kodidb.tvshow_by_imdbid(imdb_id)
+                    if local_details:
+                        result = local_details["art"]
+                result = self.extend_dict(result, self.fanarttv.tvshow(tvdb_id))
         # add additional art with special path
         if result:
             result = {"art": result}
