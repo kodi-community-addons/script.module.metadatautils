@@ -79,6 +79,9 @@ class TheAudioDb(object):
             if adbdetails.get("strArtistLogo") and xbmcvfs.exists(adbdetails.get("strArtistLogo")):
                 details["art"]["clearlogo"] = adbdetails.get("strArtistLogo")
                 details["art"]["clearlogos"] = [adbdetails.get("strArtistLogo")]
+            if adbdetails.get("strArtistClearart") and xbmcvfs.exists(adbdetails.get("strArtistClearart")):
+                details["art"]["clearart"] = adbdetails.get("strArtistClearart")
+                details["art"]["cleararts"] = [adbdetails.get("strArtistClearart")]
             if adbdetails.get("strArtistThumb") and xbmcvfs.exists(adbdetails.get("strArtistThumb")):
                 details["art"]["thumb"] = adbdetails["strArtistThumb"]
                 details["art"]["thumbs"] = [adbdetails["strArtistThumb"]]
