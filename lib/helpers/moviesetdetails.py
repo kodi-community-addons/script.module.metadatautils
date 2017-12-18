@@ -49,7 +49,7 @@ def get_online_setdata(metadatautils, title):
         details["art"] = extend_dict(
             details["art"],
             metadatautils.fanarttv.movie(details["tmdb_id"]),
-            ["poster", "fanart"])
+            ["poster", "fanart", "clearlogo", "clearart"])
     return details
 
 # pylint: disable-msg=too-many-local-variables
