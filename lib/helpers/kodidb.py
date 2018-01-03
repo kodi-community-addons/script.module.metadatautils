@@ -641,7 +641,7 @@ class KodiDb(object):
             if "channel" in item:
                 properties["channel"] = item["channel"]
                 properties["channelname"] = item["channel"]
-                item["label2"] = item["channel"]
+                item["label2"] = item["title"]
 
             # artwork
             art = item.get("art", {})
