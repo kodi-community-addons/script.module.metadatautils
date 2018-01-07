@@ -21,6 +21,7 @@ class MetadataUtils(object):
     _imdb, _google, _studiologos, _animatedart, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 8
     _studiologos_path, _process_method_on_list, _detect_plugin_content, _get_streamdetails = [None] * 4
     _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 6
+    cache = None
 
 
     def __init__(self):
@@ -423,8 +424,9 @@ class MetadataUtils(object):
     def close(self):
         '''Cleanup instances'''
         self._close_called = True
-        self.cache.close()
-        del self.cache
+        if self.cache:
+            self.cache.close()
+            del self.cache
         if self._addon:
             del self._addon
         if self._thetvdb:
