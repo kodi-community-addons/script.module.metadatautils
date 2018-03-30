@@ -13,6 +13,11 @@ The requests to these api's are rate-limited and cached by this addon to not ove
 The addon settings will contain options for users to enter their personal/payed API-key to enable all features of the API and remove the rate limiter.
 
 
+## Help needed with maintaining !
+I am very busy currently so I do not have a lot of time to work on this project or watch the forums.
+Be aware that this is a community driven project, so feel free to submit PR's yourself to improve the code and/or help others with support on the forums etc. If you're willing to really participate in the development, please contact me so I can give you write access to the repo. I do my best to maintain the project every once in a while, when I have some spare time left.
+Thanks for understanding!
+
 
 ## Usage
 
