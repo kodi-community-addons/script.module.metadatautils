@@ -406,8 +406,7 @@ class KodiDb(object):
                     "album": item.get("album"),
                     "artist": item.get("artist"),
                     "votes": item.get("votes"),
-                    "trailer": item.get("trailer"),
-                    "progress": item.get('progresspercentage')
+                    "trailer": item.get("trailer")
                 }
                 if item["type"] == "episode":
                     infolabels["season"] = item["season"]
