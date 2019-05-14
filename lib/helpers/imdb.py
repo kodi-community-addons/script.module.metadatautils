@@ -68,4 +68,5 @@ class Imdb(object):
                     "movieid": kodi_movie["movieid"],
                     "top250": results[imdb_id]
                 }
-                self.kodidb.set_json('VideoLibrary.SetMovieDetails', params)
+                if not ("top250" in kodi_movie and kodi_movie["top250"] == results[imdb_id]):
+                    self.kodidb.set_json('VideoLibrary.SetMovieDetails', params)
