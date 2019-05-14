@@ -11,7 +11,7 @@ from utils import try_parse_int, localdate_from_utc_string, localized_date_time
 from kodi_constants import *
 from operator import itemgetter
 import arrow
-
+import datetime
 
 class KodiDb(object):
     '''various methods and helpers to get data from kodi json api'''
@@ -39,7 +39,11 @@ class KodiDb(object):
         # apparently you can't filter on imdb so we have to do this the complicated way
         if KODI_VERSION > 16:
             # from Kodi 17 we have a uniqueid field instead of imdbnumber
-            all_items = self.get_json('VideoLibrary.GetMovies', fields=["uniqueid"], returntype="movies")
+            all_items = self.cache.get("kodidb.all_movies_uniqueids")
+            if not all_items:
+                all_items = self.get_json('VideoLibrary.GetMovies', fields=["uniqueid"], returntype="movies")
+                self.cache.set("kodidb.all_movies_uniqueids", all_items, expiration=datetime.timedelta(minutes=15))
+
             for item in all_items:
                 for item2 in item["uniqueid"].values():
                     if item2 == imdb_id:
