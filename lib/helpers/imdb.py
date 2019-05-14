@@ -24,7 +24,7 @@ class Imdb(object):
             self.cache = simplecache
         if not kodidb:
             from kodidb import KodiDb
-            self.kodidb = KodiDb()
+            self.kodidb = KodiDb(self.cache)
         else:
             self.kodidb = kodidb
 

@@ -19,17 +19,18 @@ class AnimatedArt(object):
     def __init__(self, simplecache=None, kodidb=None):
         '''Initialize - optionaly provide SimpleCache and KodiDb object'''
 
-        if not kodidb:
-            from kodidb import KodiDb
-            self.kodidb = KodiDb()
-        else:
-            self.kodidb = kodidb
-
         if not simplecache:
             from simplecache import SimpleCache
             self.cache = SimpleCache()
         else:
             self.cache = simplecache
+
+        if not kodidb:
+            from kodidb import KodiDb
+            self.kodidb = KodiDb(self.cache)
+        else:
+            self.kodidb = kodidb
+
 
     @use_cache(14)
     def get_animated_artwork(self, imdb_id, manual_select=False, ignore_cache=False):

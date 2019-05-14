@@ -314,7 +314,7 @@ class MetadataUtils(object):
         '''public kodidb object - for lazy loading'''
         if not self._kodidb:
             from helpers.kodidb import KodiDb
-            self._kodidb = KodiDb()
+            self._kodidb = KodiDb(self.cache)
         return self._kodidb
 
     @property

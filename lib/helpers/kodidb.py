@@ -16,6 +16,14 @@ import arrow
 class KodiDb(object):
     '''various methods and helpers to get data from kodi json api'''
 
+    def __init__(self, simplecache=None):
+        '''Initialize - optionaly provide simplecache object'''
+        if not simplecache:
+            from simplecache import SimpleCache
+            self.cache = SimpleCache()
+        else:
+            self.cache = simplecache
+
     def movie(self, db_id):
         '''get moviedetails from kodi db'''
         return self.get_json("VideoLibrary.GetMovieDetails", returntype="moviedetails",
