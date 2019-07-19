@@ -91,6 +91,7 @@ class MetadataUtils(object):
                         "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
         return result
 
+    @use_cache(90)
     def get_tmdb_details(self, imdb_id="", tvdb_id="", title="", year="", media_type="",
                          preftype="", manual_select=False, ignore_cache=False):
         '''returns details from tmdb'''
@@ -117,6 +118,7 @@ class MetadataUtils(object):
             result.update(self.get_duration(result["runtime"]))
         return result
 
+    @use_cache(90)
     def get_moviesetdetails(self, title, set_id):
         '''get a nicely formatted dict of the movieset details which we can for example set as window props'''
         # get details from tmdb
@@ -176,6 +178,7 @@ class MetadataUtils(object):
 
         return {"art": artwork}
 
+    @use_cache(90)
     def get_omdb_info(self, imdb_id="", title="", year="", content_type=""):
         '''Get (kodi compatible formatted) metadata from OMDB, including Rotten tomatoes details'''
         title = title.split(" (")[0]  # strip year appended to title
