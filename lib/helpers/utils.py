@@ -18,6 +18,7 @@ import unicodedata
 import os
 import datetime
 import time
+import xml.etree.ElementTree as ET
 
 try:
     import simplejson as json
@@ -134,6 +135,39 @@ def get_json(url, params=None, retries=0, ratelimit=None):
     return result
 
 
+def get_xml(url, params=None, retries=0, ratelimit=None):
+    '''get info from a rest api'''
+    result = {}
+    if not params:
+        params = {}
+    # apply rate limiting if needed
+    rate_limiter(ratelimit)
+    try:
+        response = requests.get(url, params=params, timeout=20)
+        if response and response.content and response.status_code == 200:
+            tree = ET.fromstring(response.content)
+            #child = tree.find('movie')
+            if(len(tree)):
+                child = tree[0]
+            #log_exception(__name__, child)
+            for attrName, attrValue in child.items():
+                result.update({attrName : attrValue})
+        elif response.status_code in (429, 503, 504):
+            raise Exception('Read timed out')
+    except Exception as exc:
+        result = None
+        if "Read timed out" in str(exc) and retries < 5 and not ratelimit:
+            # retry on connection error or http server limiting
+            monitor = xbmc.Monitor()
+            if not monitor.waitForAbort(2):
+                result = get_xml(url, params, retries + 1)
+            del monitor
+        else:
+            log_exception(__name__, exc)
+    # return result
+    return result
+    
+
 def try_encode(text, encoding="utf-8"):
     '''helper to encode a string to utf-8'''
     try:
@@ -175,19 +209,24 @@ def formatted_number(number):
 def process_method_on_list(method_to_run, items):
     '''helper method that processes a method on each listitem with pooling if the system supports it'''
     all_items = []
-    if SUPPORTS_POOL:
-        pool = ThreadPool()
-        try:
-            all_items = pool.map(method_to_run, items)
-        except Exception:
-            # catch exception to prevent threadpool running forever
-            log_msg(format_exc(sys.exc_info()))
-            log_msg("Error in %s" % method_to_run)
-        pool.close()
-        pool.join()
-    else:
-        all_items = [method_to_run(item) for item in items]
-    all_items = filter(None, all_items)
+    if items is not None:
+        if SUPPORTS_POOL:
+            pool = ThreadPool()
+            try:
+                all_items = pool.map(method_to_run, items)
+            except Exception:
+                # catch exception to prevent threadpool running forever
+                log_msg(format_exc(sys.exc_info()))
+                log_msg("Error in %s" % method_to_run)
+            pool.close()
+            pool.join()
+        else:
+            try:
+                all_items = [method_to_run(item) for item in list(items)]
+            except Exception:
+                log_msg(format_exc(sys.exc_info()))
+                log_msg("Error in %s with %s" % method_to_run, items)
+        all_items = filter(None, all_items)
     return all_items
 
 
@@ -312,7 +351,7 @@ def localized_date_time(timestring):
     date_time = arrow.get(timestring)
     local_date = date_time.strftime(xbmc.getRegion("dateshort"))
     local_time = date_time.strftime(xbmc.getRegion("time").replace(":%S", ""))
-    return (local_date, local_time)
+    return local_date, local_time
 
 
 def normalize_string(text):
