@@ -81,8 +81,6 @@ class Omdb(object):
                     result["year"] = value
             elif key == "Rated":
                 result["mpaa"] = value.replace("Rated", "")
-            elif key == "Title":
-                result["title"] = value
             elif key == "Released":
                 date_time = arrow.get(value, "DD MMM YYYY")
                 result["premiered"] = date_time.strftime(xbmc.getRegion("dateshort"))
