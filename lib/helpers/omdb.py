@@ -3,10 +3,10 @@
 
 '''get metadata from omdb'''
 
-from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+from utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
 from simplecache import use_cache
 import arrow
-import xbmc
+import xbmc, time
 import xbmcaddon
 
 
@@ -27,14 +27,14 @@ class Omdb(object):
             self.api_key = api_key
         del addon
 
-    @use_cache(2)
+    @use_cache(14)
     def get_details_by_imdbid(self, imdb_id):
         '''get omdb details by providing an imdb id'''
         params = {"i": imdb_id}
         data = self.get_data(params)
         return self.map_details(data) if data else None
 
-    @use_cache(2)
+    @use_cache(14)
     def get_details_by_title(self, title, year="", media_type=""):
         ''' get omdb details by title
             title --> The title of the media to look for (required)
