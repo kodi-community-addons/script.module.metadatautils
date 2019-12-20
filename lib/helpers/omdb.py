@@ -59,7 +59,7 @@ class Omdb(object):
             rate_limit = None
         else:
             # rate limited api key !
-            params["apikey"] = "ea23cea2"
+            params["apikey"] = "d4d53b9a"
             rate_limit = ("omdbapi.com", 2)
         params["r"] = "json"
         return get_json(base_url, params, ratelimit=rate_limit)
