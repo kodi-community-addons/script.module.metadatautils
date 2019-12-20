@@ -1,21 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''get metadata from omdb'''
+"""get metadata from omdb"""
 
-from utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
 from simplecache import use_cache
 import arrow
-import xbmc, time
+import xbmc
 import xbmcaddon
 
 
 class Omdb(object):
-    '''get metadata from omdb'''
+    """get metadata from omdb"""
     api_key = None  # public var to be set by the calling addon
 
     def __init__(self, simplecache=None):
-        '''Initialize - optionaly provide simplecache object'''
+        """Initialize - optionaly provide simplecache object"""
         if not simplecache:
             from simplecache import SimpleCache
             self.cache = SimpleCache()
@@ -29,18 +29,18 @@ class Omdb(object):
 
     @use_cache(14)
     def get_details_by_imdbid(self, imdb_id):
-        '''get omdb details by providing an imdb id'''
+        """get omdb details by providing an imdb id"""
         params = {"i": imdb_id}
         data = self.get_data(params)
         return self.map_details(data) if data else None
 
     @use_cache(14)
     def get_details_by_title(self, title, year="", media_type=""):
-        ''' get omdb details by title
+        """ get omdb details by title
             title --> The title of the media to look for (required)
             year (str/int)--> The year of the media (optional, better results when provided)
             media_type --> The type of the media: movie/tvshow (optional, better results of provided)
-        '''
+        """
         if "movie" in media_type:
             media_type = "movie"
         elif media_type in ["tvshows", "tvshow"]:
@@ -51,7 +51,7 @@ class Omdb(object):
 
     @use_cache(14)
     def get_data(self, params):
-        '''helper method to get data from omdb json API'''
+        """helper method to get data from omdb json API"""
         base_url = 'http://www.omdbapi.com/'
         params["plot"] = "full"
         if self.api_key:
@@ -66,7 +66,7 @@ class Omdb(object):
 
     @staticmethod
     def map_details(data):
-        '''helper method to map the details received from omdb to kodi compatible format'''
+        """helper method to map the details received from omdb to kodi compatible format"""
         result = {}
         for key, value in data.iteritems():
             # filter the N/A values
