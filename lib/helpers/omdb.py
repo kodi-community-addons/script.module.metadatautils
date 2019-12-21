@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """get metadata from omdb"""
-
-from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+else:
+    from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
 from simplecache import use_cache
 import arrow
 import xbmc

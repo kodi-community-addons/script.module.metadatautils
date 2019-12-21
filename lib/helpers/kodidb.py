@@ -3,12 +3,18 @@
 
 """get metadata from the kodi DB"""
 
+import os, sys
 import xbmc
 import xbmcgui
 import xbmcvfs
-from utils import json, try_encode, log_msg, log_exception, get_clean_image, KODI_VERSION
-from utils import try_parse_int, localdate_from_utc_string, localized_date_time
-from kodi_constants import *
+if sys.version_info.major == 3:
+    from .utils import json, try_encode, log_msg, log_exception, get_clean_image, KODI_VERSION
+    from .utils import try_parse_int, localdate_from_utc_string, localized_date_time
+    from .kodi_constants import *
+else: 
+    from utils import json, try_encode, log_msg, log_exception, get_clean_image, KODI_VERSION
+    from utils import try_parse_int, localdate_from_utc_string, localized_date_time
+    from kodi_constants import *
 from operator import itemgetter
 import arrow
 
@@ -240,7 +246,10 @@ class KodiDb(object):
         kodi_json["params"] = params
         kodi_json["id"] = 1
         json_response = xbmc.executeJSONRPC(try_encode(json.dumps(kodi_json)))
-        return json.loads(json_response.decode('utf-8', 'replace'))
+        if sys.version_info.major == 3:
+            return json.loads(json_response)
+        else:
+            return json.loads(json_response.decode('utf-8', 'replace'))
 
     @staticmethod
     def get_json(jsonmethod, sort=None, filters=None, fields=None, limits=None,
@@ -271,7 +280,10 @@ class KodiDb(object):
         if limits:
             kodi_json["params"]["limits"] = {"start": limits[0], "end": limits[1]}
         json_response = xbmc.executeJSONRPC(try_encode(json.dumps(kodi_json)))
-        json_object = json.loads(json_response.decode('utf-8', 'replace'))
+        if sys.version_info.major == 3:
+            json_object = json.loads(json_response)
+        else:
+            json_object = json.loads(json_response.decode('utf-8', 'replace'))
         # set the default returntype to prevent errors
         if "details" in jsonmethod.lower():
             result = {}
@@ -283,9 +295,14 @@ class KodiDb(object):
                 result = json_object['result'][returntype]
             else:
                 # no returntype specified, we'll have to look for it
-                for key, value in json_object['result'].iteritems():
-                    if not key == "limits" and (isinstance(value, list) or isinstance(value, dict)):
-                        result = value
+                if sys.version_info.major == 3:
+                    for key, value in json_object['result'].items():
+                        if not key == "limits" and (isinstance(value, list) or isinstance(value, dict)):
+                            result = value
+                else:
+                    for key, value in json_object['result'].iteritems():
+                        if not key == "limits" and (isinstance(value, list) or isinstance(value, dict)):
+                            result = value
         else:
             log_msg(json_response)
             log_msg(kodi_json)
@@ -297,7 +314,10 @@ class KodiDb(object):
         allfavourites = []
         try:
             from xml.dom.minidom import parse
-            favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
+            if sys.version_info.major == 3:
+                favourites_path = xbmc.translatePath('special://profile/favourites.xml')
+            else:
+                favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
             if xbmcvfs.exists(favourites_path):
                 doc = parse(favourites_path)
                 result = doc.documentElement.getElementsByTagName('favourite')
@@ -356,8 +376,12 @@ class KodiDb(object):
                 nodetype = "Music"
 
             # extra properties
-            for key, value in item["extraproperties"].iteritems():
-                liz.setProperty(key, value)
+            if sys.version_info.major == 3:
+                for key, value in item["extraproperties"].items():
+                    liz.setProperty(key, value)
+            else:
+                for key, value in item["extraproperties"].iteritems():
+                    liz.setProperty(key, value)
 
             # video infolabels
             if nodetype == "Video":
@@ -447,10 +471,16 @@ class KodiDb(object):
 
             # artwork
             liz.setArt(item.get("art", {}))
-            if "icon" in item:
-                liz.setIconImage(item['icon'])
-            if "thumbnail" in item:
-                liz.setThumbnailImage(item['thumbnail'])
+            if KODI_VERSION > 17:
+                if "icon" in item:
+                    liz.setArt({"icon":item['icon']})
+                if "thumbnail" in item:
+                    liz.setArt({"thumb":item['thumbnail']})
+            else:
+                if "icon" in item:
+                    liz.setIconImage(item['icon'])
+                if "thumbnail" in item:
+                    liz.setThumbnailImage(item['thumbnail'])
 
             # contextmenu
             if item["type"] in ["episode", "season"] and "season" in item and "tvshowid" in item:
@@ -673,11 +703,18 @@ class KodiDb(object):
                 item["thumbnail"] = art["thumb"]
 
             # clean art
-            for key, value in art.iteritems():
-                if not isinstance(value, (str, unicode)):
-                    art[key] = ""
-                elif value:
-                    art[key] = get_clean_image(value)
+            if sys.version_info.major == 3:
+                for key, value in art.items():
+                    if not isinstance(value, str):
+                        art[key] = ""
+                    elif value:
+                        art[key] = get_clean_image(value)
+            else:
+                for key, value in art.iteritems():
+                    if not isinstance(value, (str, unicode)):
+                        art[key] = ""
+                    elif value:
+                        art[key] = get_clean_image(value)
             item["art"] = art
 
             item["extraproperties"] = properties

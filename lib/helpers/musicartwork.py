@@ -7,13 +7,18 @@
     Get metadata for music
 """
 
-from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
-from mbrainz import MusicBrainz
-import os
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
+    from .mbrainz import MusicBrainz
+    from urllib.parse import quote_plus
+else:
+    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
+    from mbrainz import MusicBrainz
+    from urllib import quote_plus
 import xbmc
 import xbmcvfs
 import xbmcgui
-from urllib import quote_plus
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
 

@@ -3,7 +3,11 @@
 
 """Get artwork for media from fanart.tv"""
 
-from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int, ADDON_ID
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int, ADDON_ID
+else:
+    from utils import get_json, KODI_LANGUAGE, process_method_on_list, try_parse_int, ADDON_ID
 from operator import itemgetter
 import xbmcaddon
 import datetime

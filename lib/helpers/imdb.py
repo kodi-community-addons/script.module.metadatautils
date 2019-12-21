@@ -7,7 +7,11 @@
     Get metadata from imdb
 """
 
-from utils import requests, try_parse_int
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import requests, try_parse_int
+else:
+    from utils import requests, try_parse_int
 import BeautifulSoup
 from simplecache import use_cache
 

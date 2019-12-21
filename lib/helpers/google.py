@@ -3,7 +3,11 @@
 
 """get images from google images"""
 
-from utils import DialogSelect, requests, log_exception
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import DialogSelect, requests, log_exception
+else:
+    from utils import DialogSelect, requests, log_exception
 import BeautifulSoup
 import xbmc
 import xbmcvfs

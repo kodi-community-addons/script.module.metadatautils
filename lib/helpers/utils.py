@@ -3,6 +3,7 @@
 
 """Various generic helper methods"""
 
+import os, sys
 import xbmcgui
 import xbmc
 import xbmcvfs
@@ -13,9 +14,11 @@ import requests
 import arrow
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-import urllib
+if sys.version_info.major == 3:
+    from urllib.parse import unquote
+else:
+    from urllib import unquote
 import unicodedata
-import os
 import datetime
 import time
 import xml.etree.ElementTree as ET
@@ -58,8 +61,9 @@ except Exception:
 
 def log_msg(msg, loglevel=xbmc.LOGDEBUG):
     """log message to kodi logfile"""
-    if isinstance(msg, unicode):
-        msg = msg.encode('utf-8')
+    if sys.version_info.major < 3:
+        if isinstance(msg, unicode):
+            msg = msg.encode('utf-8')
     if loglevel == xbmc.LOGDEBUG and FORCE_DEBUG_LOG:
         loglevel = xbmc.LOGNOTICE
     xbmc.log("%s --> %s" % (ADDON_ID, msg), level=loglevel)
@@ -170,7 +174,10 @@ def get_xml(url, params=None, retries=0, ratelimit=None):
 def try_encode(text, encoding="utf-8"):
     """helper to encode a string to utf-8"""
     try:
-        return text.encode(encoding, "ignore")
+        if sys.version_info.major == 3:
+            return text
+        else:
+            return text.encode(encoding, "ignore")
     except Exception:
         return text
 
@@ -178,7 +185,10 @@ def try_encode(text, encoding="utf-8"):
 def try_decode(text, encoding="utf-8"):
     """helper to decode a string to unicode"""
     try:
-        return text.decode(encoding, "ignore")
+        if sys.version_info.major == 3:
+            return text
+        else:
+            return text.decode(encoding, "ignore")
     except Exception:
         return text
 
@@ -225,7 +235,10 @@ def process_method_on_list(method_to_run, items):
             except Exception:
                 log_msg(format_exc(sys.exc_info()))
             log_msg("Error while executing %s with %s" % (method_to_run, items))
-        all_items = filter(None, all_items)
+        if sys.version_info.major == 3:
+            all_items = list(filter(None, all_items))
+        else:
+            all_items = filter(None, all_items)
     return all_items
 
 
@@ -242,11 +255,15 @@ def get_clean_image(image):
         image = thumbcache
     if image and "image://" in image:
         image = image.replace("image://", "")
-        image = urllib.unquote(image.encode("utf-8"))
+        if sys.version_info.major == 3:
+            image = unquote(image)
+        else:
+            image = unquote(image.encode("utf-8"))
         if image.endswith("/"):
             image = image[:-1]
-    if not isinstance(image, unicode):
-        image = image.decode("utf8")
+    if sys.version_info.major < 3:
+        if not isinstance(image, unicode):
+            image = image.decode("utf8")
     return image
 
 
@@ -374,8 +391,9 @@ def normalize_string(text):
 
 def get_compare_string(text):
     """strip all special chars in a string for better comparing of searchresults"""
-    if not isinstance(text, unicode):
-        text.decode("utf-8")
+    if sys.version_info.major < 3:
+        if not isinstance(text, unicode):
+            text.decode("utf-8")
     text = text.lower()
     text = ''.join(e for e in text if e.isalnum())
     return text

@@ -7,8 +7,11 @@
     Get channellogos from kodidb or logosdb
 """
 
-
-from utils import get_json, get_clean_image
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, get_clean_image
+else:
+    from utils import get_json, get_clean_image
 import xbmc
 import xbmcvfs
 

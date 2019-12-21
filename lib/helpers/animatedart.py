@@ -3,7 +3,11 @@
 
 """Retrieve animated artwork for kodi movies"""
 
-from utils import get_json, DialogSelect, log_msg, ADDON_ID
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, DialogSelect, log_msg, ADDON_ID
+else:
+    from utils import get_json, DialogSelect, log_msg, ADDON_ID
 import xbmc
 import xbmcvfs
 import xbmcgui

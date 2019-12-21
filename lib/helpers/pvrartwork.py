@@ -7,15 +7,19 @@
     Get metadata for Kodi PVR programs
 """
 
-from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID, download_artwork, normalize_string
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID, download_artwork, normalize_string
+    from urllib.parse import quote_plus
+else:
+    from utils import get_clean_image, DialogSelect, log_msg, extend_dict, ADDON_ID, download_artwork, normalize_string
+    from urllib import quote_plus
 import xbmc
 import xbmcgui
 import xbmcvfs
 from difflib import SequenceMatcher as SM
 from operator import itemgetter
 import re
-from urllib import quote_plus
-import os
 from datetime import timedelta
 
 

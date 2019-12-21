@@ -7,7 +7,11 @@
     Get metadata from The Movie Database
 """
 
-from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
+else:
+    from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
 from operator import itemgetter

@@ -6,11 +6,17 @@
     Provides all kind of mediainfo for kodi media, returned as dict with details
 '''
 
+import os, sys
 import helpers.kodi_constants as kodi_constants
 from helpers.utils import log_msg, ADDON_ID
 from simplecache import use_cache, SimpleCache
-from urllib import quote_plus
 import xbmcvfs
+
+if sys.version_info.major == 3:
+    import urllib.request, urllib.parse, urllib.error
+else:
+    import urllib
+
 
 
 class MetadataUtils(object):
