@@ -216,7 +216,10 @@ class Tmdb(object):
             # without personal (or addon specific) api key = rate limiting and older info from cache
             rate_limit = ("themoviedb.org", 5)
             expiration = datetime.timedelta(days=60)
-        cachestr = "tmdb.%s" % params.itervalues()
+        if sys.version_info.major == 3:
+            cachestr = "tmdb.%s" % params.values()
+        else:
+            cachestr = "tmdb.%s" % params.itervalues()
         cache = self.cache.get(cachestr)
         if cache:
             # data obtained from cache

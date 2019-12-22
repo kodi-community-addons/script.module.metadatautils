@@ -44,8 +44,12 @@ class FanartTv(object):
         data = self.get_data("music/albums/%s" % album_id)
         if data:
             mapping_table = [("cdart", "discart"), ("albumcover", "thumb")]
-            for item in data["albums"].itervalues():
-                artwork.update(self.map_artwork(item, mapping_table))
+            if sys.version_info.major == 3:
+                for item in data["albums"].values():
+                    artwork.update(self.map_artwork(item, mapping_table))
+            else:
+                for item in data["albums"].itervalues():
+                    artwork.update(self.map_artwork(item, mapping_table))
         return artwork
 
     def musiclabel(self, label_id):

@@ -712,11 +712,18 @@ class KodiDb(object):
                     elif value:
                         art[key] = get_clean_image(value)
             else:
-                for key, value in art.iteritems():
-                    if not isinstance(value, (str, unicode)):
-                        art[key] = ""
-                    elif value:
-                        art[key] = get_clean_image(value)
+                if sys.version_info.major == 3:
+                    for key, value in art.items():
+                        if not isinstance(value, str):
+                            art[key] = ""
+                        elif value:
+                            art[key] = get_clean_image(value)
+                else:
+                    for key, value in art.iteritems():
+                        if not isinstance(value, (str, unicode)):
+                            art[key] = ""
+                        elif value:
+                            art[key] = get_clean_image(value)
             item["art"] = art
 
             item["extraproperties"] = properties

@@ -328,33 +328,92 @@ def extend_dict(org_dict, new_dict, allow_overwrite=None):
         return org_dict
     if not org_dict:
         return new_dict
-    for key, value in new_dict.iteritems():
-        if value:
-            if not org_dict.get(key):
-                # orginal dict doesn't has this key (or no value), just overwrite
-                org_dict[key] = value
-            else:
-                # original dict already has this key, append results
-                if isinstance(value, list):
-                    # make sure that our original value also is a list
-                    if isinstance(org_dict[key], list):
-                        for item in value:
-                            if item not in org_dict[key]:
-                                org_dict[key].append(item)
-                    # previous value was str, combine both in list
-                    elif isinstance(org_dict[key], (str, unicode)):
-                        org_dict[key] = org_dict[key].split(" / ")
-                        for item in value:
-                            if item not in org_dict[key]:
-                                org_dict[key].append(item)
-                elif isinstance(value, dict):
-                    org_dict[key] = extend_dict(org_dict[key], value, allow_overwrite)
-                elif allow_overwrite and key in allow_overwrite:
-                    # value may be overwritten
+    if sys.version_info.major == 3:
+        for key, value in new_dict.items():
+            if value:
+                if not org_dict.get(key):
+                    # orginal dict doesn't has this key (or no value), just overwrite
                     org_dict[key] = value
                 else:
-                    # conflict, leave alone
-                    pass
+                    # original dict already has this key, append results
+                    if isinstance(value, list):
+                        # make sure that our original value also is a list
+                        if isinstance(org_dict[key], list):
+                            for item in value:
+                                if item not in org_dict[key]:
+                                    org_dict[key].append(item)
+                        # previous value was str, combine both in list
+                        elif isinstance(org_dict[key], str):
+                            org_dict[key] = org_dict[key].split(" / ")
+                            for item in value:
+                                if item not in org_dict[key]:
+                                    org_dict[key].append(item)
+                    elif isinstance(value, dict):
+                        org_dict[key] = extend_dict(org_dict[key], value, allow_overwrite)
+                    elif allow_overwrite and key in allow_overwrite:
+                        # value may be overwritten
+                        org_dict[key] = value
+                    else:
+                        # conflict, leave alone
+                        pass
+    else:
+        if sys.version_info.major == 3:
+            for key, value in new_dict.items():
+                if value:
+                    if not org_dict.get(key):
+                        # orginal dict doesn't has this key (or no value), just overwrite
+                        org_dict[key] = value
+                    else:
+                        # original dict already has this key, append results
+                        if isinstance(value, list):
+                            # make sure that our original value also is a list
+                            if isinstance(org_dict[key], list):
+                                for item in value:
+                                    if item not in org_dict[key]:
+                                        org_dict[key].append(item)
+                            # previous value was str, combine both in list
+                            elif isinstance(org_dict[key], str):
+                                org_dict[key] = org_dict[key].split(" / ")
+                                for item in value:
+                                    if item not in org_dict[key]:
+                                        org_dict[key].append(item)
+                        elif isinstance(value, dict):
+                            org_dict[key] = extend_dict(org_dict[key], value, allow_overwrite)
+                        elif allow_overwrite and key in allow_overwrite:
+                            # value may be overwritten
+                            org_dict[key] = value
+                        else:
+                            # conflict, leave alone
+                            pass
+        else:
+            for key, value in new_dict.iteritems():
+                if value:
+                    if not org_dict.get(key):
+                        # orginal dict doesn't has this key (or no value), just overwrite
+                        org_dict[key] = value
+                    else:
+                        # original dict already has this key, append results
+                        if isinstance(value, list):
+                            # make sure that our original value also is a list
+                            if isinstance(org_dict[key], list):
+                                for item in value:
+                                    if item not in org_dict[key]:
+                                        org_dict[key].append(item)
+                            # previous value was str, combine both in list
+                            elif isinstance(org_dict[key], (str, unicode)):
+                                org_dict[key] = org_dict[key].split(" / ")
+                                for item in value:
+                                    if item not in org_dict[key]:
+                                        org_dict[key].append(item)
+                        elif isinstance(value, dict):
+                            org_dict[key] = extend_dict(org_dict[key], value, allow_overwrite)
+                        elif allow_overwrite and key in allow_overwrite:
+                            # value may be overwritten
+                            org_dict[key] = value
+                        else:
+                            # conflict, leave alone
+                            pass
+
     return org_dict
 
 
@@ -508,57 +567,110 @@ def download_artwork(folderpath, artwork):
     new_dict = {}
     if not xbmcvfs.exists(folderpath):
         xbmcvfs.mkdir(folderpath)
-    for key, value in artwork.iteritems():
-        if key == "fanart":
-            new_dict[key] = download_image(os.path.join(folderpath, "fanart.jpg"), value)
-        elif key == "thumb":
-            new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
-        elif key == "discart":
-            new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
-        elif key == "banner":
-            new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
-        elif key == "clearlogo":
-            new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
-        elif key == "clearart":
-            new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
-        elif key == "characterart":
-            new_dict[key] = download_image(os.path.join(folderpath, "characterart.png"), value)
-        elif key == "poster":
-            new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
-        elif key == "landscape":
-            new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
-        elif key == "thumbback":
-            new_dict[key] = download_image(os.path.join(folderpath, "thumbback.jpg"), value)
-        elif key == "spine":
-            new_dict[key] = download_image(os.path.join(folderpath, "spine.jpg"), value)
-        elif key == "fanarts" and value:
-            # copy extrafanarts only if the directory doesn't exist at all
-            delim = "\\" if "\\" in folderpath else "/"
-            efa_path = "%sextrafanart" % folderpath + delim
-            if not xbmcvfs.exists(efa_path):
-                xbmcvfs.mkdir(efa_path)
-                images = []
-                for count, image in enumerate(value):
-                    image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
-                    images.append(image)
-                    if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
-                        break
-                new_dict[key] = images
-        elif key == "posters" and value:
-            # copy extraposters only if the directory doesn't exist at all
-            delim = "\\" if "\\" in folderpath else "/"
-            efa_path = "%sextraposter" % folderpath + delim
-            if not xbmcvfs.exists(efa_path):
-                xbmcvfs.mkdir(efa_path)
-                images = []
-                for count, image in enumerate(value):
-                    image = download_image(os.path.join(efa_path, "poster%s.jpg" % count), image)
-                    images.append(image)
-                    if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
-                        break
-                new_dict[key] = images
-        else:
-            new_dict[key] = value
+    if sys.version_info.major == 3:
+        for key, value in artwork.items():
+            if key == "fanart":
+                new_dict[key] = download_image(os.path.join(folderpath, "fanart.jpg"), value)
+            elif key == "thumb":
+                new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
+            elif key == "discart":
+                new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
+            elif key == "banner":
+                new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
+            elif key == "clearlogo":
+                new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
+            elif key == "clearart":
+                new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
+            elif key == "characterart":
+                new_dict[key] = download_image(os.path.join(folderpath, "characterart.png"), value)
+            elif key == "poster":
+                new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
+            elif key == "landscape":
+                new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
+            elif key == "thumbback":
+                new_dict[key] = download_image(os.path.join(folderpath, "thumbback.jpg"), value)
+            elif key == "spine":
+                new_dict[key] = download_image(os.path.join(folderpath, "spine.jpg"), value)
+            elif key == "fanarts" and value:
+                # copy extrafanarts only if the directory doesn't exist at all
+                delim = "\\" if "\\" in folderpath else "/"
+                efa_path = "%sextrafanart" % folderpath + delim
+                if not xbmcvfs.exists(efa_path):
+                    xbmcvfs.mkdir(efa_path)
+                    images = []
+                    for count, image in enumerate(value):
+                        image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
+                        images.append(image)
+                        if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                            break
+                    new_dict[key] = images
+            elif key == "posters" and value:
+                # copy extraposters only if the directory doesn't exist at all
+                delim = "\\" if "\\" in folderpath else "/"
+                efa_path = "%sextraposter" % folderpath + delim
+                if not xbmcvfs.exists(efa_path):
+                    xbmcvfs.mkdir(efa_path)
+                    images = []
+                    for count, image in enumerate(value):
+                        image = download_image(os.path.join(efa_path, "poster%s.jpg" % count), image)
+                        images.append(image)
+                        if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                            break
+                    new_dict[key] = images
+            else:
+                new_dict[key] = value
+    else:
+        for key, value in artwork.iteritems():
+            if key == "fanart":
+                new_dict[key] = download_image(os.path.join(folderpath, "fanart.jpg"), value)
+            elif key == "thumb":
+                new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
+            elif key == "discart":
+                new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
+            elif key == "banner":
+                new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
+            elif key == "clearlogo":
+                new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
+            elif key == "clearart":
+                new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
+            elif key == "characterart":
+                new_dict[key] = download_image(os.path.join(folderpath, "characterart.png"), value)
+            elif key == "poster":
+                new_dict[key] = download_image(os.path.join(folderpath, "poster.jpg"), value)
+            elif key == "landscape":
+                new_dict[key] = download_image(os.path.join(folderpath, "landscape.jpg"), value)
+            elif key == "thumbback":
+                new_dict[key] = download_image(os.path.join(folderpath, "thumbback.jpg"), value)
+            elif key == "spine":
+                new_dict[key] = download_image(os.path.join(folderpath, "spine.jpg"), value)
+            elif key == "fanarts" and value:
+                # copy extrafanarts only if the directory doesn't exist at all
+                delim = "\\" if "\\" in folderpath else "/"
+                efa_path = "%sextrafanart" % folderpath + delim
+                if not xbmcvfs.exists(efa_path):
+                    xbmcvfs.mkdir(efa_path)
+                    images = []
+                    for count, image in enumerate(value):
+                        image = download_image(os.path.join(efa_path, "fanart%s.jpg" % count), image)
+                        images.append(image)
+                        if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                            break
+                    new_dict[key] = images
+            elif key == "posters" and value:
+                # copy extraposters only if the directory doesn't exist at all
+                delim = "\\" if "\\" in folderpath else "/"
+                efa_path = "%sextraposter" % folderpath + delim
+                if not xbmcvfs.exists(efa_path):
+                    xbmcvfs.mkdir(efa_path)
+                    images = []
+                    for count, image in enumerate(value):
+                        image = download_image(os.path.join(efa_path, "poster%s.jpg" % count), image)
+                        images.append(image)
+                        if LIMIT_EXTRAFANART and count == LIMIT_EXTRAFANART:
+                            break
+                    new_dict[key] = images
+            else:
+                new_dict[key] = value
     if efa_path:
         new_dict["extrafanart"] = efa_path
     return new_dict

@@ -513,7 +513,11 @@ class PvrArtwork(object):
                 details = kodi_items[0]
                 details["media_type"] = "movie"
         if details:
-            for artkey, artvalue in details["art"].iteritems():
-                details["art"][artkey] = get_clean_image(artvalue)
+            if sys.version_info.major == 3:
+                for artkey, artvalue in details["art"].items():
+                    details["art"][artkey] = get_clean_image(artvalue)
+            else:
+                for artkey, artvalue in details["art"].iteritems():
+                    details["art"][artkey] = get_clean_image(artvalue)
             # todo: check extrafanart ?
         return details
