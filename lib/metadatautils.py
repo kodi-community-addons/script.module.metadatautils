@@ -212,16 +212,28 @@ class MetadataUtils(object):
         if not self._get_duration:
             from helpers.utils import get_duration
             self._get_duration = get_duration
-        if isinstance(duration, (str, unicode)) and ":" in duration:
-            dur_lst = duration.split(":")
-            return {
-                "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
-                "Duration.Hours": dur_lst[0],
-                "Duration.Minutes": dur_lst[1],
-                "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
-            }
+        if sys.version_info.major == 3:
+            if isinstance(duration, str) and ":" in duration:
+                dur_lst = duration.split(":")
+                return {
+                    "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
+                    "Duration.Hours": dur_lst[0],
+                    "Duration.Minutes": dur_lst[1],
+                    "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
+                }
+            else:
+                return self._get_duration(duration)
         else:
-            return self._get_duration(duration)
+            if isinstance(duration, (str, unicode)) and ":" in duration:
+                dur_lst = duration.split(":")
+                return {
+                    "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
+                    "Duration.Hours": dur_lst[0],
+                    "Duration.Minutes": dur_lst[1],
+                    "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
+                }
+            else:
+                return self._get_duration(duration)
 
     @use_cache(2)
     def get_tvdb_details(self, imdbid="", tvdbid=""):

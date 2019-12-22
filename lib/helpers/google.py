@@ -6,9 +6,10 @@
 import os, sys
 if sys.version_info.major == 3:
     from .utils import DialogSelect, requests, log_exception
+    import bs4 as BeautifulSoup
 else:
     from utils import DialogSelect, requests, log_exception
-import BeautifulSoup
+    import BeautifulSoup
 import xbmc
 import xbmcvfs
 import xbmcgui
@@ -55,7 +56,10 @@ class GoogleImages(object):
             del dialog
             if selected_item != -1:
                 selected_item = images_list[selected_item]
-                image = selected_item.getLabel().decode("utf-8")
+                if sys.version_info.major == 3:
+                    image = selected_item.getLabel()
+                else:
+                    image = selected_item.getLabel().decode("utf-8")
         return image
 
     @use_cache(30)

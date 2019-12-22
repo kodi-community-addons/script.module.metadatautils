@@ -118,7 +118,10 @@ def get_json(url, params=None, retries=0, ratelimit=None):
     try:
         response = requests.get(url, params=params, timeout=20)
         if response and response.content and response.status_code == 200:
-            result = json.loads(response.content.decode('utf-8', 'replace'))
+            if sys.version_info.major == 3:
+                result = json.loads(response.content)
+            else:
+                result = json.loads(response.content.decode('utf-8', 'replace'))
             if "results" in result:
                 result = result["results"]
             elif "result" in result:
@@ -584,7 +587,10 @@ def download_image(filename, url):
 def refresh_image(imagepath):
     """tell kodi texture cache to refresh a particular image"""
     import sqlite3
-    dbpath = xbmc.translatePath("special://database/Textures13.db").decode('utf-8')
+    if sys.version_info.major == 3:
+        dbpath = xbmc.translatePath("special://database/Textures13.db")
+    else:
+        dbpath = xbmc.translatePath("special://database/Textures13.db").decode('utf-8')
     connection = sqlite3.connect(dbpath, timeout=30, isolation_level=None)
     try:
         cache_image = connection.execute('SELECT cachedurl FROM texture WHERE url = ?', (imagepath,)).fetchone()
@@ -635,8 +641,12 @@ def manual_set_artwork(artwork, mediatype, header=None):
             # show results for selected art type
             artoptions = []
             selected_item = listitems[selected_item]
-            image = selected_item.getProperty("icon").decode("utf-8")
-            label = selected_item.getLabel().decode("utf-8")
+            if sys.version_info.major == 3:
+                image = selected_item.getProperty("icon")
+                label = selected_item.getLabel()
+            else:
+                image = selected_item.getProperty("icon").decode("utf-8")
+                label = selected_item.getLabel().decode("utf-8")
             subheader = "%s: %s" % (header, label)
             if image:
                 # current image
@@ -674,7 +684,11 @@ def manual_set_artwork(artwork, mediatype, header=None):
             elif (image and selected_item == 2) or (not image and selected_item == 0):
                 # manual browse...
                 dialog = xbmcgui.Dialog()
-                image = dialog.browse(2, xbmc.getLocalizedString(1030),
+                if sys.version_info.major == 3:
+                    image = dialog.browse(2, xbmc.getLocalizedString(1030),
+                                      'files', mask='.gif|.png|.jpg')
+                else:
+                    image = dialog.browse(2, xbmc.getLocalizedString(1030),
                                       'files', mask='.gif|.png|.jpg').decode("utf-8")
                 del dialog
                 if image:

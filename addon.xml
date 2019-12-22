@@ -2,7 +2,7 @@
 <addon id="script.module.metadatautils"
        name="Metadata and Artwork module"
        version="1.0.28"
-       provider-name="marcelveldt, finkleandeinhorn, cartmandos, wuff">
+       provider-name="marcelveldt, finkleandeinhorn, cartmandos">
     <requires>
         <import addon="xbmc.python" version="2.24.0"/>
         <import addon="script.module.requests" version="2.3.0"/>

@@ -137,7 +137,10 @@ class AnimatedArt(object):
                 if selected_item == 1:
                     # browse for image
                     dialog = xbmcgui.Dialog()
-                    image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif').decode("utf-8")
+                    if sys.version_info.major == 3:
+                        image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif')
+                    else:
+                        image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif').decode("utf-8")
                     del dialog
                 elif selected_item > 1:
                     # user has selected an image from online results
