@@ -22,7 +22,10 @@ class ChannelLogos(object):
     def __init__(self, kodidb=None):
         """Initialize - optionaly provide KodiDb object"""
         if not kodidb:
-            from kodidb import KodiDb
+            if sys.version_info.major == 3:
+                from .kodidb import KodiDb
+            else:
+                from kodidb import KodiDb
             self.kodidb = KodiDb()
         else:
             self.kodidb = kodidb

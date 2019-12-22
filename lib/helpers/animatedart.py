@@ -24,7 +24,10 @@ class AnimatedArt(object):
         """Initialize - optionaly provide SimpleCache and KodiDb object"""
 
         if not kodidb:
-            from kodidb import KodiDb
+            if sys.version_info.major == 3:
+                from .kodidb import KodiDb
+            else:
+                from kodidb import KodiDb
             self.kodidb = KodiDb()
         else:
             self.kodidb = kodidb

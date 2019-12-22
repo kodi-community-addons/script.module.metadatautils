@@ -74,7 +74,7 @@ def get_streamdetails(kodidb, db_id, media_type):
                 streamdetails['AudioStreams.%d.AudioChannels' % count] = str(item['channels'])
             if sys.version_info.major == 3:
                 joinchar = " • "
-            else
+            else:
                 joinchar = " • ".decode("utf-8")
             audio_str = joinchar.join([language, codec, channels])
             if audio_str:

@@ -417,9 +417,11 @@ class KodiDb(object):
                     "album": item.get("album"),
                     "artist": item.get("artist"),
                     "votes": item.get("votes"),
-                    "trailer": item.get("trailer"),
-                    "progress": item.get('progresspercentage')
+                    "trailer": item.get("trailer")
                 }
+                #ERROR: NEWADDON Unknown Video Info Key "progress" in Kodi 19 ?!
+                if KODI_VERSION < 18:
+                    infolabels["progress"] = item.get('progresspercentage')
                 if item["type"] == "episode":
                     infolabels["season"] = item["season"]
                     infolabels["episode"] = item["episode"]
