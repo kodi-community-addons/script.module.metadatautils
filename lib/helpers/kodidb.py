@@ -39,9 +39,10 @@ class KodiDb(object):
             # from Kodi 17 we have a uniqueid field instead of imdbnumber
             all_items = self.get_json('VideoLibrary.GetMovies', fields=["uniqueid"], returntype="movies")
             for item in all_items:
-                for item2 in item["uniqueid"].values():
-                    if item2 == imdb_id:
-                        return self.movie(item["movieid"])
+                if 'uniqueid' in item:
+                    for item2 in item["uniqueid"].values():
+                        if item2 == imdb_id:
+                            return self.movie(item["movieid"])
         else:
             all_items = self.get_json('VideoLibrary.GetMovies', fields=["imdbnumber"], returntype="movies")
             for item in all_items:
@@ -71,9 +72,10 @@ class KodiDb(object):
             # from Kodi 17 we have a uniqueid field instead of imdbnumber
             all_items = self.get_json('VideoLibrary.GetTvShows', fields=["uniqueid"], returntype="tvshows")
             for item in all_items:
-                for item2 in item["uniqueid"].values():
-                    if item2 == imdb_id:
-                        return self.tvshow(item["tvshowid"])
+                if 'uniqueid' in item:
+                    for item2 in item["uniqueid"].values():
+                        if item2 == imdb_id:
+                            return self.tvshow(item["tvshowid"])
         else:
             # pre-kodi 17 approach
             all_items = self.get_json('VideoLibrary.GetTvShows', fields=["imdbnumber"], returntype="tvshows")

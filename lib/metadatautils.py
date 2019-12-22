@@ -13,10 +13,9 @@ from simplecache import use_cache, SimpleCache
 import xbmcvfs
 
 if sys.version_info.major == 3:
-    import urllib.request, urllib.parse, urllib.error
+    from urllib.parse import quote_plus
 else:
-    import urllib
-
+    from urllib import quote_plus
 
 
 class MetadataUtils(object):

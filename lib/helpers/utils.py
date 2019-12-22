@@ -274,8 +274,12 @@ def get_duration(duration):
     """transform duration time in minutes to hours:minutes"""
     if not duration:
         return {}
-    if isinstance(duration, (unicode, str)):
-        duration.replace("min", "").replace("", "").replace(".", "")
+    if sys.version_info.major == 3:
+        if isinstance(duration, str):
+            duration.replace("min", "").replace("", "").replace(".", "")
+    else:
+        if isinstance(duration, (unicode, str)):
+            duration.replace("min", "").replace("", "").replace(".", "")
     try:
         total_minutes = int(duration)
         if total_minutes < 60:
@@ -706,10 +710,16 @@ def refresh_image(imagepath):
     connection = sqlite3.connect(dbpath, timeout=30, isolation_level=None)
     try:
         cache_image = connection.execute('SELECT cachedurl FROM texture WHERE url = ?', (imagepath,)).fetchone()
-        if cache_image and isinstance(cache_image, (unicode, str)):
-            if xbmcvfs.exists(cache_image):
-                xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
-            connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
+        if sys.version_info.major == 3:
+            if cache_image and isinstance(cache_image, str):
+                if xbmcvfs.exists(cache_image):
+                    xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
+                connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
+        else:
+            if cache_image and isinstance(cache_image, (unicode, str)):
+                if xbmcvfs.exists(cache_image):
+                    xbmcvfs.delete("special://profile/Thumbnails/%s" % cache_image)
+                connection.execute('DELETE FROM texture WHERE url = ?', (imagepath,))
         connection.close()
     except Exception as exc:
         log_exception(__name__, exc)
