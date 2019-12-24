@@ -7,6 +7,7 @@
         <import addon="xbmc.python" version="2.24.0"/>
         <import addon="script.module.requests" version="2.3.0"/>
         <import addon="script.module.beautifulsoup" version="3.0.8" />
+        <import addon="script.module.beautifulsoup4" version="4.0.0" />
         <import addon="script.module.thetvdb" version="0.0.1" />
         <import addon="script.module.musicbrainz" version="0.0.1" />
         <import addon="script.module.simplecache" version="1.0.0"/>
@@ -20,8 +21,9 @@
             various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv.[CR][CR]
             This product uses the TMDb API but is not endorsed or certified by TMDb
         </description>
-	<news>v1.0.28[CR]- Kodi 19/Python 3 fixes[CR][CR]</news>
+        <news>v1.0.28[CR]- Kodi 19/Python 3 fixes[CR][CR]</news>
         <license>Apache 2.0</license>
+        <forum>https://forum.kodi.tv/showthread.php?tid=350315</forum>
         <source>https://github.com/kodi-community-addons/script.module.metadatautils</source>
         <platform>all</platform>
     </extension>
