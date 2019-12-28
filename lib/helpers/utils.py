@@ -9,14 +9,15 @@ import xbmc
 import xbmcvfs
 import xbmcaddon
 import sys
-from traceback import format_exc
 import requests
 import arrow
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 if sys.version_info.major == 3:
+    import traceback
     from urllib.parse import unquote
 else:
+    from traceback import format_exc
     from urllib import unquote
 import unicodedata
 import datetime
@@ -70,9 +71,14 @@ def log_msg(msg, loglevel=xbmc.LOGDEBUG):
 
 
 def log_exception(modulename, exceptiondetails):
-    """helper to properly log an exception"""
-    log_msg(format_exc(sys.exc_info()), xbmc.LOGWARNING)
-    log_msg("ERROR in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
+    '''helper to properly log an exception'''
+    if sys.version_info.major == 3:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        log_msg("Exception details: Type: %s Value: %s Traceback: %s" % (exc_type.__name__, exc_value, ''.join(line for line in lines)), xbmc.LOGWARNING)
+    else:
+        log_msg(format_exc(sys.exc_info()), xbmc.LOGWARNING)
+    log_msg("Exception in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
 
 
 def rate_limiter(rl_params):
