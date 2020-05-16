@@ -37,6 +37,7 @@ class MetadataUtils(object):
     @use_cache(14)
     def get_extrafanart(self, file_path):
         '''helper to retrieve the extrafanart path for a kodi media item'''
+        log_msg("metadatautils get_extrafanart called for %s" % file_path)
         if not self._get_extrafanart:
             from helpers.extrafanart import get_extrafanart
             self._get_extrafanart = get_extrafanart
