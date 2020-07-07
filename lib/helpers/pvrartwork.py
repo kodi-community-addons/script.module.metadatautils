@@ -72,8 +72,9 @@ class PvrArtwork(object):
             else:
                 details["genre"] = genre.split(" / ")
                 details["media_type"] = self.get_mediatype_from_genre(genre)
-            searchtitle = self.get_searchtitle(title, channel)
-
+            # original code: searchtitle = self.get_searchtitle(title, channel). part of "auto fresh" fix
+            searchtitle = title
+            
             # only continue if we pass our basic checks
             filterstr = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
             proceed_lookup = False if filterstr else True
@@ -131,9 +132,14 @@ class PvrArtwork(object):
                         details = extend_dict(details, tmdb_result)
 
                     # fallback to tvdb scraper
+                    # following 3 lines added as part of "auto refresh" fix. ensure manual_select=true fot TVDB lookup. No idea why this works
+                    tempmanualselect = manual_select
+                    manual_select="true"                
+                    log_msg("DEGUG INFO: TVDB lookup: searchtitle: %s channel: %s manual_select: %s" %(searchtitle, channel, manual_select))
                     if (not tmdb_result or (tmdb_result and not tmdb_result.get("art")) or
                             details["media_type"] == "tvshow"):
-                        tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select)
+                        # original code: tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select). part of "auto refresh" fix.
+                        tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select, tempmanualselect=tempmanualselect)
                         log_msg("pvrart lookup for title: %s - TVDB result: %s" % (searchtitle, tvdb_match))
                         if tvdb_match:
                             # get full tvdb results and extend with tmdb
@@ -142,7 +148,8 @@ class PvrArtwork(object):
                             details = extend_dict(details, self._mutils.thetvdb.get_series(tvdb_match))
                             details = extend_dict(details, self._mutils.tmdb.get_videodetails_by_externalid(
                                 tvdb_match, "tvdb_id"), ["poster", "fanart"])
-
+                    # part of "auto refresh" fix - revert manual_select to original value
+                    manual_select = tempmanualselect
                     # fanart.tv scraping - append result to existing art
                     if details.get("imdbnumber") and details["media_type"] == "movie":
                         details["art"] = extend_dict(
@@ -377,7 +384,8 @@ class PvrArtwork(object):
         self._mutils.cache.set("recordingdetails.%s%s" % (title, channel), details)
         return details
 
-    def lookup_tvdb(self, searchtitle, channel, manual_select=False):
+    # original code: def lookup_tvdb(self, searchtitle, channel, manual_select=False):. part of "auto refesh fix".
+    def lookup_tvdb(self, searchtitle, channel, manual_select=False, tempmanualselect=False):
         """helper to select a match on tvdb"""
         tvdb_match = None
         searchtitle = searchtitle.lower()
@@ -414,7 +422,8 @@ class PvrArtwork(object):
                     match_results.append(item)
             # sort our new list by score
             match_results = sorted(match_results, key=itemgetter("score"), reverse=True)
-            if match_results and manual_select:
+            # original code:  if match_results and manual_select:. part of "auto refresh" fix.
+            if match_results and manual_select and tempmanualselect:
                 # show selectdialog to manually select the item
                 listitems = []
                 for item in match_results:
