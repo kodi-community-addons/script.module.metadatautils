@@ -755,7 +755,8 @@ def manual_set_artwork(artwork, mediatype, header=None):
         listitems = []
         for arttype in art_types:
             img = artwork.get(arttype, "")
-            listitem = xbmcgui.ListItem(label=arttype, label2=img, iconImage=img)
+            listitem = xbmcgui.ListItem(label=arttype, label2=img)
+            listitem.setArt({'icon': img})
             listitem.setProperty("icon", img)
             listitems.append(listitem)
         dialog = DialogSelect("DialogSelect.xml", "", listing=listitems,
@@ -778,22 +779,26 @@ def manual_set_artwork(artwork, mediatype, header=None):
             subheader = "%s: %s" % (header, label)
             if image:
                 # current image
-                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), iconImage=image, label2=image)
+                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(13512), label2=image)
+                listitem.setArt({'icon': image})
                 listitem.setProperty("icon", image)
                 artoptions.append(listitem)
                 # none option
-                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231), iconImage="DefaultAddonNone.png")
+                listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231))
+                listitem.setArt({'icon': "DefaultAddonNone.png"})
                 listitem.setProperty("icon", "DefaultAddonNone.png")
                 artoptions.append(listitem)
             # browse option
-            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1024), iconImage="DefaultFolder.png")
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1024))
+            listitem.setArt({'icon': "DefaultFolder.png"})
             listitem.setProperty("icon", "DefaultFolder.png")
             artoptions.append(listitem)
 
             # add remaining images as option
             allarts = artwork.get(label + "s", [])
             for item in allarts:
-                listitem = xbmcgui.ListItem(label=item, iconImage=item)
+                listitem = xbmcgui.ListItem(label=item)
+                listitem.setArt({'icon': item})
                 listitem.setProperty("icon", item)
                 artoptions.append(listitem)
 
