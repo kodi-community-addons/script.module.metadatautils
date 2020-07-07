@@ -390,10 +390,10 @@ class PvrArtwork(object):
                 if not item["seriesName"]:
                     continue  # seriesname can be None in some conditions
                 itemtitle = item["seriesName"].lower()
-                network = item["network"].lower().replace(" ", "")
+                # network = item["network"].lower().replace(" ", "")
                 # high score if channel name matches
-                if network in searchchannel or searchchannel in network:
-                    item["score"] += 800
+                # if network in searchchannel or searchchannel in network:
+                    # item["score"] += 800
                 # exact match on title - very high score
                 if searchtitle == itemtitle:
                     item["score"] += 1000
@@ -405,8 +405,8 @@ class PvrArtwork(object):
                 if stringmatchscore > 0.7:
                     item["score"] += stringmatchscore * 500
                 # prefer items with native language as we've searched with localized info enabled
-                if item["overview"]:
-                    item["score"] += 250
+                # if item["overview"]:
+                    # item["score"] += 250
                 # prefer items with artwork
                 if item["banner"]:
                     item["score"] += 1
@@ -419,7 +419,8 @@ class PvrArtwork(object):
                 listitems = []
                 for item in match_results:
                     thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
-                    listitem = xbmcgui.ListItem(label=item["seriesName"], iconImage=thumb, label2=item["overview"])
+                    listitem = xbmcgui.ListItem(label=item["seriesName"])
+                    listitem.setArt({'icon': thumb})
                     listitems.append(listitem)
                 dialog = DialogSelect(
                     "DialogSelect.xml",
