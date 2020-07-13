@@ -228,7 +228,7 @@ class PvrArtwork(object):
         header = None
         artwork = details["art"]
         # ========= code copied from utils.py ========
-                changemade = False
+        changemade = False
         if mediatype == "artist":
             art_types = ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]
         elif mediatype == "album":
