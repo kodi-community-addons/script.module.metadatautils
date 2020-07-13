@@ -17,19 +17,18 @@
     <extension point="xbmc.addon.metadata">
         <summary>Metadata and artwork from common sources like TMDB, IMDB, TADB and fanart.tv </summary>
         <description>
-            The metadata and artwork module for Kodi provides rich metadata, including artwork for 
-            various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv.
+            The metadata and artwork module for Kodi provides rich metadata, including artwork for various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv.
             This product uses the TMDb API but is not endorsed or certified by TMDb
         </description>
 	<news>
-		v1.0.30.002
-		- Fix for "Manual Configure Artwork" option
-		v1.0.30.001
-		- Initial fixes for PVR artwork
-		v1.0.29
-		- Remove python requirement for Kodi 18/19 compat
-		v1.0.28
-		- Kodi 19/Python 3 fixes
+v1.0.30.002
+- Fix for "Manual Configure Artwork" option
+v1.0.30.001
+- Initial fixes for PVR artwork
+v1.0.29
+- Remove python requirement for Kodi 18/19 compat
+v1.0.28
+- Kodi 19/Python 3 fixes
 	 </news>
         <license>Apache 2.0</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=350315</forum>
