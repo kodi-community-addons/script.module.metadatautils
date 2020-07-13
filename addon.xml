@@ -2,7 +2,7 @@
 <addon id="script.module.metadatautils"
        name="Metadata and Artwork module"
        version="1.0.30.002"
-       provider-name="marcelveldt, finkleandeinhorn, cartmandos">
+       provider-name="marcelveldt, finkleandeinhorn, cartmandos, berkhornet">
     <requires>
 	<import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.3.0"/>
@@ -17,8 +17,7 @@
     <extension point="xbmc.addon.metadata">
         <summary>Metadata and artwork from common sources like TMDB, IMDB, TADB and fanart.tv </summary>
         <description>
-            The metadata and artwork module for Kodi provides rich metadata, including artwork for various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv.
-            This product uses the TMDb API but is not endorsed or certified by TMDb
+            The metadata and artwork module for Kodi provides rich metadata, including artwork for various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv. This product uses the TMDb API but is not endorsed or certified by TMDb
         </description>
 	<news>
 v1.0.30.002
