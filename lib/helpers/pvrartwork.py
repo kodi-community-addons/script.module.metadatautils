@@ -431,7 +431,7 @@ class PvrArtwork(object):
                 # show selectdialog to manually select the item
                 listitems = []
                 for item in match_results:
-                    thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
+                    thumb = "http://thetvdb.com%s" % item["poster"] if item["poster"] else ""
                     try:
                         listitem = xbmcgui.ListItem(label=item["seriesName"], label2=item["overview"])
                     except KeyError:
