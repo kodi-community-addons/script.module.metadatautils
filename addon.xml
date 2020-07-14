@@ -21,12 +21,15 @@
         </description>
 	<news>
 v1.0.30.003
-- Improve initial fixes for PVR artwork
-- Fix display of artwork when manually selecting from TVDB
+- Kodi 19/Python 3 
+  Improve initial fixes for PVR artwork
+  Fix display of artwork when manually selecting from TVDB
 v1.0.30.002
-- Fix for "Manual Configure Artwork" option
+- Kodi 19/Python 3
+  Fix for "Manual Configure Artwork" option
 v1.0.30.001
-- Initial fixes for PVR artwork
+- Kodi 19/Python 3
+  Initial fixes for PVR artwork
 v1.0.29
 - Remove python requirement for Kodi 18/19 compat
 v1.0.28
