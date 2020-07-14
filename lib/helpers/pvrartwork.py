@@ -398,10 +398,11 @@ class PvrArtwork(object):
                 if not item["seriesName"]:
                     continue  # seriesname can be None in some conditions
                 itemtitle = item["seriesName"].lower()
-                # network = item["network"].lower().replace(" ", "")
+                if item["network"]: #if added 
+                    network = item["network"].lower().replace(" ", "")
                 # high score if channel name matches
-                # if network in searchchannel or searchchannel in network:
-                    # item["score"] += 800
+                if network in searchchannel or searchchannel in network:
+                    item["score"] += 800
                 # exact match on title - very high score
                 if searchtitle == itemtitle:
                     item["score"] += 1000
