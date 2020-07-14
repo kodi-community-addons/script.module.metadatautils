@@ -414,8 +414,11 @@ class PvrArtwork(object):
                 if stringmatchscore > 0.7:
                     item["score"] += stringmatchscore * 500
                 # prefer items with native language as we've searched with localized info enabled
-                # if item["overview"]:
-                    # item["score"] += 250
+                try:
+                    if item["overview"]:
+                      item["score"] += 250
+                except KeyError:
+                    log_msg("pvrartwork.py - Overview Key Error in lookup_tvb: %s" % searchchannel) 
                 # prefer items with artwork
                 if item["banner"]:
                     item["score"] += 1
@@ -429,7 +432,11 @@ class PvrArtwork(object):
                 listitems = []
                 for item in match_results:
                     thumb = "http://thetvdb.com/banners/%s" % item["banner"] if item["banner"] else ""
-                    listitem = xbmcgui.ListItem(label=item["seriesName"])
+                    try:
+                        listitem = xbmcgui.ListItem(label=item["seriesName"], label2=item["overview"])
+                    except KeyError:
+                        listitem = xbmcgui.ListItem(label=item["seriesName"])
+                        log_msg("pvrartwork.py - Overview Key Error in lookup_tvb: %s" % searchchannel) 
                     listitem.setArt({'icon': thumb})
                     listitems.append(listitem)
                 dialog = DialogSelect(
