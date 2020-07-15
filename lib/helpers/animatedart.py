@@ -131,7 +131,7 @@ class AnimatedArt(object):
                 labels = [item["contributedby"], item["dateadded"], item["language"], item["source"]]
                 label = " / ".join(labels)
                 listitem = xbmcgui.ListItem(label=label)
-                listitem.setArt({'icon': thumb})
+                listitem.setArt({'icon': item["thumb"]})
                 results_list.append(listitem)
             if manual_select and results_list:
                 dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title=art_type)
