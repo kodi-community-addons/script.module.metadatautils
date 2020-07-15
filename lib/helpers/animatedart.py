@@ -121,14 +121,17 @@ class AnimatedArt(object):
             # show selectdialog to manually select the item
             results_list = []
             # add none and browse entries
-            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231), iconImage="DefaultAddonNone.png")
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231))
+            listitem.setArt({'icon': "DefaultAddonNone.png"})
             results_list.append(listitem)
-            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1030), iconImage="DefaultFolder.png")
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1030))
+            listitem.setArt({'icon': "DefaultFolder.png"})
             results_list.append(listitem)
             for item in items:
                 labels = [item["contributedby"], item["dateadded"], item["language"], item["source"]]
                 label = " / ".join(labels)
-                listitem = xbmcgui.ListItem(label=label, iconImage=item["thumb"])
+                listitem = xbmcgui.ListItem(label=label)
+                listitem.setArt({'icon': thumb})
                 results_list.append(listitem)
             if manual_select and results_list:
                 dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title=art_type)
