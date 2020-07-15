@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.module.metadatautils"
        name="Metadata and Artwork module"
-       version="1.0.30.003"
+       version="1.0.30"
        provider-name="marcelveldt, finkleandeinhorn, cartmandos, berkhornet">
     <requires>
 	<import addon="xbmc.python" version="3.0.0"/>
@@ -20,16 +20,11 @@
             The metadata and artwork module for Kodi provides rich metadata, including artwork for various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv. This product uses the TMDb API but is not endorsed or certified by TMDb
         </description>
 	<news>
-v1.0.30.003
+v1.0.30
 - Kodi 19/Python 3 
-  Improve initial fixes for PVR artwork
+  Fixes for PVR artwork
   Fix display of artwork when manually selecting from TVDB
-v1.0.30.002
-- Kodi 19/Python 3
-  Fix for "Manual Configure Artwork" option
-v1.0.30.001
-- Kodi 19/Python 3
-  Initial fixes for PVR artwork
+  More fixes for anmimated art and google
 v1.0.29
 - Remove python requirement for Kodi 18/19 compat
 v1.0.28
