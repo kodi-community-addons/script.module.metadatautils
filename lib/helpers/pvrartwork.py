@@ -391,6 +391,12 @@ class PvrArtwork(object):
         searchtitle = searchtitle.lower()
         tvdb_result = self._mutils.thetvdb.search_series(searchtitle, True)
         searchchannel = channel.lower().split("hd")[0].replace(" ", "")
+        if " FHD" in channel:
+            searchchannel = channel.lower().split("fhd")[0].replace(" ", "")           
+        if " HD" in channel:
+            searchchannel = channel.lower().split("hd")[0].replace(" ", "")      
+        if " SD" in channel:
+            searchchannel = channel.lower().split("sd")[0].replace(" ", "")
         match_results = []
         if tvdb_result:
             for item in tvdb_result:
