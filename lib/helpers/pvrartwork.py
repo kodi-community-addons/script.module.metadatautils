@@ -42,7 +42,13 @@ class PvrArtwork(object):
         """
         details = {"art": {}}
         # try cache first
-        cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
+        
+        # use searchtitle when searching cache 
+        cache_title = title.lower()
+        cache_channel = channel.lower()
+        searchtitle = self.get_searchtitle(cache_title, cache_channel)
+        # original cache_str assignment cache_str = "pvr_artwork.%s.%s" % (title.lower(), channel.lower())
+        cache_str = "pvr_artwork.%s.%s" % (searchtitle, channel.lower())
         cache = self._mutils.cache.get(cache_str)
         if cache and not manual_select and not ignore_cache:
             log_msg("get_pvr_artwork - return data from cache - %s" % cache_str)
@@ -72,9 +78,8 @@ class PvrArtwork(object):
             else:
                 details["genre"] = genre.split(" / ")
                 details["media_type"] = self.get_mediatype_from_genre(genre)
-            # original code: searchtitle = self.get_searchtitle(title, channel). part of "auto fresh" fix
-            searchtitle = title
-            
+            searchtitle = self.get_searchtitle(title, channel)
+                        
             # only continue if we pass our basic checks
             filterstr = self.pvr_proceed_lookup(title, channel, genre, recordingdetails)
             proceed_lookup = False if filterstr else True
@@ -132,10 +137,10 @@ class PvrArtwork(object):
                         details = extend_dict(details, tmdb_result)
 
                     # fallback to tvdb scraper
-                    # following 3 lines added as part of "auto refresh" fix. ensure manual_select=true fot TVDB lookup. No idea why this works
+                    # following 3 lines added as part of "auto refresh" fix. ensure manual_select=true for TVDB lookup. No idea why this works
                     tempmanualselect = manual_select
                     manual_select="true"                
-                    log_msg("DEGUG INFO: TVDB lookup: searchtitle: %s channel: %s manual_select: %s" %(searchtitle, channel, manual_select))
+                    log_msg("DEBUG INFO: TVDB lookup: searchtitle: %s channel: %s manual_select: %s" %(searchtitle, channel, manual_select))
                     if (not tmdb_result or (tmdb_result and not tmdb_result.get("art")) or
                             details["media_type"] == "tvshow"):
                         # original code: tvdb_match = self.lookup_tvdb(searchtitle, channel, manual_select=manual_select). part of "auto refresh" fix.
@@ -208,7 +213,7 @@ class PvrArtwork(object):
         if manual_select:
             self._mutils.cache.set(cache_str, details, expiration=timedelta(days=365))
         else:
-            self._mutils.cache.set(cache_str, details)
+            self._mutils.cache.set(cache_str, details, expiration=timedelta(days=365))
         return details
 
     def manual_set_pvr_artwork(self, title, channel, genre):
@@ -354,7 +359,8 @@ class PvrArtwork(object):
         # replace common chars and words
         if sys.version_info.major == 3:
             title = re.sub(self._mutils.addon.getSetting("pvr_art_replace_by_space"), ' ', title)
-            title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars"), '', title)
+            # following line removed as always seems to return blanks. also addon settings changed to replace ": " with " "
+            # title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars"), '', title)
         else:
             title = re.sub(self._mutils.addon.getSetting("pvr_art_replace_by_space").decode("utf-8"), ' ', title)
             title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars").decode("utf-8"), '', title)
