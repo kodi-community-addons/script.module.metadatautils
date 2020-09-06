@@ -437,7 +437,8 @@ class Tmdb(object):
                 else:
                     thumb = ""
                 label = "%s (%s) - %s" % (title, year, item["media_type"])
-                listitem = xbmcgui.ListItem(label=label, iconImage=thumb, label2=item["overview"])
+                listitem = xbmcgui.ListItem(label=label, label2=item["overview"])
+                listitem.setArt({'icon': thumb})
                 results_list.append(listitem)
             if manual_select and results_list:
                 dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title="%s - TMDB"

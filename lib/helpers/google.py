@@ -46,7 +46,8 @@ class GoogleImages(object):
                     return img
                 else:
                     # manual lookup, list results and let user pick one
-                    listitem = xbmcgui.ListItem(label=img, iconImage=img)
+                    listitem = xbmcgui.ListItem(label=img)
+                    listitem.setArt({'icon': img})
                     images_list.append(listitem)
         if manual_select and images_list:
             dialog = DialogSelect("DialogSelect.xml", "", listing=images_list, window_title="%s - Google"

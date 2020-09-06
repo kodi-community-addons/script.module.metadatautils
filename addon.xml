@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.module.metadatautils"
        name="Metadata and Artwork module"
-       version="1.0.29"
-       provider-name="marcelveldt, finkleandeinhorn, cartmandos">
+       version="1.0.31"
+       provider-name="marcelveldt, finkleandeinhorn, cartmandos, berkhornet">
     <requires>
-	    <!-- <import addon="xbmc.python" version="3.0.0"/> -->
+	<import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.3.0"/>
         <import addon="script.module.beautifulsoup" version="3.0.8" />
         <import addon="script.module.beautifulsoup4" version="4.0.0" />
@@ -17,11 +17,21 @@
     <extension point="xbmc.addon.metadata">
         <summary>Metadata and artwork from common sources like TMDB, IMDB, TADB and fanart.tv </summary>
         <description>
-            The metadata and artwork module for Kodi provides rich metadata, including artwork for 
-            various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv.[CR][CR]
-            This product uses the TMDb API but is not endorsed or certified by TMDb
+            The metadata and artwork module for Kodi provides rich metadata, including artwork for various metatypes by scraping (and caching) this information from sites like TMDB, musicbrainz and fanart.tv. This product uses the TMDb API but is not endorsed or certified by TMDb
         </description>
-	<news>v1.0.29[CR]- Remove python requirement for Kodi 18/19 compat[CR][CR]v1.0.28[CR]- Kodi 19/Python 3 fixes[CR][CR]</news>
+	<news>
+v1.0.31
+- Further fixes for PVR artwork
+v1.0.30
+- Kodi 19/Python 3 
+  Fixes for PVR artwork
+  Fix display of artwork when manually selecting from TVDB
+  Fixes for animated art and google
+v1.0.29
+- Remove python requirement for Kodi 18/19 compat
+v1.0.28
+- Kodi 19/Python 3 fixes
+	 </news>
         <license>Apache 2.0</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=350315</forum>
         <source>https://github.com/kodi-community-addons/script.module.metadatautils</source>
