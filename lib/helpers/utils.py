@@ -710,7 +710,7 @@ def refresh_image(imagepath):
     """tell kodi texture cache to refresh a particular image"""
     import sqlite3
     if sys.version_info.major == 3:
-        dbpath = xbmc.translatePath("special://database/Textures13.db")
+        dbpath = xbmcvfs.translatePath("special://database/Textures13.db")
     else:
         dbpath = xbmc.translatePath("special://database/Textures13.db").decode('utf-8')
     connection = sqlite3.connect(dbpath, timeout=30, isolation_level=None)

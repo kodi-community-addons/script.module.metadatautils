@@ -317,7 +317,7 @@ class KodiDb(object):
         try:
             from xml.dom.minidom import parse
             if sys.version_info.major == 3:
-                favourites_path = xbmc.translatePath('special://profile/favourites.xml')
+                favourites_path = xbmcvfs.translatePath('special://profile/favourites.xml')
             else:
                 favourites_path = xbmc.translatePath('special://profile/favourites.xml').decode("utf-8")
             if xbmcvfs.exists(favourites_path):

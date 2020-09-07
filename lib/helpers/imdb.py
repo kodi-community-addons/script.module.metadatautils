@@ -53,7 +53,7 @@ class Imdb(object):
                 "http://www.imdb.com/chart/%s" %
                 listing[0], headers={
                     'User-agent': 'Mozilla/5.0'}, timeout=20)
-            soup = BeautifulSoup.BeautifulSoup(html.text, features="lxml")
+            soup = BeautifulSoup.BeautifulSoup(html.text, features="html.parser")
             for table in soup.findAll('table'):
                 if table.get("class") == "chart full-width":
                     for td_def in table.findAll('td'):
