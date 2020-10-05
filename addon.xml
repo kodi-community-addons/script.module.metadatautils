@@ -9,7 +9,7 @@
         <import addon="script.module.beautifulsoup" version="3.0.8" optional="true" />
         <import addon="script.module.beautifulsoup4" version="4.0.0" />
         <import addon="script.module.thetvdb" version="0.0.1" />
-        <import addon="script.module.musicbrainz" version="0.0.1" />
+        <import addon="script.module.musicbrainz" version="0.0.1" optional="true" />
         <import addon="script.module.simplecache" version="1.0.0"/>
         <import addon="script.module.arrow" version="0.6.0"/>
     </requires>
@@ -20,7 +20,7 @@
         </description>
         <news>
 v1.0.34 (wuff)
-- Set BeautifulSoup 3 dependency as optional to allow install on Matrix
+- Set BeautifulSoup3 and MusicBrainz dependency as optional to allow install on Matrix
             
 v1.0.33 (wuff)
 - replace xbmc.LOGNOTICE with xbmc.LOGINFO as LOGNOTICE was removed
