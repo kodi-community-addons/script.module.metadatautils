@@ -6,10 +6,9 @@
 import os, sys
 if sys.version_info.major == 3:
     from .utils import DialogSelect, requests, log_exception
-    import bs4 as BeautifulSoup
 else:
     from utils import DialogSelect, requests, log_exception
-    import BeautifulSoup
+import bs4 as BeautifulSoup
 import xbmc
 import xbmcvfs
 import xbmcgui
