@@ -6,11 +6,16 @@
     Provides all kind of mediainfo for kodi media, returned as dict with details
 '''
 
+import os, sys
 import helpers.kodi_constants as kodi_constants
 from helpers.utils import log_msg, ADDON_ID
 from simplecache import use_cache, SimpleCache
-from urllib import quote_plus
 import xbmcvfs
+
+if sys.version_info.major == 3:
+    from urllib.parse import quote_plus
+else:
+    from urllib import quote_plus
 
 
 class MetadataUtils(object):
@@ -32,6 +37,7 @@ class MetadataUtils(object):
     @use_cache(14)
     def get_extrafanart(self, file_path):
         '''helper to retrieve the extrafanart path for a kodi media item'''
+        log_msg("metadatautils get_extrafanart called for %s" % file_path)
         if not self._get_extrafanart:
             from helpers.extrafanart import get_extrafanart
             self._get_extrafanart = get_extrafanart
@@ -206,16 +212,28 @@ class MetadataUtils(object):
         if not self._get_duration:
             from helpers.utils import get_duration
             self._get_duration = get_duration
-        if isinstance(duration, (str, unicode)) and ":" in duration:
-            dur_lst = duration.split(":")
-            return {
-                "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
-                "Duration.Hours": dur_lst[0],
-                "Duration.Minutes": dur_lst[1],
-                "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
-            }
+        if sys.version_info.major == 3:
+            if isinstance(duration, str) and ":" in duration:
+                dur_lst = duration.split(":")
+                return {
+                    "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
+                    "Duration.Hours": dur_lst[0],
+                    "Duration.Minutes": dur_lst[1],
+                    "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
+                }
+            else:
+                return self._get_duration(duration)
         else:
-            return self._get_duration(duration)
+            if isinstance(duration, (str, unicode)) and ":" in duration:
+                dur_lst = duration.split(":")
+                return {
+                    "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
+                    "Duration.Hours": dur_lst[0],
+                    "Duration.Minutes": dur_lst[1],
+                    "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
+                }
+            else:
+                return self._get_duration(duration)
 
     @use_cache(2)
     def get_tvdb_details(self, imdbid="", tvdbid=""):

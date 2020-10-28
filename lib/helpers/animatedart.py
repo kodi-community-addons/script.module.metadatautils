@@ -3,7 +3,11 @@
 
 """Retrieve animated artwork for kodi movies"""
 
-from utils import get_json, DialogSelect, log_msg, ADDON_ID
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import get_json, DialogSelect, log_msg, ADDON_ID
+else:
+    from utils import get_json, DialogSelect, log_msg, ADDON_ID
 import xbmc
 import xbmcvfs
 import xbmcgui
@@ -20,7 +24,10 @@ class AnimatedArt(object):
         """Initialize - optionaly provide SimpleCache and KodiDb object"""
 
         if not kodidb:
-            from kodidb import KodiDb
+            if sys.version_info.major == 3:
+                from .kodidb import KodiDb
+            else:
+                from kodidb import KodiDb
             self.kodidb = KodiDb()
         else:
             self.kodidb = kodidb
@@ -114,14 +121,17 @@ class AnimatedArt(object):
             # show selectdialog to manually select the item
             results_list = []
             # add none and browse entries
-            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231), iconImage="DefaultAddonNone.png")
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(231))
+            listitem.setArt({'icon': "DefaultAddonNone.png"})
             results_list.append(listitem)
-            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1030), iconImage="DefaultFolder.png")
+            listitem = xbmcgui.ListItem(label=xbmc.getLocalizedString(1030))
+            listitem.setArt({'icon': "DefaultFolder.png"})
             results_list.append(listitem)
             for item in items:
                 labels = [item["contributedby"], item["dateadded"], item["language"], item["source"]]
                 label = " / ".join(labels)
-                listitem = xbmcgui.ListItem(label=label, iconImage=item["thumb"])
+                listitem = xbmcgui.ListItem(label=label)
+                listitem.setArt({'icon': item["thumb"]})
                 results_list.append(listitem)
             if manual_select and results_list:
                 dialog = DialogSelect("DialogSelect.xml", "", listing=results_list, window_title=art_type)
@@ -133,7 +143,10 @@ class AnimatedArt(object):
                 if selected_item == 1:
                     # browse for image
                     dialog = xbmcgui.Dialog()
-                    image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif').decode("utf-8")
+                    if sys.version_info.major == 3:
+                        image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif')
+                    else:
+                        image = dialog.browse(2, xbmc.getLocalizedString(1030), 'files', mask='.gif').decode("utf-8")
                     del dialog
                 elif selected_item > 1:
                     # user has selected an image from online results

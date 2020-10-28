@@ -7,8 +7,12 @@
     Get metadata from imdb
 """
 
-from utils import requests, try_parse_int
-import BeautifulSoup
+import os, sys
+if sys.version_info.major == 3:
+    from .utils import requests, try_parse_int
+else:
+    from utils import requests, try_parse_int
+import bs4 as BeautifulSoup
 from simplecache import use_cache
 
 
@@ -23,7 +27,10 @@ class Imdb(object):
         else:
             self.cache = simplecache
         if not kodidb:
-            from kodidb import KodiDb
+            if sys.version_info.major == 3:
+                from .kodidb import KodiDb
+            else:
+                from kodidb import KodiDb
             self.kodidb = KodiDb()
         else:
             self.kodidb = kodidb
@@ -45,7 +52,7 @@ class Imdb(object):
                 "http://www.imdb.com/chart/%s" %
                 listing[0], headers={
                     'User-agent': 'Mozilla/5.0'}, timeout=20)
-            soup = BeautifulSoup.BeautifulSoup(html.text)
+            soup = BeautifulSoup.BeautifulSoup(html.text, features="html.parser")
             for table in soup.findAll('table'):
                 if table.get("class") == "chart full-width":
                     for td_def in table.findAll('td'):

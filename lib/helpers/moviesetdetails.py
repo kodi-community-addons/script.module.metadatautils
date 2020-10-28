@@ -5,10 +5,16 @@
     Returns complete (nicely formatted) information about the movieset and it's movies
 """
 
-from kodi_constants import FIELDS_MOVIES
-from utils import get_duration, get_clean_image, extend_dict
+import os, sys
+if sys.version_info.major == 3:
+    from .kodi_constants import FIELDS_MOVIES
+    from .utils import get_duration, get_clean_image, extend_dict
+    from urllib.parse import quote_plus
+else:
+    from kodi_constants import FIELDS_MOVIES
+    from utils import get_duration, get_clean_image, extend_dict
+    from urllib import quote_plus
 from operator import itemgetter
-from urllib import quote_plus
 import xbmc
 
 
