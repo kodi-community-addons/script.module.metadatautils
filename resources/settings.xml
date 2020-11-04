@@ -56,6 +56,7 @@
         <setting id="fanarttv_apikey" label="32045" type="text"/>
         <setting id="omdbapi_apikey" label="32054" type="text"/>
         <setting id="tmdb_apikey" label="32055" type="text"/>
+        <setting id="adb_apikey" label="32061" type="text"/>
     </category>
     <category label="32044">
         <setting label="32034" type="lsep" />

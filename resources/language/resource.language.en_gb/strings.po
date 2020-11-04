@@ -255,3 +255,7 @@ msgstr ""
 msgctxt "#32060"
 msgid "Limit number of extrafanarts to download (0 is no limit)"
 msgstr ""
+
+msgctxt "#32061"
+msgid "Personal developer API-key for TheAudioDb"
+msgstr ""

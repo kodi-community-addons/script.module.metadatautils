@@ -256,3 +256,7 @@ msgstr "הפעל רישום של איתור באגים (ללא קשר להגדר
 msgctxt "#32060"
 msgid "Limit number of extrafanarts to download (0 is no limit)"
 msgstr "להגביל מספר אקסטרה פאנארט להורדה (0 = ללא הגבלה)"
+
+msgctxt "#32061"
+msgid "Personal developer API-key for TheAudioDb"
+msgstr "API-key TheAudioDb"

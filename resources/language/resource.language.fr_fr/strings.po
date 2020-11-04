@@ -247,3 +247,7 @@ msgstr "Informations"
 msgctxt "#32058"
 msgid "This modules uses the following sites/services to grab metadata"
 msgstr "Ces modules utilisent les sites/services suivants pour récupérer les métadonnées"
+
+msgctxt "#32061"
+msgid "Personal developer API-key for TheAudioDb"
+msgstr "API-key TheAudioDb"
