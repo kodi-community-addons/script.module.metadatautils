@@ -1,0 +1,261 @@
+# Kodi language file
+# Addon Name: Metadata and Artwork module
+# Addon id: script.module.metadatautils
+# Addon Provider: marcelveldt
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC-Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
+"POT-Creation-Date: 2014-10-26 17:05+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: roliverosc (2020)\n"
+"Language-Team: LANGUAGE\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgctxt "#32000"
+msgid "PVR Artwork"
+msgstr ""
+
+msgctxt "#32001"
+msgid "PVR metadata/artwork scraper - needs skin or addon support!"
+msgstr "PVR metadata / artwork scraper - ¡Necesita el soporte de skin o addon!"
+
+msgctxt "#32002"
+msgid "Enable PVR artwork/metadata only for TV recordings"
+msgstr "Activar ilustraciones/metadatos PVR solo para grabaciones de TV"
+
+msgctxt "#32003"
+msgid "Enable online scraper (tvdb,tmdb,fanart.tv)"
+msgstr "Activar scraper online (tvdb,tmdb,fanart.tv)"
+
+msgctxt "#32004"
+msgid "Allow Google Images as fallback for thumbs if primary scraping fails"
+msgstr "Permitir imágenes de Google como reserva para miniaturas si falla el scraper primario"
+
+msgctxt "#32005"
+msgid "Lookup artwork in a custom folder (e.g. recordings folder)"
+msgstr "Buscar ilustraciones en una carpeta personalizada (por ejemplo, carpeta de grabaciones)"
+
+msgctxt "#32006"
+msgid "Path to the custom folder"
+msgstr "Ruta a la carpeta personalizada"
+
+msgctxt "#32007"
+msgid "Download artwork to my custom folder"
+msgstr "Descargar ilustraciones a mi carpeta personalizada"
+
+msgctxt "#32008"
+msgid "Advanced section: finetune the scraper"
+msgstr "Sección avanzada: afinar el raspador"
+
+msgctxt "#32009"
+msgid "Use | as delimiter to enter multiple values"
+msgstr "Usar | como delimitador para ingresar múltiples valores"
+
+msgctxt "#32010"
+msgid "Channels to ignore"
+msgstr "Canales a ignorar"
+
+msgctxt "#32011"
+msgid "Titles to ignore"
+msgstr "Títulos a ignorar"
+
+msgctxt "#32012"
+msgid "Split title on character (use only first part)"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Characters to replace by space in title"
+msgstr "Carácteres para reemplazar por espacio en el título"
+
+msgctxt "#32014"
+msgid "Characters to strip from title"
+msgstr "Carácteres para quitar del título"
+
+msgctxt "#32015"
+msgid "Music Artwork"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Provides rich metadata and artwork for skins and addons"
+msgstr "Proporciona metadatos e ilustraciones enriquecidas para skin y addons."
+
+msgctxt "#32017"
+msgid "Works with both library and online sources (radio)"
+msgstr "Funciona con bibliotecas y recursos online (radio)."
+
+msgctxt "#32018"
+msgid "Enable online scraper"
+msgstr "Activar scraper online"
+
+msgctxt "#32019"
+msgid "Lookup artwork in a custom folder"
+msgstr "Buscar ilustraciones en una carpeta personalizada"
+
+msgctxt "#32020"
+msgid "Path to the custom folder"
+msgstr "Ruta a la carpeta personalizada"
+
+msgctxt "#32021"
+msgid "Lookup artwork in my music folders (library)"
+msgstr "Buscar ilustraciones en mis carpetas de música (biblioteca)"
+
+msgctxt "#32022"
+msgid "Download (missing) artwork to my music folders"
+msgstr "Descargar ilustraciones (ausentes) a mis carpetas de música"
+
+msgctxt "#32023"
+msgid "Download (missing) artwork to my custom folder"
+msgstr "Descargar ilustraciones (ausentes) a mi carpeta personalizada"
+
+msgctxt "#32024"
+msgid "Use custom Musicbrainz mirror"
+msgstr "Usar mirror Musicbrainz personalizado"
+
+msgctxt "#32025"
+msgid "Skip if genre contains any of these genres"
+msgstr "Omitir si el género contiene alguno de estos géneros"
+
+msgctxt "#32026"
+msgid "Skip news/weather/sports/commercial etc. (depends on correct epg info)"
+msgstr "Omitir noticias/clima/deportes/comerciales, etc. (depende de la información correcta del epg)"
+
+msgctxt "#32027"
+msgid "One or more filters are active for this item. Are you sure you want to proceed ?"
+msgstr "Uno o más filtros están activos para este elemento. ¿Estas seguro que deseas continuar?"
+
+msgctxt "#32028"
+msgid "Refresh (auto lookup)"
+msgstr "Refrescar (búsqueda automática)"
+
+msgctxt "#32029"
+msgid "Refresh (manual lookup)"
+msgstr "Refrescar (búsqueda manual)"
+
+msgctxt "#32030"
+msgid "Remove channel from ignore list"
+msgstr "Eliminar canal de la lista de ignorados"
+
+msgctxt "#32031"
+msgid "Add channel to ignore list"
+msgstr "Añadir canal a la lista de ignorados"
+
+msgctxt "#32032"
+msgid "Remove title from ignore list"
+msgstr "Eliminar título de la lista de ignorados"
+
+msgctxt "#32033"
+msgid "Add title to ignore list"
+msgstr "Añadir título a la lista de ignorados"
+
+msgctxt "#32034"
+msgid "Configure advanced settings"
+msgstr "Configurar ajustes avanzados"
+
+msgctxt "#32035"
+msgid "Settings for PVR artwork"
+msgstr "Ajustes para ilustraciones PVR"
+
+msgctxt "#32036"
+msgid "Manual configure artwork"
+msgstr "Configurar manualmente ilustraciones"
+
+msgctxt "#32037"
+msgid "Continuing"
+msgstr "Continuo"
+
+msgctxt "#32038"
+msgid "Ended"
+msgstr "Terminado"
+
+msgctxt "#32040"
+msgid "Released"
+msgstr "Publicado"
+
+msgctxt "#32041"
+msgid "Is the selected PVR Title a movie or tvshow ?"
+msgstr "¿El título PVR seleccionado es una película o programa de televisión?"
+
+msgctxt "#32042"
+msgid "Movie"
+msgstr "Película"
+
+msgctxt "#32043"
+msgid "Tvshow"
+msgstr "Programa de televisión"
+
+msgctxt "#32044"
+msgid "Other"
+msgstr "Otro"
+
+msgctxt "#32045"
+msgid "Personal API key for Fanart.TV"
+msgstr "Clave API personal de Fanart.TV"
+
+msgctxt "#32046"
+msgid "see www.fanart.tv for more details about personal and VIP memberships"
+msgstr "vea www.fanart.tv para más detalles sobre afiliaciones personales y VIP "
+
+msgctxt "#32047"
+msgid "Scraper settings"
+msgstr "Ajustes scraper"
+
+msgctxt "#32048"
+msgid "Enable theaudiodb for metadata/artwork"
+msgstr "Activar theaudiodb para metadatos/ilustraciones"
+
+msgctxt "#32049"
+msgid "Enable TheAudioDb for metadata/artwork"
+msgstr "Activar TheAudioDb para metadatos/ilustraciones"
+
+msgctxt "#32050"
+msgid "Enable last.fm for metadata"
+msgstr "Activar last.fm para metadatos"
+
+msgctxt "#32051"
+msgid "Enable fanart.tv for artwork"
+msgstr "Activar fanart.tv para ilustraciones"
+
+msgctxt "#32052"
+msgid "API keys"
+msgstr "Claves API"
+
+msgctxt "#32053"
+msgid "Unlock full features by providing custom API keys"
+msgstr "Desbloquee funciones completas al proporcionar claves API personalizadas"
+
+msgctxt "#32054"
+msgid "Patreon API-key for omdbapi.com"
+msgstr "API-key Patreon para omdbapi.com"
+
+msgctxt "#32055"
+msgid "Personal developer API-key for TMDB"
+msgstr "API-key personal de desarrollador para TMDB"
+
+msgctxt "#32056"
+msgid "Consider donating to these great projects providing you with great metadata"
+msgstr "Considere donar a estos grandes proyectos que le proporcionan importantes metadatos"
+
+msgctxt "#32057"
+msgid "Info"
+msgstr "Info"
+
+msgctxt "#32058"
+msgid "This modules uses the following sites/services to grab metadata"
+msgstr "Este módulo utiliza los siguientes sitios/servicios para obtener metadatos"
+
+msgctxt "#32059"
+msgid "Enable debug logging (regardless of Kodi log level)"
+msgstr "Activar registro de depuración (independientemente del nivel de registro de Kodi)"
+
+msgctxt "#32060"
+msgid "Limit number of extrafanarts to download (0 is no limit)"
+msgstr "Límite de número de extrafanarts para descargar (0 es sin límite)"
+
+msgctxt "#32061"
+msgid "Personal developer API-key for TheAudioDb"
+msgstr "API-key personal de desarrollador para TheAudioDb"
