@@ -281,13 +281,14 @@ class MusicArtwork(object):
                 mb_albumid = details.get("musicbrainzalbumid")
                 if not mb_albumid:
                     mb_albumid = self.get_mb_album_id(artist, album, track)
+                    adb_album = self.audiodb.get_album_id(artist, album, track)
                 if mb_albumid:
                     # get artwork from fanarttv
                     if self._mutils.addon.getSetting("music_art_scraper_fatv") == "true":
                         details["art"] = extend_dict(details["art"], self._mutils.fanarttv.album(mb_albumid))
                     # get metadata from theaudiodb
                     if self._mutils.addon.getSetting("music_art_scraper_adb") == "true":
-                        details = extend_dict(details, self.audiodb.album_info(album))
+                        details = extend_dict(details, self.audiodb.album_info(artist, adb_album))
                     # get metadata from lastfm
                     if self._mutils.addon.getSetting("music_art_scraper_lfm") == "true":
                         details = extend_dict(details, self.lastfm.album_info(mb_albumid))
