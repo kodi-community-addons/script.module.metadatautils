@@ -571,6 +571,14 @@ class MusicArtwork(object):
                 artwork["thumbback"] = folderpath + item
             if item == "spine.jpg":
                 artwork["spine"] = folderpath + item
+            if item == "album3Dthumb.png":
+                artwork["album3Dthumb"] = folderpath + item
+            if item == "album3Dflat.png":
+                artwork["album3Dflat"] = folderpath + item
+            if item == "album3Dcase.png":
+                artwork["album3Dcase"] = folderpath + item
+            if item == "album3Dface.png":
+                artwork["album3Dface"] = folderpath + item
             elif item == "folder.jpg":
                 artwork["thumb"] = folderpath + item
         return artwork

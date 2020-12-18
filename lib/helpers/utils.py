@@ -601,6 +601,14 @@ def download_artwork(folderpath, artwork):
                 new_dict[key] = download_image(os.path.join(folderpath, "thumbback.jpg"), value)
             elif key == "spine":
                 new_dict[key] = download_image(os.path.join(folderpath, "spine.jpg"), value)
+            elif key == "album3Dthumb":
+                new_dict[key] = download_image(os.path.join(folderpath, "album3Dthumb.png"), value)
+            elif key == "album3Dflat":
+                new_dict[key] = download_image(os.path.join(folderpath, "album3Dflat.png"), value)
+            elif key == "album3Dcase":
+                new_dict[key] = download_image(os.path.join(folderpath, "album3Dcase.png"), value)
+            elif key == "album3Dface":
+                new_dict[key] = download_image(os.path.join(folderpath, "album3Dface.png"), value)
             elif key == "fanarts" and value:
                 # copy extrafanarts only if the directory doesn't exist at all
                 delim = "\\" if "\\" in folderpath else "/"
@@ -741,7 +749,7 @@ def manual_set_artwork(artwork, mediatype, header=None):
     if mediatype == "artist":
         art_types = ["thumb", "poster", "fanart", "banner", "clearart", "clearlogo", "landscape"]
     elif mediatype == "album":
-        art_types = ["thumb", "discart", "thumbback", "spine"]
+        art_types = ["thumb", "discart", "thumbback", "spine", "album3Dthumb", "album3Dflat", "album3Dcase", "album3Dface"]
     else:
         art_types = ["thumb", "poster", "fanart", "banner", "clearart",
                      "clearlogo", "discart", "landscape", "characterart"]

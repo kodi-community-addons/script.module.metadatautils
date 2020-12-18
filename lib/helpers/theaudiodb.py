@@ -146,6 +146,8 @@ class TheAudioDb(object):
                 details["art"]["spine"] = adbdetails.get("strAlbumSpine")
             if adbdetails.get("strAlbumThumbBack") and xbmcvfs.exists(adbdetails.get("strAlbumThumbBack")):
                 details["art"]["thumbback"] = adbdetails.get("strAlbumThumbBack")
+            if adbdetails.get("strAlbum3DCase") and xbmcvfs.exists(adbdetails.get("strAlbum3DCase")):
+                details["art"]["album3Dcase"] = adbdetails.get("strAlbum3DCase")
             if adbdetails.get("strAlbum3DFlat") and xbmcvfs.exists(adbdetails.get("strAlbum3DFlat")):
                 details["art"]["album3Dflat"] = adbdetails.get("strAlbum3DFlat")
             if adbdetails.get("strAlbum3DFace") and xbmcvfs.exists(adbdetails.get("strAlbum3DFace")):

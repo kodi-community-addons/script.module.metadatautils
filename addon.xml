@@ -21,7 +21,7 @@
 		<description lang="es">El módulo de metadatos e ilustraciones para Kodi proporciona metadatos enriquecidos, que incluyen ilustraciones paravarios metatipos al raspar (y almacenar en caché) esta información se extrae de sitios como TMDB, musicbrainz and fanart.tv.[CR][CR]Este producto utiliza la API de TMDb pero no está avalado ni certificado por TMDb</description>
         <news>
 v1.0.36
-- Fix for theaudiodb scraper,Add sone new Art thumb and label
+- Fix for theaudiodb scraper,Add some new Art thumb and label
 
 v1.0.35 (wuff)
 - Remove BeautifulSoup3 dependency and use BeautifulSoup4 on Kodi 18 and 19 instead
