@@ -174,6 +174,18 @@ class TheAudioDb(object):
                 details["title"] = adbdetails["strAlbum"]
             if adbdetails.get("strLabel"):
                 details["albumlabel"] = adbdetails["strLabel"]
+            if adbdetails.get("idAlbum"):
+                details["idalbum"] = adbdetails["idAlbum"]
+                if adbdetails.get("idAlbum"):
+                    idalbum = adbdetails.get("idAlbum", "")
+                    data = self.get_data("/track.php", {'m': idalbum})
+                    adbtrackdetails = data["track"]
+                    if data.get("track"):
+                        tracks = []
+                        for count, item in enumerate(adbtrackdetails):
+                            tracks.append(item["strTrack"])
+                            details["tracks.formatted.%s" % count] = item["intTrackNumber"] + "." + item["strTrack"]
+                        details["tracks.formatted"] = "[CR]".join(tracks)
         return details
 
     @use_cache(60)
