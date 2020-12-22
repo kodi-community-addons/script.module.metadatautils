@@ -39,13 +39,6 @@ class TheAudioDb(object):
         artist = artist.lower()
         params = {'s': artist, 'a': album}
         data = self.get_data("searchalbum.php", params)
-        if data and data.get("album") and len(data.get("album")) > 0:
-            adbdetails = data["album"][0]
-            # safety check - only allow exact artist match
-            foundartist = adbdetails.get("strArtist", "").lower()
-            if foundartist and get_compare_string(foundartist) == get_compare_string(artist):
-                album = adbdetails.get("strAlbum", "")
-                artist = adbdetails.get("strArtist", "")
         if not album and track:
             params = {'t': track, 's': artist}
             data = self.get_data("searchtrack.php", params)
@@ -56,6 +49,13 @@ class TheAudioDb(object):
                 if foundartist and get_compare_string(foundartist) == get_compare_string(artist):
                     album = adbdetails.get("strAlbum", "")
                     artist = adbdetails.get("strArtist", "")
+        if data and data.get("album") and len(data.get("album")) > 0:
+            adbdetails = data["album"][0]
+            # safety check - only allow exact artist match
+            foundartist = adbdetails.get("strArtist", "").lower()
+            if foundartist and get_compare_string(foundartist) == get_compare_string(artist):
+                album = adbdetails.get("strAlbum", "")
+                artist = adbdetails.get("strArtist", "")
         return artist, album
 
     def get_artist_id(self, artist, album, track):

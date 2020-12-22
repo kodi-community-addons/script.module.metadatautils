@@ -13,7 +13,7 @@ if sys.version_info.major == 3:
     from .mbrainz import MusicBrainz
     from urllib.parse import quote_plus
 else:
-    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
+    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode
     from mbrainz import MusicBrainz
     from urllib import quote_plus
 import xbmc
@@ -60,7 +60,7 @@ class MusicArtwork(object):
 
         # combine artist plot and album plot as extended plot
         if artist_details.get("plot") and album_details.get("plot"):
-            details["extendedplot"] = "%s  --  %s" % (album_details["plot"], artist_details["plot"])
+            details["extendedplot"] = "%s  --  %s" % try_decode((album_details["plot"], artist_details["plot"]))
         else:
             details["extendedplot"] = details.get("plot", "")
 
