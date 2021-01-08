@@ -291,7 +291,7 @@ def get_duration(duration):
         if total_minutes < 60:
             hours = 0
         else:
-            hours = total_minutes / 60
+            hours = total_minutes  // 60 % 60
         minutes = total_minutes - (hours * 60)
         formatted_time = "%s:%s" % (hours, str(minutes).zfill(2))
     except Exception as exc:

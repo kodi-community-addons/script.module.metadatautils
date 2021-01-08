@@ -219,7 +219,7 @@ class MetadataUtils(object):
                     "Duration": "%s:%s" % (dur_lst[0], dur_lst[1]),
                     "Duration.Hours": dur_lst[0],
                     "Duration.Minutes": dur_lst[1],
-                    "Runtime": str((int(dur_lst[0]) * 60) + int(dur_lst[1])),
+                    "Runtime": int(dur_lst[0]) * 60 + int(dur_lst[1]),
                 }
             else:
                 return self._get_duration(duration)

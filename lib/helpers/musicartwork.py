@@ -9,7 +9,7 @@
 
 import os, sys
 if sys.version_info.major == 3:
-    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork
+    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode
     from .mbrainz import MusicBrainz
     from urllib.parse import quote_plus
 else:

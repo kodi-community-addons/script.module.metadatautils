@@ -71,11 +71,11 @@ class LastFM(object):
         data = self.get_data(params)
         if data and data.get("artist"):
             lfmdetails = data["artist"]
-            if lfmdetails.get("image"):
-                for image in lfmdetails["image"]:
-                    if image["size"] in ["mega", "extralarge"] and xbmcvfs.exists(image["#text"]):
-                        details["art"]["thumbs"] = [image["#text"]]
-                        details["art"]["thumb"] = image["#text"]
+            #if lfmdetails.get("image"):
+            #    for image in lfmdetails["image"]:
+            #        if image["size"] in ["mega", "extralarge"] and xbmcvfs.exists(image["#text"]):
+            #            details["art"]["thumbs"] = [image["#text"]]
+            #            details["art"]["thumb"] = image["#text"]
             if lfmdetails.get("bio") and lfmdetails["bio"].get("content"):
                 details["plot"] = strip_newlines(lfmdetails["bio"]["content"].split(' <a href')[0])
             if lfmdetails.get("stats") and lfmdetails["stats"].get("listeners"):
@@ -89,11 +89,11 @@ class LastFM(object):
                 for count, item in enumerate(lfmdetails["similar"]["artist"]):
                     similar_artists.append(item["name"])
                     details["lastfm.similarartists.%s.name" % count] = item["name"]
-                    if item.get("image"):
-                        for image in item["image"]:
-                            if image["size"] in ["mega", "extralarge", "large"] and xbmcvfs.exists(image["#text"]):
-                                details["lastfm.similarartists.%s.thumb" % count] = image["#text"]
-                                break
+                    #if item.get("image"):
+                    #    for image in item["image"]:
+                    #        if image["size"] in ["mega", "extralarge", "large"] and xbmcvfs.exists(image["#text"]):
+                    #            details["lastfm.similarartists.%s.thumb" % count] = image["#text"]
+                    #            break
                 details["lastfm.similarartists"] = similar_artists
 
         return details
@@ -108,11 +108,11 @@ class LastFM(object):
                 lfmdetails = data["album"][0]
             else:
                 lfmdetails = data["album"]
-            if lfmdetails.get("image"):
-                for image in lfmdetails["image"]:
-                    if image["size"] in ["mega", "extralarge"] and xbmcvfs.exists(image["#text"]):
-                        details["art"]["thumbs"] = [image["#text"]]
-                        details["art"]["thumb"] = image["#text"]
+            #if lfmdetails.get("image"):
+            #    for image in lfmdetails["image"]:
+            #        if image["size"] in ["mega", "extralarge"] and xbmcvfs.exists(image["#text"]):
+            #            details["art"]["thumbs"] = [image["#text"]]
+            #            details["art"]["thumb"] = image["#text"]
             if lfmdetails.get("listeners"):
                 details["lastfm.listeners"] = lfmdetails["listeners"]
             if lfmdetails.get("playcount"):

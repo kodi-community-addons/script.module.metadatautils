@@ -185,6 +185,7 @@ class TheAudioDb(object):
                         for count, item in enumerate(adbtrackdetails):
                             tracks.append(item["strTrack"])
                             details["tracks.formatted.%s" % count] = item["intTrackNumber"] + "." + item["strTrack"]
+                            details["tracks.clean.formatted.%s" % count] = item["strTrack"]
                         details["tracks.formatted"] = "[CR]".join(tracks)
         return details
 
