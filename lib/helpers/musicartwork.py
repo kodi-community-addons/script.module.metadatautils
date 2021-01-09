@@ -9,11 +9,11 @@
 
 import os, sys
 if sys.version_info.major == 3:
-    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode
+    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode, manual_set_artwork
     from .mbrainz import MusicBrainz
     from urllib.parse import quote_plus
 else:
-    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode
+    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode, manual_set_artwork
     from mbrainz import MusicBrainz
     from urllib import quote_plus
 import xbmc
@@ -469,7 +469,6 @@ class MusicArtwork(object):
 
     def manual_set_music_artwork(self, details, mediatype):
         """manual override artwork options"""
-        from utils import manual_set_artwork
         if mediatype == "artist" and "artist" in details:
             header = "%s: %s" % (xbmc.getLocalizedString(13511), details["artist"])
         else:
