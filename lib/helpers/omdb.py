@@ -4,9 +4,9 @@
 """get metadata from omdb"""
 import os, sys
 if sys.version_info.major == 3:
-    from .utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+    from .utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
 else:
-    from utils import get_json, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+    from utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
 from simplecache import use_cache
 import arrow
 import xbmc
@@ -64,8 +64,9 @@ class Omdb(object):
             # rate limited api key !
             params["apikey"] = "d4d53b9a"
             rate_limit = ("omdbapi.com", 2)
-        params["r"] = "json"
-        return get_json(base_url, params, ratelimit=rate_limit)
+        params["r"] = "xml"
+        params["tomatoes"] = "true"
+        return get_xml(base_url, params, ratelimit=rate_limit)
 
     @staticmethod
     def map_details(data):
@@ -76,73 +77,48 @@ class Omdb(object):
                 # filter the N/A values
                 if value in ["N/A", "NA"] or not value:
                     continue
-                if key == "Title":
+                if key == "title":
                     result["title"] = value
-                elif key == "Year":
+                elif key == "year":
                     try:
                         result["year"] = try_parse_int(value.split("-")[0])
                     except Exception:
                         result["year"] = value
-                elif key == "Rated":
+                elif key == "rated":
                     result["mpaa"] = value.replace("Rated", "")
-                elif key == "Released":
+                elif key == "released":
                     date_time = arrow.get(value, "DD MMM YYYY")
                     result["premiered"] = date_time.strftime(xbmc.getRegion("dateshort"))
                     try:
                         result["premiered.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
                     except Exception:
                         result["premiered.formatted"] = value
-                elif key == "Runtime":
+                elif key == "runtime":
                     result["runtime"] = try_parse_int(value.replace(" min", "")) * 60
-                elif key == "Genre":
+                elif key == "genre":
                     result["genre"] = value.split(", ")
-                elif key == "Director":
+                elif key == "director":
                     result["director"] = value.split(", ")
-                elif key == "Writer":
+                elif key == "writer":
                     result["writer"] = value.split(", ")
-                elif key == "Country":
+                elif key == "country":
                     result["country"] = value.split(", ")
-                elif key == "Awards":
+                elif key == "awards":
                     result["awards"] = value
-                elif key == "Poster":
+                elif key == "poster":
                     result["thumbnail"] = value
                     result["art"] = {}
                     result["art"]["thumb"] = value
                 elif key == "imdbVotes":
                     result["votes.imdb"] = value
                     result["votes"] = try_parse_int(value.replace(",", ""))
-                elif key == "Ratings":
-                    for rating_item in value:
-                        if rating_item["Source"] == "Internet Movie Database":
-                            rating = rating_item["Value"]
-                            result["rating.imdb.text"] = rating
-                            rating = rating.split("/")[0]
-                            result["rating.imdb"] = rating
-                            result["rating"] = float(rating)
-                            result["rating.percent.imdb"] = "%s" % (try_parse_int(float(rating) * 10))
-                        elif rating_item["Source"] == "Rotten Tomatoes":
-                            rating = rating_item["Value"]
-                            result["rottentomatoes.rating.percent"] = rating
-                            rating = rating.replace("%", "")
-                            # this should be a dedicated rt rating instead of the meter
-                            result["rottentomatoes.rating"] = rating
-                            result["rating.rt"] = rating
-                            result["rottentomatoes.meter"] = rating
-                            result["rottentomatoesmeter"] = rating
-                            rating = int(rating)
-                            if rating < 60:
-                                result["rottentomatoes.rotten"] = rating
-                                result["rottentomatoes.image"] = "rotten"
-                            else:
-                                result["rottentomatoes.fresh"] = rating
-                                result["rottentomatoes.image"] = "fresh"
-                        elif rating_item["Source"] == "Metacritic":
-                            rating = rating_item["Value"]
-                            result["rating.mc.text"] = rating
-                            rating = rating.split("/")[0]
-                            result["metacritic.rating"] = rating
-                            result["rating.mc"] = rating
-                            result["metacritic.rating.percent"] = "%s" % rating
+                elif key == "imdbRating":
+                    result["rating.imdb"] = value
+                    result["rating"] = float(value)
+                    result["rating.percent.imdb"] = "%s" % (try_parse_int(float(value) * 10))
+                elif key == "metascore":
+                    result["metacritic.rating"] = value
+                    result["metacritic.rating.percent"] = "%s" % value
                 elif key == "imdbID":
                     result["imdbnumber"] = value
                 elif key == "BoxOffice":
@@ -155,87 +131,89 @@ class Omdb(object):
                     result["studio"] = value.split(", ")
                 elif key == "Website":
                     result["homepage"] = value
-                elif key == "Plot":
+                elif key == "plot":
                     result["plot"] = value
                     result["imdb.plot"] = value
-                elif key == "Type":
+                elif key == "type":
                     if value == "series":
                         result["type"] = "tvshow"
                     else:
                         result["type"] = value
                     result["media_type"] = result["type"]
+            # rotten tomatoes
+                elif key == "tomatoMeter":
+                    result["rottentomatoes.meter"] = value
+                    result["rottentomatoesmeter"] = value
+                elif key == "tomatoImage":
+                    result["rottentomatoes.image"] = value
+                elif key == "tomatoRating":
+                    result["rottentomatoes.rating"] = value
+                    result["rottentomatoes.rating.percent"] = "%s" % (try_parse_int(float(value) * 10))
+                    result["rating.rt"] = value
+                elif key == "tomatoReviews":
+                    result["rottentomatoes.reviews"] = formatted_number(value)
+                elif key == "tomatoFresh":
+                    result["rottentomatoes.fresh"] = value
+                elif key == "tomatoRotten":
+                    result["rottentomatoes.rotten"] = value
+                elif key == "tomatoConsensus":
+                    result["rottentomatoes.consensus"] = value
+                elif key == "tomatoUserMeter":
+                    result["rottentomatoes.usermeter"] = value
+                elif key == "tomatoUserRating":
+                    result["rottentomatoes.userrating"] = value
+                    result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
+                elif key == "tomatoUserReviews":
+                    result["rottentomatoes.userreviews"] = int_with_commas(value)
+                elif key == "tomatoURL":
+                    result["rottentomatoes.url"] = value
         else:
             for key, value in data.iteritems():
                 # filter the N/A values
                 if value in ["N/A", "NA"] or not value:
                     continue
-                if key == "Title":
+                if key == "title":
                     result["title"] = value
                 elif key == "Year":
                     try:
                         result["year"] = try_parse_int(value.split("-")[0])
                     except Exception:
                         result["year"] = value
-                elif key == "Rated":
+                elif key == "rated":
                     result["mpaa"] = value.replace("Rated", "")
-                elif key == "Released":
+                elif key == "released":
                     date_time = arrow.get(value, "DD MMM YYYY")
                     result["premiered"] = date_time.strftime(xbmc.getRegion("dateshort"))
                     try:
                         result["premiered.formatted"] = date_time.format('DD MMM YYYY', locale=KODI_LANGUAGE)
                     except Exception:
                         result["premiered.formatted"] = value
-                elif key == "Runtime":
+                elif key == "runtime":
                     result["runtime"] = try_parse_int(value.replace(" min", "")) * 60
-                elif key == "Genre":
+                elif key == "genre":
                     result["genre"] = value.split(", ")
-                elif key == "Director":
+                elif key == "director":
                     result["director"] = value.split(", ")
-                elif key == "Writer":
+                elif key == "writer":
                     result["writer"] = value.split(", ")
-                elif key == "Country":
+                elif key == "country":
                     result["country"] = value.split(", ")
-                elif key == "Awards":
+                elif key == "awards":
                     result["awards"] = value
-                elif key == "Poster":
+                elif key == "poster":
                     result["thumbnail"] = value
                     result["art"] = {}
                     result["art"]["thumb"] = value
                 elif key == "imdbVotes":
                     result["votes.imdb"] = value
                     result["votes"] = try_parse_int(value.replace(",", ""))
-                elif key == "Ratings":
-                    for rating_item in value:
-                        if rating_item["Source"] == "Internet Movie Database":
-                            rating = rating_item["Value"]
-                            result["rating.imdb.text"] = rating
-                            rating = rating.split("/")[0]
-                            result["rating.imdb"] = rating
-                            result["rating"] = float(rating)
-                            result["rating.percent.imdb"] = "%s" % (try_parse_int(float(rating) * 10))
-                        elif rating_item["Source"] == "Rotten Tomatoes":
-                            rating = rating_item["Value"]
-                            result["rottentomatoes.rating.percent"] = rating
-                            rating = rating.replace("%", "")
-                            # this should be a dedicated rt rating instead of the meter
-                            result["rottentomatoes.rating"] = rating
-                            result["rating.rt"] = rating
-                            result["rottentomatoes.meter"] = rating
-                            result["rottentomatoesmeter"] = rating
-                            rating = int(rating)
-                            if rating < 60:
-                                result["rottentomatoes.rotten"] = rating
-                                result["rottentomatoes.image"] = "rotten"
-                            else:
-                                result["rottentomatoes.fresh"] = rating
-                                result["rottentomatoes.image"] = "fresh"
-                        elif rating_item["Source"] == "Metacritic":
-                            rating = rating_item["Value"]
-                            result["rating.mc.text"] = rating
-                            rating = rating.split("/")[0]
-                            result["metacritic.rating"] = rating
-                            result["rating.mc"] = rating
-                            result["metacritic.rating.percent"] = "%s" % rating
+                elif key == "imdbRating":
+                    result["rating.imdb"] = value
+                    result["rating"] = float(value)
+                    result["rating.percent.imdb"] = "%s" % (try_parse_int(float(value) * 10))
+                elif key == "metascore":
+                    result["metacritic.rating"] = value
+                    result["metacritic.rating.percent"] = "%s" % value
                 elif key == "imdbID":
                     result["imdbnumber"] = value
                 elif key == "BoxOffice":
@@ -248,13 +226,40 @@ class Omdb(object):
                     result["studio"] = value.split(", ")
                 elif key == "Website":
                     result["homepage"] = value
-                elif key == "Plot":
+                elif key == "plot":
                     result["plot"] = value
                     result["imdb.plot"] = value
-                elif key == "Type":
+                elif key == "type":
                     if value == "series":
                         result["type"] = "tvshow"
                     else:
                         result["type"] = value
                     result["media_type"] = result["type"]
+            # rotten tomatoes
+                elif key == "tomatoMeter":
+                    result["rottentomatoes.meter"] = value
+                    result["rottentomatoesmeter"] = value
+                elif key == "tomatoImage":
+                    result["rottentomatoes.image"] = value
+                elif key == "tomatoRating":
+                    result["rottentomatoes.rating"] = value
+                    result["rottentomatoes.rating.percent"] = "%s" % (try_parse_int(float(value) * 10))
+                    result["rating.rt"] = value
+                elif key == "tomatoReviews":
+                    result["rottentomatoes.reviews"] = formatted_number(value)
+                elif key == "tomatoFresh":
+                    result["rottentomatoes.fresh"] = value
+                elif key == "tomatoRotten":
+                    result["rottentomatoes.rotten"] = value
+                elif key == "tomatoConsensus":
+                    result["rottentomatoes.consensus"] = value
+                elif key == "tomatoUserMeter":
+                    result["rottentomatoes.usermeter"] = value
+                elif key == "tomatoUserRating":
+                    result["rottentomatoes.userrating"] = value
+                    result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
+                elif key == "tomatoUserReviews":
+                    result["rottentomatoes.userreviews"] = int_with_commas(value)
+                elif key == "tomatoURL":
+                    result["rottentomatoes.url"] = value
         return result
