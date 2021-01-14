@@ -54,9 +54,9 @@ class Imdb(object):
                     'User-agent': 'Mozilla/5.0'}, timeout=20)
             soup = BeautifulSoup.BeautifulSoup(html.text, features="html.parser")
             for table in soup.findAll('table'):
-                if table.get("class") == "chart full-width":
+                if not table.get("class") == "chart full-width":
                     for td_def in table.findAll('td'):
-                        if td_def.get("class") == "titleColumn":
+                        if not td_def.get("class") == "titleColumn":
                             a_link = td_def.find("a")
                             if a_link:
                                 url = a_link["href"]
