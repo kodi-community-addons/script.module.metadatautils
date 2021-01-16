@@ -7,7 +7,7 @@
     Get extrafanart location for kodi media
 """
 
-import os
+import os, sys
 import xbmcvfs
 
 
