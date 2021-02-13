@@ -62,7 +62,6 @@
         <setting label="32034" type="lsep" />
         <setting type="sep" />
         <setting id="debug_log" type="bool" label="32059" default="false"/>
-        <setting id="max_extrafanarts" type="number" label="32060" default="12" visible="false"/>
-        <setting id="max_extraposters" type="number" label="32062" default="12" visible="false"/>
+        <setting id="max_extrafanarts" type="number" label="32060" default="25" visible="false"/>
     </category>
 </settings>

@@ -189,7 +189,7 @@ class PvrArtwork(object):
                         if manual_select:
                             google_title = searchtitle
                         else:
-                            google_title = '%s %s' % (searchtitle, "imdb")
+                            google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
                         thumb = self._mutils.google.search_image(google_title, manual_select)
                     if thumb:
                         details["thumbnail"] = thumb
