@@ -337,6 +337,17 @@ class Tmdb(object):
                 details["studio"] = [item["name"] for item in data["networks"]]
             if "origin_country" in data:
                 details["country"] = data["origin_country"]
+            if "number_of_seasons" in data:
+                details["Seasons"] = data["number_of_seasons"]
+            if "number_of_episodes" in data:
+                details["Episodes"] = data["number_of_episodes"]
+            if data.get("seasons"):
+                tmdboverviewdetails = data["seasons"]
+                seasons = []
+                for count, item in enumerate(tmdboverviewdetails):
+                    seasons.append(item["overview"])
+                    details["seasons.formatted.%s" % count] = "%s %s[CR]%s[CR]" % (item["name"], item["air_date"], item["overview"])
+                details["seasons.formatted"] = "[CR]".join(seasons)
             if data.get("external_ids"):
                 details["imdbnumber"] = data["external_ids"].get("imdb_id", "")
                 details["tvdb_id"] = data["external_ids"].get("tvdb_id", "")
