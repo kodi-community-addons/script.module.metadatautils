@@ -180,7 +180,7 @@ class MusicArtwork(object):
                 else:
                     custom_path = self._mutils.addon.getSetting("music_art_custom_path").decode("utf-8")
                 local_path_custom = self.get_customfolder_path(custom_path, artist)
-                log_msg("custom path on disk for artist: %s --> %s" % (artist, local_path_custom))
+                #log_msg("custom path on disk for artist: %s --> %s" % (artist, local_path_custom))
                 details["art"] = extend_dict(details["art"], self.lookup_artistart_in_folder(local_path_custom))
                 details["customartpath"] = local_path_custom
             # lookup online metadata
@@ -386,7 +386,7 @@ class MusicArtwork(object):
                         details["tracks.formatted"] += u"%s %s [CR]" % (bullet, tr_title)
                         duration = album_track["duration"]
                         total_seconds = int(duration)
-                        minutes = total_seconds / 60
+                        minutes = total_seconds // 60 % 60
                         seconds = total_seconds - (minutes * 60)
                         duration = "%s:%s" % (minutes, str(seconds).zfill(2))
                         details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, tr_title, duration)
@@ -430,7 +430,7 @@ class MusicArtwork(object):
                     details["tracks.formatted"] += u"%s %s [CR]" % (bullet, item["title"])
                     duration = item["duration"]
                     total_seconds = int(duration)
-                    minutes = total_seconds / 60
+                    minutes = total_seconds // 60 % 60
                     seconds = total_seconds - (minutes * 60)
                     duration = "%s:%s" % (minutes, str(seconds).zfill(2))
                     details["runtime"] += item["duration"]
@@ -442,7 +442,7 @@ class MusicArtwork(object):
                 details["songcount"] = len(album_tracks)
                 # get album total duration pretty printed as mm:ss
                 total_seconds = int(details["runtime"])
-                minutes = total_seconds / 60
+                minutes = total_seconds // 60 % 60
                 seconds = total_seconds - (minutes * 60)
                 details["duration"] = "%s:%s" % (minutes, str(seconds).zfill(2))
                 # do not retrieve artwork from item as there's no way to write it back

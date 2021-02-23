@@ -86,7 +86,7 @@ class PvrArtwork(object):
             if not proceed_lookup and manual_select:
                 # warn user about active skip filter
                 proceed_lookup = xbmcgui.Dialog().yesno(
-                    line1=self._mutils.addon.getLocalizedString(32027), line2=filterstr,
+                    message=self._mutils.addon.getLocalizedString(32027), line2=filterstr,
                     heading=xbmc.getLocalizedString(750))
 
             if proceed_lookup:
@@ -189,7 +189,7 @@ class PvrArtwork(object):
                         if manual_select:
                             google_title = searchtitle
                         else:
-                            google_title = '%s %s' % (searchtitle, channel.lower().split(" hd")[0])
+                            google_title = '%s %s' % (searchtitle, "imdb")
                         thumb = self._mutils.google.search_image(google_title, manual_select)
                     if thumb:
                         details["thumbnail"] = thumb
@@ -426,12 +426,6 @@ class PvrArtwork(object):
                 stringmatchscore = SM(None, searchtitle, itemtitle).ratio()
                 if stringmatchscore > 0.7:
                     item["score"] += stringmatchscore * 500
-                # prefer items with native language as we've searched with localized info enabled
-                try:
-                    if item["overview"]:
-                      item["score"] += 250
-                except KeyError:
-                    log_msg("pvrartwork.py - Overview Key Error in lookup_tvb: %s" % searchchannel) 
                 # prefer items with artwork
                 if item["banner"]:
                     item["score"] += 1
@@ -445,11 +439,7 @@ class PvrArtwork(object):
                 listitems = []
                 for item in match_results:
                     thumb = "http://thetvdb.com%s" % item["poster"] if item["poster"] else ""
-                    try:
-                        listitem = xbmcgui.ListItem(label=item["seriesName"], label2=item["overview"])
-                    except KeyError:
-                        listitem = xbmcgui.ListItem(label=item["seriesName"])
-                        log_msg("pvrartwork.py - Overview Key Error in lookup_tvb: %s" % searchchannel) 
+                    listitem = xbmcgui.ListItem(label=item["seriesName"])
                     listitem.setArt({'icon': thumb})
                     listitems.append(listitem)
                 dialog = DialogSelect(

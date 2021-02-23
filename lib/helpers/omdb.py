@@ -165,7 +165,7 @@ class Omdb(object):
                     result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
                 elif key == "tomatoUserReviews":
                     result["rottentomatoes.userreviews"] = int_with_commas(value)
-                elif key == "tomatoURL":
+                elif key == "tomatoeURL":
                     result["rottentomatoes.url"] = value
         else:
             for key, value in data.iteritems():
@@ -260,6 +260,6 @@ class Omdb(object):
                     result["rottentomatoes.userrating.percent"] = "%s" % (try_parse_int(float(value) * 10))
                 elif key == "tomatoUserReviews":
                     result["rottentomatoes.userreviews"] = int_with_commas(value)
-                elif key == "tomatoURL":
+                elif key == "tomatoeURL":
                     result["rottentomatoes.url"] = value
         return result
