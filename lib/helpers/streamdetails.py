@@ -33,33 +33,33 @@ def get_streamdetails(kodidb, db_id, media_type):
             # audio codec
             codec = item['codec']
             if "ac3" in codec:
-                codec = u"Dolby D"
+                codec = "Dolby D"
             elif "dca" in codec:
-                codec = u"DTS"
+                codec = "DTS"
             elif "dts-hd" in codec or "dtshd" in codec:
-                codec = u"DTS HD"
+                codec = "DTS HD"
             # audio channels
             channels = item['channels']
             if channels == 1:
                 channels = u"1.0"
             elif channels == 2:
-                channels = u"2.0"
+                channels = "2.0"
             elif channels == 3:
-                channels = u"2.1"
+                channels = "2.1"
             elif channels == 4:
-                channels = u"4.0"
+                channels = "4.0"
             elif channels == 5:
-                channels = u"5.0"
+                channels = "5.0"
             elif channels == 6:
-                channels = u"5.1"
+                channels = "5.1"
             elif channels == 7:
-                channels = u"6.1"
+                channels = "6.1"
             elif channels == 8:
-                channels = u"7.1"
+                channels = "7.1"
             elif channels == 9:
-                channels = u"8.1"
+                channels = "8.1"
             elif channels == 10:
-                channels = u"9.1"
+                channels = "9.1"
             else:
                 channels = str(channels)
             # audio language

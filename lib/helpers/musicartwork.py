@@ -353,18 +353,18 @@ class MusicArtwork(object):
                 bullet = "•"
             else:
                 bullet = "•".decode("utf-8")
-            details["albums.formatted"] = u""
-            details["tracks.formatted"] = u""
-            details["tracks.formatted2"] = u""
-            details["albumsartist.formatted"] = u""
-            details["albumscompilations.formatted"] = u""
+            details["albums.formatted"] = ""
+            details["tracks.formatted"] = ""
+            details["tracks.formatted2"] = ""
+            details["albumsartist.formatted"] = ""
+            details["albumscompilations.formatted"] = ""
             # enumerate albums for this artist
             for artist_album in artist_albums:
                 details["albums"].append(artist_album["label"])
-                details["albums.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
+                details["albums.formatted"] += "%s %s [CR]" % (bullet, artist_album["label"])
                 if artist in artist_album["displayartist"]:
                     details["albumsartist"].append(artist_album["label"])
-                    details["albumsartist.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
+                    details["albumsartist.formatted"] += "%s %s [CR]" % (bullet, artist_album["label"])
                 else:
                     details["albumscompilations"].append(artist_album["label"])
                     details["albumscompilations.formatted"] += u"%s %s [CR]" % (bullet, artist_album["label"])
@@ -383,13 +383,13 @@ class MusicArtwork(object):
                         tr_title = album_track["title"]
                         if album_track["track"]:
                             tr_title = "%s. %s" % (album_track["track"], album_track["title"])
-                        details["tracks.formatted"] += u"%s %s [CR]" % (bullet, tr_title)
+                        details["tracks.formatted"] += "%s %s [CR]" % (bullet, tr_title)
                         duration = album_track["duration"]
                         total_seconds = int(duration)
                         minutes = total_seconds // 60 % 60
                         seconds = total_seconds - (minutes * 60)
                         duration = "%s:%s" % (minutes, str(seconds).zfill(2))
-                        details["tracks.formatted2"] += u"%s %s (%s)[CR]" % (bullet, tr_title, duration)
+                        details["tracks.formatted2"] += "%s %s (%s)[CR]" % (bullet, tr_title, duration)
             details["albumcount"] = len(details["albums"])
             details["albumsartistcount"] = len(details["albumsartist"])
             details["albumscompilationscount"] = len(details["albumscompilations"])
@@ -422,7 +422,7 @@ class MusicArtwork(object):
                     bullet = "•"
                 else:
                     bullet = "•".decode("utf-8")
-                details["tracks.formatted"] = u""
+                details["tracks.formatted"] = ""
                 details["tracks.formatted2"] = ""
                 details["runtime"] = 0
                 for item in album_tracks:
@@ -680,7 +680,7 @@ class MusicArtwork(object):
 
         for splitter in ["ft.", " ft ", "feat.", "Now On Air: ", " and ", "feat", "featuring", "Ft.", "Feat.", "F.", "F/", "f/", " Ft ", "Featuring", " x ", " & ", "vs.", ","]:
             # replace splitter by kodi default splitter for easier split all later
-            artist = artist.replace(splitter, u"/")
+            artist = artist.replace(splitter, "/")
 
             # extract any featuring artists from trackname
             if splitter in track:

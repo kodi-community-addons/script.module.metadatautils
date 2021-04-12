@@ -8,6 +8,7 @@
 """
 
 import os, sys
+import base64
 if sys.version_info.major == 3:
     from .utils import get_json, strip_newlines, KODI_LANGUAGE, get_compare_string, ADDON_ID
 else:
@@ -29,7 +30,7 @@ class TheAudioDb(object):
         else:
             self.cache = simplecache
         addon = xbmcaddon.Addon(id=ADDON_ID)
-        api_key = addon.getSetting("adb_apikey")
+        api_key = addon.getSetting("adb_apikey")       
         if api_key:
             self.api_key = api_key
         del addon
@@ -192,7 +193,7 @@ class TheAudioDb(object):
     @use_cache(60)
     def get_data(self, endpoint, params):
         """helper method to get data from theaudiodb json API"""
-        endpoint = 'https://www.theaudiodb.com/api/v1/json/%s/%s' % (self.api_key, endpoint)
+        endpoint = 'https://www.theaudiodb.com/api/v1/json/%s/%s' % (base64.b64decode(self.api_key.encode('ascii')).decode('ascii'), endpoint)
         data = get_json(endpoint, params)
         if data:
             return data

@@ -17,7 +17,7 @@ def get_extrafanart(file_path):
     efa_path = ""
     if "plugin.video.emby" in file_path:
         # workaround for emby addon
-        efa_path = u"plugin://plugin.video.emby/extrafanart?path=" + file_path
+        efa_path = "plugin://plugin.video.emby/extrafanart?path=" + file_path
     elif "plugin://" in file_path:
         efa_path = ""
     elif "videodb://" in file_path:
@@ -27,7 +27,7 @@ def get_extrafanart(file_path):
         while not count == 3:
             # lookup extrafanart folder by navigating up the tree
             file_path = os.path.dirname(file_path)
-            try_path = file_path + u"/extrafanart/"
+            try_path = file_path + "/extrafanart/"
             if xbmcvfs.exists(try_path):
                 efa_path = try_path
                 break

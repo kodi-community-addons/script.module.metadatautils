@@ -78,9 +78,7 @@ class AnimatedArt(object):
 
     def get_art(self, imdb_id, art_type):
         """get the artwork"""
-        art_db = self.get_animatedart_db()
-        if art_db.get(imdb_id):
-            return art_db[imdb_id][art_type]
+        art_db = ""
         return []
 
     def get_animatedart_db(self):

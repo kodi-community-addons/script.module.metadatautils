@@ -86,7 +86,7 @@ class PvrArtwork(object):
             if not proceed_lookup and manual_select:
                 # warn user about active skip filter
                 proceed_lookup = xbmcgui.Dialog().yesno(
-                    message=self._mutils.addon.getLocalizedString(32027), line2=filterstr,
+                    message=self._mutils.addon.getLocalizedString(32027),
                     heading=xbmc.getLocalizedString(750))
 
             if proceed_lookup:

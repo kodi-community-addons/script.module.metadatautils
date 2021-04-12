@@ -515,7 +515,7 @@ def detect_plugin_content(plugin_path):
         content_type = "movies"
     # if we didn't get the content based on the path, we need to probe the addon...
     if not content_type and not xbmc.getCondVisibility("Window.IsMedia"):  # safety check
-        from kodidb import KodiDb
+        from .kodidb import KodiDb
         media_array = KodiDb().files(plugin_path, limits=(0, 1))
         for item in media_array:
             if item.get("filetype", "") == "directory":
