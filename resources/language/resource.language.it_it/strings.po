@@ -2,6 +2,7 @@
 # Addon Name: Metadata and Artwork module
 # Addon id: script.module.metadatautils
 # Addon Provider: marcelveldt
+# Translate: FabioS
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC-Addons\n"
@@ -10,7 +11,7 @@ msgstr ""
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE\n"
-"Language: en\n"
+"Language: Italian"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -42,7 +43,7 @@ msgstr "Ricerca artwork in una cartella personalizzata (es: cartella delle regis
 
 msgctxt "#32006"
 msgid "Path to the custom folder"
-msgstr "Percorso della cartella personalizzata"
+msgstr "Percorso cartella personalizzato"
 
 msgctxt "#32007"
 msgid "Download artwork to my custom folder"
@@ -78,7 +79,7 @@ msgstr "Caratteri da rimuovere dal titolo"
 
 msgctxt "#32015"
 msgid "Music Artwork"
-msgstr "Artowok Musica"
+msgstr "Artwork Musica"
 
 msgctxt "#32016"
 msgid "Provides rich metadata and artwork for skins and addons"
@@ -126,7 +127,7 @@ msgstr "Ignora notizie/sport/commerciale etc. (dipende se le info EPG sono corre
 
 msgctxt "#32027"
 msgid "One or more filters are active for this item. Are you sure you want to proceed ?"
-msgstr "Uno o più filtri sono attivi per questo elemento. Sei sicuro che vuoi procedere?"
+msgstr "Uno o piÃ¹ filtri sono attivi per questo elemento. Sei sicuro che vuoi procedere?"
 
 msgctxt "#32028"
 msgid "Refresh (auto lookup)"
@@ -178,7 +179,7 @@ msgstr "Rilasciato"
 
 msgctxt "#32041"
 msgid "Is the selected PVR Title a movie or tvshow ?"
-msgstr "Il Titolo PVR selezionato è un Film o Serie TV?"
+msgstr "Il Titolo PVR selezionato Ã¨ un Film o Serie TV?"
 
 msgctxt "#32042"
 msgid "Movie"
@@ -190,35 +191,35 @@ msgstr "Serie TV"
 
 msgctxt "#32044"
 msgid "Other"
-msgstr ""
+msgstr "Altri"
 
 msgctxt "#32045"
 msgid "Personal API key for Fanart.TV"
-msgstr ""
+msgstr "Api key personale per Fanart.TV"
 
 msgctxt "#32046"
 msgid "see www.fanart.tv for more details about personal and VIP memberships"
-msgstr ""
+msgstr "vai su www.fanart.tv per maggiori dettagli sulla membership privata e VIP"
 
 msgctxt "#32047"
 msgid "Scraper settings"
-msgstr ""
+msgstr "Impostazioni Scraper"
 
 msgctxt "#32048"
 msgid "Enable theaudiodb for metadata/artwork"
-msgstr ""
+msgstr "Abilita theaudiodb per i metadata/artwork"
 
 msgctxt "#32049"
 msgid "Enable TheAudioDb for metadata/artwork"
-msgstr ""
+msgstr "Abiltia TheAudioDb per mi etadata/artwork"
 
 msgctxt "#32050"
 msgid "Enable last.fm for metadata"
-msgstr ""
+msgstr "Abilita last.fm per i metadata"
 
 msgctxt "#32051"
 msgid "Enable fanart.tv for artwork"
-msgstr ""
+msgstr "Abilita fanart.tv per gli artwork"
 
 msgctxt "#32052"
 msgid "API keys"
@@ -226,36 +227,40 @@ msgstr ""
 
 msgctxt "#32053"
 msgid "Unlock full features by providing custom API keys"
-msgstr ""
+msgstr "Sblocca le opzioni complete inserendo le API key personali"
 
 msgctxt "#32054"
 msgid "Patreon API-key for omdbapi.com"
-msgstr ""
+msgstr "Patreon API-key per omdapi.com"
 
 msgctxt "#32055"
 msgid "Personal developer API-key for TMDB"
-msgstr ""
+msgstr "API-key sviluppatore personale per TMDB"
 
 msgctxt "#32056"
 msgid "Consider donating to these great projects providing you with great metadata"
-msgstr ""
+msgstr "Considera la donazione per questo grande progetto che ti fornisce ottimi metadata"
 
 msgctxt "#32057"
 msgid "Info"
-msgstr ""
+msgstr "Informazioni"
 
 msgctxt "#32058"
 msgid "This modules uses the following sites/services to grab metadata"
-msgstr ""
+msgstr "Questo modulo usa i seguenti siti/servizi per ottenre i metadata"
 
 msgctxt "#32059"
 msgid "Enable debug logging (regardless of Kodi log level)"
-msgstr ""
+msgstr "Abilita logging di debug (indipendentemente dal livello di log di Kodi)"
 
 msgctxt "#32060"
 msgid "Limit number of extrafanarts to download (0 is no limit)"
-msgstr ""
+msgstr "Limita il numero di extrafanarts da scaricare (0 corrisponde a nessun limite)"
 
 msgctxt "#32061"
 msgid "Personal developer API-key for TheAudioDb"
-msgstr ""
+msgstr "API-key sviluppatore personale per TheAudioDb"
+
+msgctxt "#32062"
+msgid "Limit number of extraposters to download (0 is no limit)"
+msgstr "Limita il numero di extraposter da scaricare (0 corrisponde a nessun limite)"
