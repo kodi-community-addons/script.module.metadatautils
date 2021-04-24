@@ -281,7 +281,8 @@ class MusicArtwork(object):
                 mb_albumid = details.get("musicbrainzalbumid")
                 if not mb_albumid:
                     mb_albumid = self.get_mb_album_id(artist, album, track)
-                    adb_album = self.audiodb.get_album_id(artist, album, track)
+                    if self._mutils.addon.getSetting("music_art_scraper_adb") == "true":
+                        adb_album = self.audiodb.get_album_id(artist, album, track)
                 if mb_albumid:
                     # get artwork from fanarttv
                     if self._mutils.addon.getSetting("music_art_scraper_fatv") == "true":

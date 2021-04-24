@@ -198,7 +198,7 @@ class MetadataUtils(object):
         if result and result.get("status"):
             result["status"] = self.translate_string(result["status"])
         if result and result.get("runtime"):
-            result["runtime"] = result["runtime"] / 60
+            result["runtime"] = result["runtime"] // 60
             result.update(self.get_duration(result["runtime"]))
         return result
 

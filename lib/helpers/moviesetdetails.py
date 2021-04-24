@@ -93,7 +93,7 @@ def get_kodidb_setdata(metadatautils, set_id):
         for label in ["label", "plot", "year", "rating"]:
             details['%s.%s' % (count, label)] = item[label]
         details["%s.DBID" % count] = item["movieid"]
-        details["%s.duration" % count] = item['runtime'] / 60
+        details["%s.duration" % count] = item['runtime'] // 60
 
         # art labels
         art = item['art']
@@ -165,8 +165,8 @@ def get_kodidb_setdata(metadatautils, set_id):
     else:
         details["extendedplots"] = plot
     details["titles"] = title_list
-    details["runtime"] = runtime / 60
-    details.update(get_duration(runtime / 60))
+    details["runtime"] = runtime // 60
+    details.update(get_duration(runtime // 60))
     details["writer"] = writer
     details["director"] = director
     details["genre"] = genre

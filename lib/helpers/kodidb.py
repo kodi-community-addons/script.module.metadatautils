@@ -302,7 +302,7 @@ class KodiDb(object):
                         if not key == "limits" and (isinstance(value, list) or isinstance(value, dict)):
                             result = value
                 else:
-                    for key, value in json_object['result'].iteritems():
+                    for key, value in json_object['result'].items():
                         if not key == "limits" and (isinstance(value, list) or isinstance(value, dict)):
                             result = value
         else:
@@ -382,7 +382,7 @@ class KodiDb(object):
                 for key, value in item["extraproperties"].items():
                     liz.setProperty(key, value)
             else:
-                for key, value in item["extraproperties"].iteritems():
+                for key, value in item["extraproperties"].items():
                     liz.setProperty(key, value)
 
             # video infolabels
@@ -551,8 +551,8 @@ class KodiDb(object):
             if item['type'] == "album" and 'album' not in item and 'label' in item:
                 item['album'] = item['label']
             if "duration" not in item and "runtime" in item:
-                if (item["runtime"] / 60) > 300:
-                    item["duration"] = item["runtime"] / 60
+                if (item["runtime"] // 60) > 300:
+                    item["duration"] = item["runtime"] // 60
                 else:
                     item["duration"] = item["runtime"]
             if "plot" not in item and "comment" in item:

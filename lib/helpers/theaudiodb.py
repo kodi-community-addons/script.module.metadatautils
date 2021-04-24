@@ -192,10 +192,12 @@ class TheAudioDb(object):
 
     @use_cache(60)
     def get_data(self, endpoint, params):
-        """helper method to get data from theaudiodb json API"""
-        endpoint = 'https://www.theaudiodb.com/api/v1/json/%s/%s' % (base64.b64decode(self.api_key.encode('ascii')).decode('ascii'), endpoint)
-        data = get_json(endpoint, params)
-        if data:
-            return data
-        else:
-            return {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        api_key = addon.getSetting("adb_apikey")       
+        if api_key:
+            endpoint = 'https://www.theaudiodb.com/api/v1/json/%s/%s' % (base64.b64decode(self.api_key.encode('ascii')).decode('ascii'), endpoint)
+            data = get_json(endpoint, params)
+            if data:
+                return data
+            else:
+                return {}

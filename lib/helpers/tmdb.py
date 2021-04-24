@@ -248,8 +248,8 @@ class Tmdb(object):
         details["votes"] = data["vote_count"]
         details["rating.tmdb"] = data["vote_average"]
         details["votes.tmdb"] = data["vote_count"]
-        details["popularity"] = data["popularity"]
-        details["popularity.tmdb"] = data["popularity"]
+        details["popularity"] = data["popularity"] * 1000
+        details["popularity.tmdb"] = data["popularity"] * 1000
         details["plot"] = data["overview"]
         details["genre"] = [item["name"] for item in data["genres"]]
         details["homepage"] = data["homepage"]
