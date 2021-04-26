@@ -43,6 +43,11 @@ def get_moviesetdetails(metadatautils, title, set_id):
         details["art"]["extrafanart"] = efa_path
         for count, fanart in enumerate(all_fanarts):
             details["art"]["ExtraFanArt.%s" % count] = fanart
+        all_posters = details["art"]["posters"]
+        efap_path = "plugin://script.skin.helper.service/?action=extraposter&posters=%s" % quote_plus(repr(all_posters))
+        details["art"]["extraposter"] = efap_path
+        for count, poster in enumerate(all_posters):
+            details["art"]["Extraposter.%s" % count] = poster
     metadatautils.cache.set(cache_str, details, checksum=cache_checksum)
     return details
 
