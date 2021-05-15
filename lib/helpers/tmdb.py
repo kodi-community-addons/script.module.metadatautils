@@ -439,8 +439,8 @@ class Tmdb(object):
             results_list = []
             for item in results:
                 title = item["name"] if "name" in item else item["title"]
-                if item.get("premiered"):
-                    year = item["premiered"].split("-")[0]
+                if item.get("release_date"):
+                    year = item["release_date"].split("-")[0]
                 else:
                     year = item.get("first_air_date", "").split("-")[0]
                 if item["poster_path"]:

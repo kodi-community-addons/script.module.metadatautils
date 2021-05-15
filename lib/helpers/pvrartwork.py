@@ -439,7 +439,8 @@ class PvrArtwork(object):
                 listitems = []
                 for item in match_results:
                     thumb = "http://thetvdb.com%s" % item["poster"] if item["poster"] else ""
-                    listitem = xbmcgui.ListItem(label=item["seriesName"])
+                    label = "%s (%s)" % (item["seriesName"], item["firstAired"].split("-")[0])
+                    listitem = xbmcgui.ListItem(label=label)
                     listitem.setArt({'icon': thumb})
                     listitems.append(listitem)
                 dialog = DialogSelect(
