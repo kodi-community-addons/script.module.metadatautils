@@ -587,11 +587,11 @@ def download_artwork(folderpath, artwork):
             elif key == "thumb":
                 new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
             elif key == "discart":
-                new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
+                new_dict[key] = download_image(os.path.join(folderpath, "discart.png"), value)
             elif key == "banner":
                 new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
             elif key == "clearlogo":
-                new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
+                new_dict[key] = download_image(os.path.join(folderpath, "clearlogo.png"), value)
             elif key == "clearart":
                 new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
             elif key == "characterart":
@@ -647,11 +647,11 @@ def download_artwork(folderpath, artwork):
             elif key == "thumb":
                 new_dict[key] = download_image(os.path.join(folderpath, "folder.jpg"), value)
             elif key == "discart":
-                new_dict[key] = download_image(os.path.join(folderpath, "disc.png"), value)
+                new_dict[key] = download_image(os.path.join(folderpath, "discart.png"), value)
             elif key == "banner":
                 new_dict[key] = download_image(os.path.join(folderpath, "banner.jpg"), value)
             elif key == "clearlogo":
-                new_dict[key] = download_image(os.path.join(folderpath, "logo.png"), value)
+                new_dict[key] = download_image(os.path.join(folderpath, "clearlogo.png"), value)
             elif key == "clearart":
                 new_dict[key] = download_image(os.path.join(folderpath, "clearart.png"), value)
             elif key == "characterart":

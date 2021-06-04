@@ -497,11 +497,11 @@ class PvrArtwork(object):
             for item in files:
                 if sys.version_info.major < 3:
                     item = item.decode("utf-8")
-                if item in ["banner.jpg", "clearart.png", "poster.jpg", "disc.png", "characterart.png",
+                if item in ["banner.jpg", "clearart.png", "poster.jpg", "discart.png", "characterart.png",
                             "fanart.jpg", "landscape.jpg"]:
                     key = item.split(".")[0]
                     details["art"][key] = title_path + item
-                elif item == "logo.png":
+                elif item == "clearlogo.png":
                     details["art"]["clearlogo"] = title_path + item
                 elif item == "thumb.jpg":
                     details["art"]["thumb"] = title_path + item
