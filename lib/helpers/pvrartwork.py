@@ -359,8 +359,7 @@ class PvrArtwork(object):
         # replace common chars and words
         if sys.version_info.major == 3:
             title = re.sub(self._mutils.addon.getSetting("pvr_art_replace_by_space"), ' ', title)
-            # following line removed as always seems to return blanks. also addon settings changed to replace ": " with " "
-            # title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars"), '', title)
+            title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars"), '', title)
         else:
             title = re.sub(self._mutils.addon.getSetting("pvr_art_replace_by_space").decode("utf-8"), ' ', title)
             title = re.sub(self._mutils.addon.getSetting("pvr_art_stripchars").decode("utf-8"), '', title)

@@ -94,7 +94,7 @@
 				</setting>
 				<setting id="pvr_art_splittitlechar" type="string" label="32012" help="">
 					<level>0</level>
-					<default> ( | ;</default>
+					<default>: </default>
 					<control type="edit" format="string">
 						<heading>32012</heading>
 					</control>
@@ -108,7 +108,7 @@
 				</setting>
 				<setting id="pvr_art_stripchars" type="string" label="32014" help="">
 					<level>0</level>
-					<default>\*|,|(|)|:|;|\&quot;|`|_new|new_|.|\'</default>
+					<default>(|)|:|;|\&quot;|`|_new|new_|\&apos;"/</default>
 					<control type="edit" format="string">
 						<heading>32014</heading>
 					</control>
