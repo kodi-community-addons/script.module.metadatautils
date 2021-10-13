@@ -35,6 +35,8 @@ try:
 except Exception:
     SUPPORTS_POOL = False
 
+if xbmc.getCondVisibility('system.platform.android'):
+    SUPPORTS_POOL = False
 
 ADDON_ID = "script.module.metadatautils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
