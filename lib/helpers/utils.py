@@ -30,12 +30,10 @@ except Exception:
     import json
 
 try:
+    if xbmc.getCondVisibility('System.Platform.Android'): raise Exception('Using Android threading')
     from multiprocessing.pool import ThreadPool
     SUPPORTS_POOL = True
 except Exception:
-    SUPPORTS_POOL = False
-
-if xbmc.getCondVisibility('system.platform.android'):
     SUPPORTS_POOL = False
 
 ADDON_ID = "script.module.metadatautils"
