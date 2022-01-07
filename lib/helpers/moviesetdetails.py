@@ -86,6 +86,7 @@ def get_kodidb_setdata(metadatautils, set_id):
     total_movies = len(movieset['movies'])
     title_header = "[B]%s %s[/B][CR]" % (total_movies, xbmc.getLocalizedString(20342))
     all_fanarts = []
+    all_posters = []
     details["art"] = movieset["art"]
     movieset_movies = sorted(movieset['movies'], key=itemgetter("year"))
     for count, item in enumerate(movieset_movies):
@@ -108,6 +109,7 @@ def get_kodidb_setdata(metadatautils, set_id):
                 if not movieset["art"].get(label):
                     movieset["art"][label] = get_clean_image(art[label])
         all_fanarts.append(get_clean_image(art.get("fanart")))
+        all_posters.append(get_clean_image(art.get("poster")))
 
         # streamdetails
         if item.get('streamdetails', ''):
@@ -187,4 +189,5 @@ def get_kodidb_setdata(metadatautils, set_id):
     details.update(metadatautils.studiologos.get_studio_logo(studio, metadatautils.studiologos_path))
     details["count"] = total_movies
     details["art"]["fanarts"] = all_fanarts
+    details["art"]["posters"] = all_posters
     return details
