@@ -263,3 +263,11 @@ msgstr ""
 msgctxt "#32062"
 msgid "Limit number of extraposters to download (0 is no limit)"
 msgstr ""
+
+msgctxt "#32063"
+msgid "Simplecache"
+msgstr ""
+
+msgctxt "#32064"
+msgid "Delete folder with Simplecache.db"
+msgstr ""

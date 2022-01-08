@@ -323,5 +323,17 @@
 				</setting>
 			</group>
 		</category>
+		<category id="simplecache" label="32063" help="">
+			<group id="1">
+				<setting id="Clean" type="action" label="32064" help="">
+					<level>0</level>
+					<data>RunScript(script.skin.helper.service,action=DELETEDIR,path=special://profile/addon_data/script.module.simplecache/)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+		</category>
 	</section>
 </settings>
