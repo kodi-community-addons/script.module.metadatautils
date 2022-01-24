@@ -271,3 +271,19 @@ msgstr ""
 msgctxt "#32064"
 msgid "Delete folder with Simplecache.db"
 msgstr ""
+
+msgctxt "#32065"
+msgid "Trakt"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Personal API key for Trakt.TV"
+msgstr ""
+
+msgctxt "#32067"
+msgid "Trakt.tv - Movies and TV Shows details"
+msgstr ""
+
+msgctxt "#32068"
+msgid "Enable Trakt.TV Info"
+msgstr ""

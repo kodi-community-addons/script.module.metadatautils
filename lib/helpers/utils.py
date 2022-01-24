@@ -116,15 +116,17 @@ def rate_limiter(rl_params):
     del win
 
 
-def get_json(url, params=None, retries=0, ratelimit=None):
+def get_json(url, params=None, retries=0, ratelimit=None, headers=None):
     """get info from a rest api"""
     result = {}
     if not params:
         params = {}
     # apply rate limiting if needed
     rate_limiter(ratelimit)
+    if not headers:
+        headers = {} 
     try:
-        response = requests.get(url, params=params, timeout=20)
+        response = requests.get(url, params=params, headers=headers, timeout=20)
         if response and response.content and response.status_code == 200:
             if sys.version_info.major == 3:
                 result = json.loads(response.content)
@@ -142,7 +144,7 @@ def get_json(url, params=None, retries=0, ratelimit=None):
             # retry on connection error or http server limiting
             monitor = xbmc.Monitor()
             if not monitor.waitForAbort(2):
-                result = get_json(url, params, retries + 1)
+                result = get_json(url, params, headers, retries + 1)
             del monitor
         else:
             log_exception(__name__, exc)

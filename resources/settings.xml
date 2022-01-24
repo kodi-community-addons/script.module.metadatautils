@@ -267,6 +267,16 @@
 						<heading>32054</heading>
 					</control>
 				</setting>
+				<setting id="traktapi_apikey" type="string" label="32066" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>32065</heading>
+					</control>
+				</setting>
 				<setting id="tmdb_apikey" type="string" label="32055" help="">
 					<level>0</level>
 					<default/>
@@ -293,6 +303,11 @@
 			<group id="1" label="32034"/>
 			<group id="2">
 				<setting id="debug_log" type="boolean" label="32059" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="trakt_info" type="boolean" label="32068" help="">
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
