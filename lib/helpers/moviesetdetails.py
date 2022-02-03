@@ -96,9 +96,10 @@ def get_kodidb_setdata(metadatautils, set_id):
             watchedcount += 1
 
         # generic labels
-        for label in ["label", "plot", "year", "rating"]:
+        for label in ["label", "plot", "year"]:
             details['%s.%s' % (count, label)] = item[label]
         details["%s.DBID" % count] = item["movieid"]
+        details["%s.rating" % count] = round(item["rating"], 2)
         details["%s.duration" % count] = item['runtime'] // 60
 
         # art labels
@@ -138,7 +139,7 @@ def get_kodidb_setdata(metadatautils, set_id):
                     details["%s.resolution" % count] = resolution
                 details["%s.Codec" % count] = stream.get("codec", "")
                 if stream.get("aspect", ""):
-                    details["%s.aspectratio" % count] = round(stream["aspect"], 2)
+                    details["%s.aspectratio" % count] = "%s" % round(stream["aspect"], 2)
             if len(audiostreams) > 0:
                 # grab details of first audio stream
                 stream = audiostreams[0]

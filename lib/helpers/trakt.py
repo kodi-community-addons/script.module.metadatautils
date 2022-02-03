@@ -48,7 +48,7 @@ class Trakt(object):
 
     @use_cache(14)
     def get_data(self, params):
-        """helper method to get data from omdb json API"""
+        """helper method to get data from trakt json API"""
         url = 'https://api.trakt.tv/%s' % params
         api_key = self.api_key
         HEADERS = {
@@ -61,7 +61,7 @@ class Trakt(object):
         
     @staticmethod                                   
     def map_details(data):
-        """helper method to map the details received from omdb to kodi compatible format"""
+        """helper method to map the details received from trakt to kodi compatible format"""
         result = {}
         ytb_plgn = 'plugin://plugin.video.youtube/?action=play_video&videoid='
         if sys.version_info.major == 3:
