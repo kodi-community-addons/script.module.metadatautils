@@ -139,7 +139,28 @@ def get_kodidb_setdata(metadatautils, set_id):
                     details["%s.resolution" % count] = resolution
                 details["%s.Codec" % count] = stream.get("codec", "")
                 if stream.get("aspect", ""):
-                    details["%s.aspectratio" % count] = "%s" % round(stream["aspect"], 2)
+                    aspectratio = ""
+                    if stream["aspect"] < 1.3499:
+                        aspectratio = "1.33"
+                    elif stream["aspect"] < 1.5080:
+                        aspectratio = "1.37"
+                    elif stream["aspect"] < 1.7190:
+                        aspectratio = "1.66"
+                    elif stream["aspect"] < 1.8147:
+                        aspectratio = "1.78"
+                    elif stream["aspect"] < 2.0174:
+                        aspectratio = "1.85"
+                    elif stream["aspect"] < 2.2738:
+                        aspectratio = "2.20"
+                    elif stream["aspect"] < 2.3749:
+                        aspectratio = "2.35"
+                    elif stream["aspect"] < 2.4739:
+                        aspectratio = "2.40"
+                    elif stream["aspect"] < 2.6529:
+                        aspectratio = "2.55"
+                    else:
+                        aspectratio = "2.76"
+                    details["%s.aspectratio" % count] = aspectratio
             if len(audiostreams) > 0:
                 # grab details of first audio stream
                 stream = audiostreams[0]
