@@ -285,5 +285,5 @@ msgid "Trakt.tv - Movies and TV Shows details"
 msgstr ""
 
 msgctxt "#32068"
-msgid "Enable Trakt.TV Info"
+msgid "Enable Trakt.TV Info for PVR"
 msgstr ""

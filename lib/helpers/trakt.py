@@ -33,17 +33,27 @@ class Trakt(object):
         del addon
 
     @use_cache(14)
+    def get_pvr_details_by_imdbid(self, imdb_id, content_type):
+        """get trakt details by providing an imdb id"""
+        if "movie" in content_type:
+            content_type = "movies"
+        elif content_type in ["tvshows", "tvshow", "tvchannels"]:
+            content_type = "shows"
+        params = '%s/%s?extended=full' % (content_type, imdb_id)
+        data = self.get_data(params)
+        return self.map_details(data) if data else None
+
+    @use_cache(14)
     def get_details_by_imdbid(self, imdb_id, content_type):
         """get trakt details by providing an imdb id"""
         win = xbmcgui.Window(10000)
         content_type = win.getProperty("contenttype")
         if "movie" in content_type:
             content_type = "movies"
-        elif content_type in ["tvshows", "tvshow"]:
+        elif content_type in ["tvshows", "tvshow", "tvchannels"]:
             content_type = "shows"
         params = '%s/%s?extended=full' % (content_type, imdb_id)
         data = self.get_data(params)
-        log_msg("Trakt Art: lookup imdbid by title and year: (- %s)" % (data), xbmc.LOGINFO)
         return self.map_details(data) if data else None
 
     @use_cache(14)
@@ -56,7 +66,6 @@ class Trakt(object):
             'trakt-api-key': api_key,
             'trakt-api-version': "2"
             }
-        log_msg("Trakt Art: lookup imdbid by title and year: (- %s)" % (url), xbmc.LOGINFO)
         return get_json(url, headers=HEADERS)
         
     @staticmethod                                   
@@ -92,7 +101,6 @@ class Trakt(object):
                 elif key == "status":
                     result["status"] = value
                 elif key == "overview":
-                    result["overview"] = value
                     result["trakt.plot"] = value
                 elif key == "tagline":
                     result["trakt.tagline"] = value

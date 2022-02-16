@@ -173,7 +173,13 @@ class PvrArtwork(object):
                             details, self._mutils.omdb.get_details_by_imdbid(
                                 details["imdbnumber"]), [
                                 "rating", "votes"])
-
+                                
+                    if self._mutils.addon.getSetting("pvr_trakt_info") == "true" and details.get("imdbnumber"):
+                        details = extend_dict(
+                            details, self._mutils.trakt.get_pvr_details_by_imdbid(
+                                details["imdbnumber"], details["media_type"]), [
+                                "rating.trakt", "votes.trakt"])
+                                
                     # set thumbnail - prefer scrapers
                     thumb = ""
                     if details.get("thumbnail"):
