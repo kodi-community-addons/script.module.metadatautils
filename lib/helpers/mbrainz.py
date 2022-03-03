@@ -57,7 +57,7 @@ class MusicBrainz(object):
                 artistid, albumid = self.search_recording_match(artist, track)
 
             # last resort: lookup with trackname as album
-            if not (artistid and albumid) and artist and track:
+            if artist and track:
                 artistid, albumid = self.search_release_group_match(artist, track)
 
         except Exception as exc:

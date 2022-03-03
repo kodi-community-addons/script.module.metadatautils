@@ -23,10 +23,10 @@ class MetadataUtils(object):
     '''
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
-    _audiodb, _addon, _close_called, _omdb, _kodidb, _tmdb, _fanarttv, _channellogos = [None] * 8
+    _audiodb, _addon, _close_called, _omdb, _rt, _kodidb, _tmdb, _fanarttv, _channellogos = [None] * 9
     _imdb, _google, _studiologos, _animatedart, _trakt, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 9
     _studiologos_path, _process_method_on_list, _detect_plugin_content, _get_streamdetails = [None] * 4
-    _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 6
+    _metacritic, _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 7
     cache = None
 
 
@@ -216,6 +216,34 @@ class MetadataUtils(object):
         return self.imdb.get_top250_rating(imdb_id)
 
     @use_cache(14)
+    def get_rt_info(self, title="", content_type=""):
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if "movies" in content_type and addon.getSetting("rt_info") == "true":
+            result = self.rt.get_details_movie_rt(title)
+        if "tvshows" in content_type and addon.getSetting("rt_info") == "true":
+            result = self.rt.get_details_tv_rt(title)            
+        return result
+
+    @use_cache(14)
+    def get_rt_ratings(self, title="", content_type=""):
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if "movies" in content_type and addon.getSetting("rt_rating") == "true":
+            result = self.rt.get_ratings_movie_rt(title)        
+        return result
+
+    @use_cache(14)
+    def get_metacritic_info(self, title="", content_type=""):
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if "movies" in content_type and addon.getSetting("metacritic_info") == "true":
+            result = self.metacritic.get_metacritic(title)
+        elif "tvshows" in content_type and addon.getSetting("metacritic_info") == "true":
+            result = self.metacritic.get_metacritic(title)            
+        return result
+
+    @use_cache(14)
     def get_duration(self, duration):
         '''helper to get a formatted duration'''
         if not self._get_duration:
@@ -346,6 +374,22 @@ class MetadataUtils(object):
             from helpers.trakt import Trakt
             self._trakt = Trakt(self.cache)
         return self._trakt
+        
+    @property
+    def rt(self):
+        '''public rt object - for lazy loading'''
+        if not self._rt:
+            from helpers.rt import Rt
+            self._rt = Rt(self.cache)
+        return self._rt
+        
+    @property
+    def metacritic(self):
+        '''public metacritic object - for lazy loading'''
+        if not self._metacritic:
+            from helpers.metacritic import Metacritic
+            self._metacritic = Metacritic(self.cache)
+        return self._metacritic
         
     @property
     def kodidb(self):
