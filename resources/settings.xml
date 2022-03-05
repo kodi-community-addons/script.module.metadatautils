@@ -307,7 +307,7 @@
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="trakt_info" type="boolean" label="32068" help="">
+				<setting id="trakt_info" type="boolean" label="32067" help="">
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
