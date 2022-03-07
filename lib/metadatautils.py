@@ -92,7 +92,7 @@ class MetadataUtils(object):
         # add additional art with special path
         if result:
             result = {"art": result}
-            for arttype in ["fanarts", "posters", "clearlogos", "banners", "discarts", "cleararts", "characterarts"]:
+            for arttype in ["fanarts", "posters", "clearlogos", "banners", "discarts", "cleararts", "characterarts", "landscapes"]:
                 if result["art"].get(arttype):
                     result["art"][arttype] = "plugin://script.skin.helper.service/"\
                         "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
@@ -230,17 +230,17 @@ class MetadataUtils(object):
         result = {}
         addon = xbmcaddon.Addon(id=ADDON_ID)
         if "movies" in content_type and addon.getSetting("rt_rating") == "true":
-            result = self.rt.get_ratings_movie_rt(title)        
+            result = self.rt.get_ratings_movie_rt(title)
+        if "tvshows" in content_type and addon.getSetting("rt_rating") == "true":
+            result = self.rt.get_ratings_tv_rt(title)       
         return result
 
     @use_cache(14)
     def get_metacritic_info(self, title="", content_type=""):
         result = {}
         addon = xbmcaddon.Addon(id=ADDON_ID)
-        if "movies" in content_type and addon.getSetting("metacritic_info") == "true":
-            result = self.metacritic.get_metacritic(title)
-        elif "tvshows" in content_type and addon.getSetting("metacritic_info") == "true":
-            result = self.metacritic.get_metacritic(title)            
+        if  addon.getSetting("metacritic_info") == "true":
+            result = self.metacritic.get_metacritic(title, content_type)            
         return result
 
     @use_cache(14)

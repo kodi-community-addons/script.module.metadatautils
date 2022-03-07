@@ -130,7 +130,35 @@ class Rt(object):
                                     if data["tomatometerScoreTop"].get("score"):
                                         result["tomatometerScoreTop.score"] = data["tomatometerScoreTop"].get("score")
         return result
-        
+ 
+    def get_ratings_tv_rt(self, title):
+        """get rt details by providing an tvshowtitle"""
+        params = {"q": title, "t": "tvseries", "limit": "1"}
+        data = self.get_data(params)
+        result = {}
+        for key, value in data.items():
+            if data and data.get("tvSeries"):
+                 for item in data["tvSeries"]:
+                    result["title"] = item["url"].split("/tv/")[1]
+                    title = result["title"]
+                    headers = {'User-agent': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows Phone OS 7.0; Trident/3.1; \
+                                IEMobile/7.0; LG; GW910)'}
+                    html = ''
+                    page = []
+                    html = requests.get("https://www.rottentomatoes.com/tv/%s" %
+                            title, headers=headers, timeout=5).text
+                    soup = BeautifulSoup.BeautifulSoup(html, features="html.parser")
+                    for div in soup.find_all("script", type="application/ld+json"):
+                        for a_link in div:
+                            data = json.loads(a_link)
+                            if data and data.get("aggregateRating"):
+                                data = data["aggregateRating"]
+                                if data.get("ratingCount"):
+                                    result["tomatometerScoreAll.ratingCount"] = data.get("ratingCount")
+                                if data.get("ratingValue"):
+                                    result["RottenTomatoes.Meter"] = data.get("ratingValue")
+        return result
+
     def get_data(self, params):
         """helper method to get data from rt  API"""
         base_url = 'https://www.rottentomatoes.com/api/private/v2.0/search?'

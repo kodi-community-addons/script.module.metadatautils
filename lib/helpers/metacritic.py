@@ -33,16 +33,21 @@ class Metacritic(object):
             self.kodidb = kodidb
 
     @use_cache(2)        
-    def get_metacritic(self, title):
-        title = title.replace(" ", "-").lower()
-        headers = {'User-agent': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows Phone OS 7.0; Trident/3.1; \
-            IEMobile/7.0; LG; GW910)'}
+    def get_metacritic(self, title, content_type):
+        for splitter in [" ", " :",": ", ":"]:
+            # replace splitter by kodi default splitter for easier split all later
+            title = title.replace(splitter, "-").lower()
+            for remover in ['(', ')']:
+                title = title.replace(remover, "")
+                title = title.replace("--", "-")
+        if "movies" in content_type:
+            content = ("movie/%s" %  title)
+        if "tvshows" in content_type:
+            content = ("tv/%s" %  title)
+        headers = {'User-agent': 'Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)'}
         html = ''
-        url = "https://www.metacritic.com/tv/%s" % title
-        html = requests.get('https://www.metacritic.com/tv/%s' % title, headers=headers, timeout=15)
-        soup = BeautifulSoup.BeautifulSoup(html.text, features="html.parser")
-        #for div in soup.find_all("a", class="metascore_anchor"):
-            #result["metacritic.userscore"] = div.get("span")
+        html = requests.get('https://www.metacritic.com/%s' % content, headers=headers, timeout=15).text
+        soup = BeautifulSoup.BeautifulSoup(html, features="html.parser")
         for div in soup.find_all("script", type="application/ld+json"):
             for mcc in div:
                 data = json.loads(mcc)
