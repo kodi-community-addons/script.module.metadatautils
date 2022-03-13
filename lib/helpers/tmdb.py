@@ -261,6 +261,16 @@ class Tmdb(object):
         details["media_type"] = media_type
         # cast
         if "credits" in data:
+            if "crew" in data["credits"]:
+                for crew_member in data["credits"]["crew"]:
+                    cast_thumb = ""
+                    if crew_member["profile_path"]:
+                        cast_thumb = "https://image.tmdb.org/t/p/original%s" % crew_member["profile_path"]
+                        if crew_member["job"] in ["Screenplay"]:
+                            details["writer.thumb"] = cast_thumb
+                        if crew_member["job"] in ["Director"]:
+                            details["director.thumb"] = cast_thumb 
+        if "credits" in data:      
             if "cast" in data["credits"]:
                 for cast_member in data["credits"]["cast"]:
                     cast_thumb = ""
