@@ -29,12 +29,6 @@ try:
 except Exception:
     import json
 
-try:
-    if xbmc.getCondVisibility('System.Platform.Android'): raise Exception('Using Android threading')
-    from multiprocessing.pool import ThreadPool
-    SUPPORTS_POOL = True
-except Exception:
-    SUPPORTS_POOL = False
 
 ADDON_ID = "script.module.metadatautils"
 KODI_LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1)
@@ -232,26 +226,11 @@ def process_method_on_list(method_to_run, items):
     """helper method that processes a method on each listitem with pooling if the system supports it"""
     all_items = []
     if items is not None:
-        if SUPPORTS_POOL:
-            pool = ThreadPool()
-            try:
-                all_items = pool.map(method_to_run, items)
-            except Exception:
-                # catch exception to prevent threadpool running forever
-                log_msg(format_exc(sys.exc_info()))
-                log_msg("Error in %s" % method_to_run)
-            pool.close()
-            pool.join()
-        else:
-            try:
-                all_items = [method_to_run(item) for item in list(items)]
-            except Exception:
-                log_msg(format_exc(sys.exc_info()))
-            log_msg("Error while executing %s with %s" % (method_to_run, items))
-        if sys.version_info.major == 3:
-            all_items = list(filter(None, all_items))
-        else:
-            all_items = filter(None, all_items)
+        try:
+            all_items = [method_to_run(item) for item in list(items)]
+        except Exception:
+            log_msg(format_exc(sys.exc_info()))
+        all_items = list(filter(None, all_items))
     return all_items
 
 
