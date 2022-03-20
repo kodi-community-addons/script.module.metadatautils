@@ -44,7 +44,7 @@ class Metacritic(object):
             content = ("movie/%s" %  title)
         if "tvshows" in content_type:
             content = ("tv/%s" %  title)
-        headers = {'User-agent': 'Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)'}
+        headers = {'User-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'}
         html = ''
         html = requests.get('https://www.metacritic.com/%s' % content, headers=headers, timeout=15).text
         soup = BeautifulSoup.BeautifulSoup(html, features="html.parser")
