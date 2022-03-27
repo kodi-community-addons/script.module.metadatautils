@@ -288,14 +288,12 @@ msgctxt "#32068"
 msgid "Enable Trakt.TV Info for PVR"
 msgstr ""
 
-msgctxt "#32069"
-msgid "Rottentomatoes - Ratings details"
-msgstr ""
-
-msgctxt "#32070"
-msgid "Rottentomatoes - Movies and TV Shows details"
-msgstr ""
 
 msgctxt "#32071"
 msgid "Metacritic - Movies and TV Shows details"
+msgstr ""
+
+
+msgctxt "#32072"
+msgid "TuneFind - Movies and TV Shows soundtrack"
 msgstr ""

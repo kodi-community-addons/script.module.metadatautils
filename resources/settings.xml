@@ -322,26 +322,16 @@
 					</dependencies>
 					<control type="toggle"/>
 				</setting>
-				<setting id="rt_rating" type="boolean" label="32069" help="">
-					<level>0</level>
-					<default>false</default>
-					<control type="toggle"/>
-				</setting>
-				<setting id="rt_info" type="boolean" label="32070" help="">
-					<level>0</level>
-					<default>false</default>
-					<dependencies>
-						<dependency type="visible">
-							<condition operator="is" setting="rt_rating">true</condition>
-						</dependency>
-					</dependencies>
-					<control type="toggle"/>
-				</setting>
 				<setting id="metacritic_info" type="boolean" label="32071" help="">
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
+				<setting id="tunefind_soundtrack" type="boolean" label="32072" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>				
 				<setting id="max_extrafanarts" type="integer" label="32060" help="">
 					<level>0</level>
 					<default>12</default>
