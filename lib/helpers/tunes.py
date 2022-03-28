@@ -34,19 +34,17 @@ class Tunes(object):
 
     @use_cache(2)        
     def get_tunes(self, title, media_type="", year=""):
-        if "movies" in media_type:
-            for splitter in [" ", " :",": ", ":"]:
+        for splitter in [" ", " :",": ", ":"]:
             # replace splitter by kodi default splitter for easier split all later
-                title = title.replace(splitter, "-").lower()
-                for remover in ['(', ')']:
-                    title = title.replace(remover, "")
-                    title = title.replace("--", "-")
+            title = title.replace(splitter, "-").lower()
+            for remover in ['(', ')']:
+                title = title.replace(remover, "")
+                title = title.replace("--", "-")
+                if "movies" in media_type:
                     params = "movie/%s-%s?fields=hot-songs" % (title, year)
-                    data = self.get_data(params)            
-        if "tvshows" in media_type:
-            title = title.split(" (")[0]
-            params = 'show/%s?fields=song-events' % (title)
-            data = self.get_data(params)
+                if "tvshows" in media_type:    
+                    params = "show/%s/season/1?fields=hot-songs" % (title)
+                data = self.get_data(params)
         return self.map_details(data) if data else None
  
     @use_cache(365) 
@@ -76,15 +74,6 @@ class Tunes(object):
                             if data.get("external_preview_url"):
                                 s_track = data.get("external_preview_url")
                         result["image.%s.soundtrack" % count] = s_thumb
-                        result["track.%s.soundtrack" % count] = s_track
-                if data.get("seasons"):
-                    datas = data["seasons"]
-                    for data in datas:
-                        if data.get("theme_song"):
-                            data = data["theme_song"]
-                            if data.get("name"):
-                                result["name.0.soundtrack"] = data.get("name")
-                            if data.get("preview_url"):
-                                result["track.0.soundtrack"] = data.get("preview_url")                
+                        result["track.%s.soundtrack" % count] = s_track              
         return result
                     

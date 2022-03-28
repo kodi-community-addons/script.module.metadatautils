@@ -103,6 +103,7 @@ class Omdb(object):
                     result["writer"] = value.split(", ")
                 elif key == "country":
                     result["country"] = value.split(", ")
+                    result["country.0"] = value.split(", ")[0]                    
                 elif key == "awards":
                     result["awards"] = value
                 elif key == "poster":
