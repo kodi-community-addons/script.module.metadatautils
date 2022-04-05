@@ -326,6 +326,12 @@ class Tmdb(object):
             details["revenue.formatted"] = int_with_commas(data["revenue"])
             if data.get("production_companies"):
                 details["studio"] = [item["name"] for item in data["production_companies"]]
+                videos:stuio = []
+                for count, item in enumerate(data["production_companies"]):
+                        videos:stuio.append(item["id"])
+                        details["name.%s.studio" % count] = item["name"]
+                        details["logo.%s.studio" % count] = "https://image.tmdb.org/t/p/h50_filter(negate,000,666)%s" % item["logo_path"]
+                        details["country.%s.studio" % count] = item["origin_country"]
             if data.get("production_countries"):
                 details["country"] = [item["name"] for item in data["production_countries"]]
             if data.get("keywords"):
