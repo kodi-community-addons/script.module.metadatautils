@@ -351,6 +351,12 @@ class Tmdb(object):
                 details["lastaired"] = data["last_air_date"]
             if data.get("networks"):
                 details["studio"] = [item["name"] for item in data["networks"]]
+                videos:stuio = []
+                for count, item in enumerate(data["networks"]):
+                        videos:stuio.append(item["id"])
+                        details["name.%s.studio" % count] = item["name"]
+                        details["logo.%s.studio" % count] = "https://image.tmdb.org/t/p/h50_filter(negate,000,666)%s" % item["logo_path"]
+                        details["country.%s.studio" % count] = item["origin_country"]
             if "origin_country" in data:
                 details["country"] = data["origin_country"]
             if "number_of_seasons" in data:
