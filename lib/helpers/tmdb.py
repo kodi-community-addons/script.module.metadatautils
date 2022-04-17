@@ -268,9 +268,15 @@ class Tmdb(object):
                         cast_thumb = "https://image.tmdb.org/t/p/original%s" % crew_member["profile_path"]
                         if crew_member["job"] in ["Screenplay"]:
                             details["writer.thumb"] = cast_thumb
+                        if crew_member["job"] in ["Author"]:
+                            details["writer.thumb"] = cast_thumb
+                        if crew_member["job"] in ["Executive Producer"]:
+                            details["director.thumb"] = cast_thumb   
                         if crew_member["job"] in ["Director"]:
-                            details["director.thumb"] = cast_thumb 
-        if "credits" in data:      
+                            details["director.thumb"] = cast_thumb
+                        if crew_member["job"] in ["Creator"]:
+                            details["director.thumb"] = cast_thumb     
+        if "credits" in data:       
             if "cast" in data["credits"]:
                 for cast_member in data["credits"]["cast"]:
                     cast_thumb = ""
@@ -279,6 +285,10 @@ class Tmdb(object):
                     details["cast"].append({"name": cast_member["name"], "role": cast_member["character"],
                                             "thumbnail": cast_thumb})
                     details["castandrole"].append((cast_member["name"], cast_member["character"]))
+                for count, item in enumerate(data["credits"]["cast"]):
+                    if count < 4:
+                        details["cast.%s.name" % count] = item["name"]
+                        details["cast.%s.thumb" % count] = "https://image.tmdb.org/t/p/original%s" % item["profile_path"] 
             # crew (including writers and directors)
             if "crew" in data["credits"]:
                 for crew_member in data["credits"]["crew"]:
@@ -326,9 +336,7 @@ class Tmdb(object):
             details["revenue.formatted"] = int_with_commas(data["revenue"])
             if data.get("production_companies"):
                 details["studio"] = [item["name"] for item in data["production_companies"]]
-                videos:stuio = []
                 for count, item in enumerate(data["production_companies"]):
-                        videos:stuio.append(item["id"])
                         details["name.%s.studio" % count] = item["name"]
                         details["logo.%s.studio" % count] = "https://image.tmdb.org/t/p/h50_filter(negate,000,666)%s" % item["logo_path"]
                         details["country.%s.studio" % count] = item["origin_country"]
@@ -351,9 +359,7 @@ class Tmdb(object):
                 details["lastaired"] = data["last_air_date"]
             if data.get("networks"):
                 details["studio"] = [item["name"] for item in data["networks"]]
-                videos:stuio = []
                 for count, item in enumerate(data["networks"]):
-                        videos:stuio.append(item["id"])
                         details["name.%s.studio" % count] = item["name"]
                         details["logo.%s.studio" % count] = "https://image.tmdb.org/t/p/h50_filter(negate,000,666)%s" % item["logo_path"]
                         details["country.%s.studio" % count] = item["origin_country"]
