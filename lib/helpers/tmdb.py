@@ -256,6 +256,7 @@ class Tmdb(object):
         details["status"] = data["status"]
         details["cast"] = []
         details["castandrole"] = []
+        details["crew"] = []
         details["writer"] = []
         details["director"] = []
         details["media_type"] = media_type
@@ -284,7 +285,8 @@ class Tmdb(object):
                         cast_thumb = "https://image.tmdb.org/t/p/original%s" % cast_member["profile_path"]
                     details["cast"].append({"name": cast_member["name"], "role": cast_member["character"],
                                             "thumbnail": cast_thumb})
-                    details["castandrole"].append((cast_member["name"], cast_member["character"]))
+                    castandrole = "%s (%s)" % (cast_member["name"], cast_member["character"])
+                    details["castandrole"].append(castandrole)
                 for count, item in enumerate(data["credits"]["cast"]):
                     if count < 4:
                         details["cast.%s.name" % count] = item["name"]
@@ -302,6 +304,8 @@ class Tmdb(object):
                     if crew_member["job"] in ["Producer", "Executive Producer", "Author", "Writer"]:
                         details["cast"].append({"name": crew_member["name"], "role": crew_member["job"],
                                                 "thumbnail": cast_thumb})
+                    crew = "%s (%s)" % (crew_member["name"], crew_member["job"])
+                    details["crew"].append(crew)                            
         # artwork
         details["art"] = {}
         if data.get("images"):
