@@ -9,10 +9,7 @@
 
 import os, sys
 import base64
-if sys.version_info.major == 3:
-    from .utils import get_json, strip_newlines, KODI_LANGUAGE, get_compare_string, ADDON_ID
-else:
-    from utils import get_json, strip_newlines, KODI_LANGUAGE, get_compare_string, ADDON_ID
+from .utils import get_json, strip_newlines, KODI_LANGUAGE, get_compare_string, ADDON_ID
 from simplecache import use_cache
 import xbmcvfs
 import xbmcaddon

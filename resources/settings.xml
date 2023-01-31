@@ -331,7 +331,12 @@
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
-				</setting>				
+				</setting>
+				<setting id="tvmaze_info" type="boolean" label="32073" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>					
 				<setting id="max_extrafanarts" type="integer" label="32060" help="">
 					<level>0</level>
 					<default>12</default>

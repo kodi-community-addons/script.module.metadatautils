@@ -4,10 +4,7 @@
 """get metadata from trakt"""
 import os, sys
 from urllib.parse import urlencode
-if sys.version_info.major == 3:
-    from .utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID, try_encode, log_msg
-else:
-    from utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID
+from .utils import get_json, get_xml, formatted_number, int_with_commas, try_parse_int, KODI_LANGUAGE, ADDON_ID, try_encode, log_msg
 from simplecache import use_cache
 import arrow
 import xbmc

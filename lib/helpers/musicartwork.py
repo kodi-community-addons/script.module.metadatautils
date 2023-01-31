@@ -8,14 +8,9 @@
 """
 
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode, manual_set_artwork
-    from .mbrainz import MusicBrainz
-    from urllib.parse import quote_plus
-else:
-    from utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode, manual_set_artwork
-    from mbrainz import MusicBrainz
-    from urllib import quote_plus
+from .utils import log_msg, extend_dict, ADDON_ID, strip_newlines, download_artwork, try_decode, manual_set_artwork
+from .mbrainz import MusicBrainz
+from urllib.parse import quote_plus
 import xbmc
 import xbmcvfs
 import xbmcgui
@@ -175,10 +170,7 @@ class MusicArtwork(object):
             # get artwork from custom folder
             custom_path = None
             if self._mutils.addon.getSetting("music_art_custom") == "true":
-                if sys.version_info.major == 3:
-                    custom_path = self._mutils.addon.getSetting("music_art_custom_path")
-                else:
-                    custom_path = self._mutils.addon.getSetting("music_art_custom_path").decode("utf-8")
+                custom_path = self._mutils.addon.getSetting("music_art_custom_path")
                 local_path_custom = self.get_customfolder_path(custom_path, artist)
                 #log_msg("custom path on disk for artist: %s --> %s" % (artist, local_path_custom))
                 details["art"] = extend_dict(details["art"], self.lookup_artistart_in_folder(local_path_custom))
@@ -268,10 +260,7 @@ class MusicArtwork(object):
             # get artwork from custom folder
             custom_path = None
             if self._mutils.addon.getSetting("music_art_custom") == "true":
-                if sys.version_info.major == 3:
-                    custom_path = self._mutils.addon.getSetting("music_art_custom_path")
-                else:
-                    custom_path = self._mutils.addon.getSetting("music_art_custom_path").decode("utf-8")
+                custom_path = self._mutils.addon.getSetting("music_art_custom_path")
                 local_path_custom = self.get_custom_album_path(custom_path, artist, album, disc)
                 details["art"] = extend_dict(details["art"], self.lookup_albumart_in_folder(local_path_custom))
                 details["customartpath"] = local_path_custom
@@ -351,10 +340,7 @@ class MusicArtwork(object):
             details["albumsartist"] = []
             details["albumscompilations"] = []
             details["tracks"] = []
-            if sys.version_info.major == 3:
-                bullet = "•"
-            else:
-                bullet = "•".decode("utf-8")
+            bullet = "•"
             details["albums.formatted"] = ""
             details["tracks.formatted"] = ""
             details["tracks.formatted2"] = ""
@@ -420,10 +406,7 @@ class MusicArtwork(object):
                 album_tracks = self._mutils.kodidb.songs(filters=filters)
                 details["artistid"] = details["artistid"][0]
                 details["tracks"] = []
-                if sys.version_info.major == 3:
-                    bullet = "•"
-                else:
-                    bullet = "•".decode("utf-8")
+                bullet = "•"
                 details["tracks.formatted"] = ""
                 details["tracks.formatted2"] = ""
                 details["runtime"] = 0
@@ -530,8 +513,6 @@ class MusicArtwork(object):
             return artwork
         files = xbmcvfs.listdir(folderpath)[1]
         for item in files:
-            if sys.version_info.major < 3:
-                item = item.decode("utf-8")
             if item in ["banner.jpg", "clearart.png", "poster.png", "fanart.jpg", "landscape.jpg"]:
                 key = item.split(".")[0]
                 artwork[key] = folderpath + item
@@ -547,10 +528,7 @@ class MusicArtwork(object):
             if files:
                 artwork["extrafanart"] = efa_path
                 for item in files:
-                    if sys.version_info.major == 3:
-                        item = efa_path + item
-                    else:
-                        item = efa_path + item.decode("utf-8")
+                    item = efa_path + item
                     artwork["fanarts"].append(item)
         return artwork
 
@@ -562,8 +540,6 @@ class MusicArtwork(object):
             return artwork
         files = xbmcvfs.listdir(folderpath)[1]
         for item in files:
-            if sys.version_info.major < 3:
-                item = item.decode("utf-8")
             if item in ["cdart.png", "disc.png"]:
                 artwork["discart"] = folderpath + item
             if item in ["cdart2.png", "disc2.png"]:
@@ -597,18 +573,13 @@ class MusicArtwork(object):
                     delim = "/"
                 dirs = xbmcvfs.listdir(album_path)[0]
                 for directory in dirs:
-                    if sys.version_info.major < 3:
-                        directory = directory.decode("utf-8")
                     if disc in directory:
                         return os.path.join(album_path, directory) + delim
         return album_path
 
     def get_customfolder_path(self, customfolder, foldername, sublevel=False):
         """search recursively (max 2 levels) for a specific folder"""
-        if sys.version_info.major == 3:
-            artistcustom_path = self._mutils.addon.getSetting("music_art_custom_path")
-        else:
-            artistcustom_path = self._mutils.addon.getSetting("music_art_custom_path").decode("utf-8")
+        artistcustom_path = self._mutils.addon.getSetting("music_art_custom_path")
         cachestr = "customfolder_path.%s%s" % (customfolder, foldername)
         folder_path = self.cache.get(cachestr)
         if not folder_path:
@@ -619,8 +590,6 @@ class MusicArtwork(object):
             dirs = xbmcvfs.listdir(customfolder)[0]
             for strictness in [1, 0.95, 0.9, 0.85]:
                 for directory in dirs:
-                    if sys.version_info.major < 3:
-                        directory = directory.decode("utf-8")
                     curpath = os.path.join(customfolder, directory) + delim
                     match = SM(None, foldername.lower(), directory.lower()).ratio()
                     if match >= strictness:

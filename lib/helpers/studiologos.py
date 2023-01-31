@@ -7,10 +7,7 @@ import xbmcvfs
 import os, sys
 from datetime import timedelta
 from simplecache import use_cache
-if sys.version_info.major == 3:
-    from .utils import try_decode
-else:
-    from utils import try_decode
+from .utils import try_decode
 
 
 class StudioLogos():

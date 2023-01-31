@@ -4,10 +4,7 @@
 """get metadata from the lastfm"""
 
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import get_json, strip_newlines, get_compare_string
-else:
-    from utils import get_json, strip_newlines, get_compare_string
+from .utils import get_json, strip_newlines, get_compare_string
 from simplecache import use_cache
 import xbmcvfs
 

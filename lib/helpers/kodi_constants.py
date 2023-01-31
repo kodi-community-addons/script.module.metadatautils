@@ -7,10 +7,7 @@
     Several common constants for use with Kodi json api
 """
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import KODI_VERSION
-else:
-    from utils import KODI_VERSION
+from .utils import KODI_VERSION
 
 FIELDS_BASE = ["dateadded", "file", "lastplayed", "plot", "title", "art", "playcount"]
 FIELDS_FILE = FIELDS_BASE + ["streamdetails", "director", "resume", "runtime"]

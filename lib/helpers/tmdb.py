@@ -8,10 +8,7 @@
 """
 
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
-else:
-    from utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
+from .utils import get_json, KODI_LANGUAGE, try_parse_int, DialogSelect, get_compare_string, int_with_commas, ADDON_ID
 from difflib import SequenceMatcher as SM
 from simplecache import use_cache
 from operator import itemgetter
@@ -216,10 +213,7 @@ class Tmdb(object):
             # without personal (or addon specific) api key = rate limiting and older info from cache
             rate_limit = ("themoviedb.org", 5)
             expiration = datetime.timedelta(days=60)
-        if sys.version_info.major == 3:
-            cachestr = "tmdb.%s" % params.values()
-        else:
-            cachestr = "tmdb.%s" % params.itervalues()
+        cachestr = "tmdb.%s" % params.values()
         cache = self.cache.get(cachestr)
         if cache:
             # data obtained from cache
@@ -267,7 +261,7 @@ class Tmdb(object):
                     cast_thumb = ""
                     if crew_member["profile_path"]:
                         cast_thumb = "https://image.tmdb.org/t/p/original%s" % crew_member["profile_path"]
-                        if crew_member["job"] in ["Screenplay"]:
+                        if crew_member["department"] in ["Writing"]:
                             details["writer.thumb"] = cast_thumb
                         if crew_member["job"] in ["Author"]:
                             details["writer.thumb"] = cast_thumb

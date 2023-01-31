@@ -4,10 +4,7 @@
 """get images from google images"""
 
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import DialogSelect, requests, log_exception
-else:
-    from utils import DialogSelect, requests, log_exception
+from .utils import DialogSelect, requests, log_exception
 import bs4 as BeautifulSoup
 import xbmc
 import xbmcvfs
@@ -56,10 +53,7 @@ class GoogleImages(object):
             del dialog
             if selected_item != -1:
                 selected_item = images_list[selected_item]
-                if sys.version_info.major == 3:
-                    image = selected_item.getLabel()
-                else:
-                    image = selected_item.getLabel().decode("utf-8")
+                image = selected_item.getLabel()
         return image
 
     @use_cache(30)

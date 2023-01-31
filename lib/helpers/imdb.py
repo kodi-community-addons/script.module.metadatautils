@@ -8,10 +8,7 @@
 """
 
 import os, sys
-if sys.version_info.major == 3:
-    from .utils import requests, try_parse_int
-else:
-    from utils import requests, try_parse_int
+from .utils import requests, try_parse_int
 import bs4 as BeautifulSoup
 from simplecache import use_cache
 
@@ -27,10 +24,7 @@ class Imdb(object):
         else:
             self.cache = simplecache
         if not kodidb:
-            if sys.version_info.major == 3:
-                from .kodidb import KodiDb
-            else:
-                from kodidb import KodiDb
+            from .kodidb import KodiDb
             self.kodidb = KodiDb()
         else:
             self.kodidb = kodidb

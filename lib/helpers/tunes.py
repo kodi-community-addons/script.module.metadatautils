@@ -40,6 +40,7 @@ class Tunes(object):
             for remover in ['(', ')']:
                 title = title.replace(remover, "")
                 title = title.replace("--", "-")
+                title = title.replace(":-", "-")
                 if "movies" in media_type:
                     params = "movie/%s-%s?fields=hot-songs" % (title, year)
                 if "tvshows" in media_type:    
@@ -68,7 +69,6 @@ class Tunes(object):
                         s_track = ""
                         if item.get("url"):
                             data = item["url"]
-                            log_msg("get_RT_all - data from json %s " %  (data))
                             if data.get("external_art_url"):
                                 s_thumb = data.get("external_art_url")
                             if data.get("external_preview_url"):

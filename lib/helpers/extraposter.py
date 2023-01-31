@@ -37,8 +37,5 @@ def get_extraposter(file_path):
         result["art"] = {"extraposter": efap_path}
         for count, file in enumerate(xbmcvfs.listdir(efap_path)[1]):
             if file.lower().endswith(".jpg"):
-                if sys.version_info.major == 3:
-                    result["art"]["ExtraPoster.%s" % count] = efap_path + file
-                else:
-                    result["art"]["ExtraPoster.%s" % count] = efap_path + file.decode("utf-8")
+                result["art"]["ExtraPoster.%s" % count] = efap_path + file
     return result
