@@ -14,6 +14,7 @@ import arrow
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import traceback
+from traceback import format_exc
 from urllib.parse import unquote
 import unicodedata
 import datetime
