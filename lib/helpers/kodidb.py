@@ -369,7 +369,6 @@ class KodiDb(object):
                     "title": item.get("title"),
                     "path": item.get("file"),
                     "size": item.get("size"),
-                    "year": item.get("year"),
                     "top250": item.get("top250"),
                     "tracknumber": item.get("tracknumber"),
                     "rating": item.get("rating"),
@@ -419,11 +418,9 @@ class KodiDb(object):
                 infolabels = {
                     "title": item.get("title"),
                     "size": item.get("size"),
-                    "genre": item.get("genre"),
                     "year": item.get("year"),
                     "tracknumber": item.get("track"),
                     "album": item.get("album"),
-                    "artist": " / ".join(item.get('artist')),
                     "rating": str(item.get("rating", 0)),
                     "lyrics": item.get("lyrics"),
                     "playcount": item.get("playcount")
