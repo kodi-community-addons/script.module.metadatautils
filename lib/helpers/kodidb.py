@@ -397,7 +397,7 @@ class KodiDb(object):
                 #ERROR: NEWADDON Unknown Video Info Key "progress" in Kodi 19 ?!
                 if KODI_VERSION < 18:
                     infolabels["progress"] = item.get('progresspercentage')
-                if item["type"] == "episode":
+                if "season" in item:
                     infolabels["season"] = item["season"]
                     infolabels["episode"] = item["episode"]
 
@@ -412,7 +412,20 @@ class KodiDb(object):
                     infolabels["dateadded"] = item["dateadded"]
                 if "date" in item:
                     infolabels["date"] = item["date"]
-
+                if "studio" in item:
+                    infolabels["studio"] = item["studio"]
+                if "genre" in item:
+                    infolabels["genre"] = item["genre"]					
+                if "writer" in item:
+                    infolabels["writer"] = item["writer"]		
+                if "director" in item:
+                    infolabels["director"] = item["director"]
+                if "country" in item:
+                    infolabels["country"] = item["country"]
+                #if "year" in item:
+                    #infolabels["year"] = item["year"]
+                if "tag" in item:
+                    infolabels["tag"] = item["tag"]
             # music infolabels
             else:
                 infolabels = {
@@ -433,7 +446,7 @@ class KodiDb(object):
                     infolabels["lastplayed"] = item["lastplayed"]
 
             # setting the dbtype and dbid is supported from kodi krypton and up
-            if KODI_VERSION > 16 and item["type"] not in ["recording", "channel", "favourite", "genre", "categorie"]:
+            if item["type"] not in ["recording", "channel", "favourite", "genre", "categorie"]:
                 infolabels["mediatype"] = item["type"]
                 # setting the dbid on music items is not supported ?
                 if nodetype == "Video" and "DBID" in item["extraproperties"]:
@@ -513,16 +526,7 @@ class KodiDb(object):
                     break
 
             # general properties
-            if "genre" in item and isinstance(item['genre'], list):
-                item["genre"] = " / ".join(item['genre'])
-            if "studio" in item and isinstance(item['studio'], list):
-                item["studio"] = " / ".join(item['studio'])
-            if "writer" in item and isinstance(item['writer'], list):
-                item["writer"] = " / ".join(item['writer'])
-            if 'director' in item and isinstance(item['director'], list):
-                item["director"] = " / ".join(item['director'])
-            if 'artist' in item and not isinstance(item['artist'], list):
-                item["artist"] = [item['artist']]
+
             if 'artist' not in item:
                 item["artist"] = []
             if item['type'] == "album" and 'album' not in item and 'label' in item:

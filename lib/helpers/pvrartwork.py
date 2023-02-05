@@ -223,7 +223,7 @@ class PvrArtwork(object):
 
         details = self.get_pvr_artwork(title, channel, genre)
         cache_str = details["cachestr"]
-
+        custom_path = self._mutils.addon.getSetting("pvr_art_custom_path")
         # show dialogselect with all artwork option  
         from .utils import manual_set_artwork
         changemade, artwork = manual_set_artwork(details["art"], "pvr")
@@ -233,7 +233,7 @@ class PvrArtwork(object):
             self._mutils.cache.set(cache_str, details, expiration=timedelta(days=365))
             # download artwork to custom folder
             if self._mutils.addon.getSetting("pvr_art_download") == "true":
-                details["art"] = download_artwork(self.get_custom_path(title), details["art"])
+                details["art"] = download_artwork(os.path.join(custom_path, normalize_string(title)), details["art"])
     def pvr_artwork_options(self, title, channel, genre):
         """show options for pvr artwork"""
         if not channel and genre:
