@@ -227,6 +227,7 @@ def get_clean_image(image):
         if not xbmcvfs.exists(thumbcache):
             xbmcvfs.copy(image, thumbcache)
         image = thumbcache
+        image = image.replace("music@", "")
     if image and "image://" in image:
         image = image.replace("image://", "")
         image = unquote(image)

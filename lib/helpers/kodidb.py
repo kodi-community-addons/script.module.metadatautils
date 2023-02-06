@@ -394,9 +394,7 @@ class KodiDb(object):
                     "votes": item.get("votes"),
                     "trailer": item.get("trailer")
                 }
-                #ERROR: NEWADDON Unknown Video Info Key "progress" in Kodi 19 ?!
-                if KODI_VERSION < 18:
-                    infolabels["progress"] = item.get('progresspercentage')
+
                 if "season" in item:
                     infolabels["season"] = item["season"]
                     infolabels["episode"] = item["episode"]
@@ -422,8 +420,8 @@ class KodiDb(object):
                     infolabels["director"] = item["director"]
                 if "country" in item:
                     infolabels["country"] = item["country"]
-                #if "year" in item:
-                    #infolabels["year"] = item["year"]
+                if item["type"] in ["movie"] and "year" in item:
+                    infolabels["year"] = item["year"]
                 if "tag" in item:
                     infolabels["tag"] = item["tag"]
             # music infolabels
@@ -441,7 +439,7 @@ class KodiDb(object):
                 if "date" in item:
                     infolabels["date"] = item["date"]
                 if "duration" in item:
-                    infolabels["duration"] = item["duration"]
+                    infolabels["duration"] = item["runtime"]
                 if "lastplayed" in item:
                     infolabels["lastplayed"] = item["lastplayed"]
 
@@ -461,14 +459,9 @@ class KodiDb(object):
             liz.setArt(item.get("art", {}))
             if KODI_VERSION > 17:
                 if "icon" in item:
-                    liz.setArt({"icon":item['icon']})
+                    liz.setArt({"icon":get_clean_image(item['icon'])})
                 if "thumbnail" in item:
-                    liz.setArt({"thumb":item['thumbnail']})
-            else:
-                if "icon" in item:
-                    liz.setIconImage(item['icon'])
-                if "thumbnail" in item:
-                    liz.setThumbnailImage(item['thumbnail'])
+                    liz.setArt({"thumb":get_clean_image(item['thumbnail'])})
 
             # contextmenu
             if item["type"] in ["episode", "season"] and "season" in item and "tvshowid" in item:
@@ -574,7 +567,9 @@ class KodiDb(object):
             if "season" in item and "episode" in item:
                 properties["episodeno"] = "s%se%s" % (item.get("season"), item.get("episode"))
             if "resume" in item:
-                info_tagger._info_tag.setResumePoint(int(item['resume']['position']), int(item['resume']['total']))
+                properties["resumetime"] = str(item['resume']['position'])
+                properties["totaltime"] = str(item['resume']['total'])
+                properties['StartOffset'] = str(item['resume']['position'])
             # streamdetails
             if "streamdetails" in item:
                 streamdetails = item["streamdetails"]
