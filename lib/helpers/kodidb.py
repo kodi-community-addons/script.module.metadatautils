@@ -342,7 +342,7 @@ class KodiDb(object):
                     label2=item.get("label2", ""),
                     path=item['file'],
                     offscreen=offscreen)
-                info_tag = ListItemInfoTag(liz, 'video')
+                info_tag = ListItemInfoTag(liz, 'video', type_check=True)
             else:
                 liz = xbmcgui.ListItem(
                     label=item.get("label", ""),
@@ -398,7 +398,10 @@ class KodiDb(object):
                 if "season" in item:
                     infolabels["season"] = item["season"]
                     infolabels["episode"] = item["episode"]
-
+                if "resume" in item:
+                    resume_float = float(item['resume']['position'])
+                    total_float = float(item['resume']['total'])
+                    info_tag._info_tag.setResumePoint(time=resume_float, totaltime=total_float)
                 # streamdetails
                 if item.get("streamdetails"):				
                     stream_details = {
@@ -496,6 +499,7 @@ class KodiDb(object):
         info_tagger = ListItemInfoTag(liz, 'video')
         try:
             # fix values returned from json to be used as listitem values
+			
             properties = item.get("extraproperties", {})
 
             # set type
@@ -566,11 +570,6 @@ class KodiDb(object):
 
             if "season" in item and "episode" in item:
                 properties["episodeno"] = "s%se%s" % (item.get("season"), item.get("episode"))
-            if "resume" in item:
-                properties["resumetime"] = str(item['resume']['position'])
-                properties["totaltime"] = str(item['resume']['total'])
-                properties['StartOffset'] = str(item['resume']['position'])
-            # streamdetails
             if "streamdetails" in item:
                 streamdetails = item["streamdetails"]
                 audiostreams = streamdetails.get('audio', [])
