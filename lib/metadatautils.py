@@ -303,8 +303,12 @@ class MetadataUtils(object):
             if content_type in ["tvshows", "seasons", "episodes"]:
                 tvdbid = imdbid
                 imdbid = ""
-        if not imdbid and year:
-            omdb_info = self.get_omdb_info("", title, year, content_type)
+            if content_type in ["movies"]:
+                omdb_info = self.get_omdb_info("", title, year, content_type)
+                if omdb_info:
+                    imdbid = omdb_info.get("imdbnumber", "")
+            if not imdbid and year:
+                omdb_info = self.get_omdb_info("", title, year, content_type)
             if omdb_info:
                 imdbid = omdb_info.get("imdbnumber", "")
         if not imdbid:
