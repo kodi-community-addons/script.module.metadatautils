@@ -307,8 +307,8 @@ class MetadataUtils(object):
                 omdb_info = self.get_omdb_info("", title, year, content_type)
                 if omdb_info:
                     imdbid = omdb_info.get("imdbnumber", "")
-            if not imdbid and year:
-                omdb_info = self.get_omdb_info("", title, year, content_type)
+        if not imdbid and year:
+            omdb_info = self.get_omdb_info("", title, year, content_type)
             if omdb_info:
                 imdbid = omdb_info.get("imdbnumber", "")
         if not imdbid:
